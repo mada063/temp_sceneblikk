@@ -1,103 +1,153 @@
-import Image from "next/image";
+import Link from "next/link";
+import {
+  FiLayout,
+  FiBarChart2,
+  FiMonitor,
+  FiPlayCircle,
+  FiGrid,
+} from "react-icons/fi";
+
+const quickLinks = [
+  {
+    href: "/editor",
+    label: "Start editing",
+    icon: FiLayout,
+    description: "Design responsive signage layouts with inch-perfect grids.",
+  },
+  {
+    href: "/dashboard",
+    label: "Open dashboard",
+    icon: FiBarChart2,
+    description: "Monitor screens, view updates, and track engagement.",
+  },
+  {
+    href: "/view",
+    label: "Launch player",
+    icon: FiMonitor,
+    description: "Preview the full-screen signage player experience.",
+  },
+];
+
+const workflow = [
+  {
+    title: "Define the canvas",
+    description:
+      "Enter your screen dimensions in inches and set the grid density that best fits your content strategy.",
+    icon: FiGrid,
+  },
+  {
+    title: "Place components",
+    description:
+      "Drag and drop reusable content blocks onto the grid. Resize cells or swap components in seconds.",
+    icon: FiLayout,
+  },
+  {
+    title: "Publish to screens",
+    description:
+      "Use the player view to project layouts to every device and track what’s live from the dashboard.",
+    icon: FiPlayCircle,
+  },
+];
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="relative min-h-screen overflow-hidden bg-custom-color-100 text-black transition-colors duration-300 dark:bg-custom-color-900 dark:text-white">
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(12,154,235,0.25),_transparent_60%)] dark:bg-[radial-gradient(circle_at_top,_rgba(3,67,105,0.55),_transparent_65%)]" />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 pb-24 pt-24 sm:px-10 lg:px-16">
+        <section className="glass-surface rounded-3xl border border-white/40 p-10 shadow-xl dark:border-white/5 dark:shadow-[0_25px_80px_rgba(0,0,0,0.35)]">
+          <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-2xl space-y-6">
+              <span className="inline-flex items-center gap-2 rounded-full border border-custom-color-300/30 bg-custom-color-50/60 px-4 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-custom-color-700 dark:border-white/10 dark:bg-custom-color-900/50 dark:text-custom-color-200">
+                Sceneblikk Signage
+              </span>
+              <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+                Create signage layouts that scale with every screen.
+              </h1>
+              <p className="text-base leading-relaxed text-custom-color-800/80 dark:text-custom-color-100/85">
+                Design inch-perfect canvases, assemble content with reusable
+                components, and monitor active screens from a single control
+                centre. Built with Next.js and Tailwind for rapid signage
+                iteration.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                {quickLinks.map(({ href, label }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="rounded-full bg-custom-color-500 px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-custom-color-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-custom-color-300 dark:bg-custom-color-400 dark:hover:bg-custom-color-300"
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+            <div className="glass-surface-strong w-full max-w-sm rounded-2xl border border-white/30 p-6 text-sm text-custom-color-900 shadow-lg dark:border-white/10 dark:text-custom-color-50">
+              <h2 className="mb-4 text-lg font-semibold text-custom-color-700 dark:text-custom-color-100">
+                Why digital signage teams choose Sceneblikk
+              </h2>
+              <ul className="space-y-4 text-sm leading-relaxed">
+                <li>
+                  <strong className="font-semibold">Grid-first editing:</strong>{" "}
+                  author layouts for every screen ratio in minutes.
+                </li>
+                <li>
+                  <strong className="font-semibold">Theme-aware visuals:</strong>{" "}
+                  colors adapt automatically to every viewer’s environment.
+                </li>
+                <li>
+                  <strong className="font-semibold">Playback ready:</strong>{" "}
+                  launch the player view with a single click to go full screen.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section className="grid gap-6 md:grid-cols-3">
+          {quickLinks.map(({ href, label, icon: Icon, description }) => (
+            <Link
+              key={href}
+              href={href}
+              className="group relative overflow-hidden rounded-2xl border border-white/40 bg-white/80 p-6 text-custom-color-900 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl dark:border-white/10 dark:bg-custom-color-800/70 dark:text-white"
+            >
+              <div className="absolute inset-0 -z-10 bg-gradient-to-br from-custom-color-100/40 via-transparent to-custom-color-300/35 opacity-0 transition group-hover:opacity-100 dark:from-custom-color-700/25 dark:to-custom-color-500/35" />
+              <div className="mb-4 inline-flex items-center justify-center rounded-xl bg-custom-color-500/15 p-3 text-custom-color-600 dark:bg-custom-color-400/20 dark:text-custom-color-200">
+                <Icon className="h-6 w-6" aria-hidden />
+              </div>
+              <h3 className="text-lg font-semibold">{label}</h3>
+              <p className="mt-2 text-sm text-custom-color-700/80 dark:text-custom-color-100/75">
+                {description}
+              </p>
+              <span className="mt-4 inline-flex items-center text-xs font-semibold uppercase tracking-[0.22em] text-custom-color-500 dark:text-custom-color-200">
+                Explore →
+              </span>
+            </Link>
+          ))}
+        </section>
+
+        <section className="glass-surface rounded-3xl border border-white/30 p-8 shadow-lg dark:border-white/10">
+          <h2 className="text-2xl font-semibold text-custom-color-800 dark:text-custom-color-100">
+            Build signage in three focused steps
+          </h2>
+          <div className="mt-8 grid gap-6 md:grid-cols-3">
+            {workflow.map(({ title, description, icon: Icon }) => (
+              <div
+                key={title}
+                className="rounded-2xl border border-custom-color-300/30 bg-white/80 p-6 shadow-md transition hover:border-custom-color-400/50 dark:border-white/10 dark:bg-custom-color-800/60"
+              >
+                <Icon className="mb-4 h-6 w-6 text-custom-color-600 dark:text-custom-color-300" />
+                <h3 className="text-lg font-semibold text-custom-color-900 dark:text-custom-color-100">
+                  {title}
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-custom-color-700/80 dark:text-custom-color-100/75">
+                  {description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    </main>
   );
 }
