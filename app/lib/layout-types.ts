@@ -14,12 +14,32 @@ export type PanelEntry = {
   duration: number;
 };
 
+export type CellAppearance = {
+  backgroundColor: string;
+  borderColor: string;
+  borderRadius: number;
+  borderWidth: number;
+  textColor: string;
+};
+
+export const makeDefaultAppearance = (): CellAppearance => ({
+  backgroundColor: "#2563eb",
+  borderColor: "#1d4ed8",
+  borderRadius: 20,
+  borderWidth: 2,
+  textColor: "#ffffff",
+});
+
+export const cloneAppearance = (appearance?: CellAppearance | null) =>
+  appearance ? { ...makeDefaultAppearance(), ...appearance } : undefined;
+
 export type GridCell = {
   componentId: string | null;
   colSpan?: number;
   rowSpan?: number;
   coveredBy?: string | null;
   panelEntries?: PanelEntry[];
+  appearance?: CellAppearance;
 };
 
 export type PersistedLayoutState = {
@@ -269,6 +289,7 @@ export const createEmptyGrid = (rows: number, columns: number) => {
         rowSpan: 1,
         coveredBy: null,
         panelEntries: [],
+        appearance: makeDefaultAppearance(),
       };
     }
   }

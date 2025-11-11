@@ -17,13 +17,16 @@ import { PLACEHOLDER_MAP } from "../lib/placeholders";
 import {
   DEFAULT_GRID_CONFIG,
   GRID_LIMITS,
+  type CellAppearance,
   type GridCell,
   type GridConfig,
   LAYOUT_STORAGE_KEY,
   type PersistedLayoutState,
+  cloneAppearance,
   createEmptyGrid,
   deriveGridGeometry,
   makeCellKey,
+  makeDefaultAppearance,
   normalizeConfig,
 } from "../lib/layout-types";
 import {
@@ -63,7 +66,7 @@ export default function EditorPage() {
     createEmptyGrid(DEFAULT_GRID_CONFIG.rows, DEFAULT_GRID_CONFIG.columns),
   );
   const [isHydrated, setHydrated] = useState(false);
-  const [selectedCell, setSelectedCell] = useState<string | null>(null);
+  const [selectedCells, setSelectedCells] = useState<string[]>([]);
   const [resizeState, setResizeState] = useState<ResizeState>(null);
   const [drawState, setDrawState] = useState<DrawState | null>(null);
   const [screenSizeDraft, setScreenSizeDraft] = useState<string>(
@@ -80,6 +83,7 @@ export default function EditorPage() {
   const configRef = useRef(config);
   const drawStateRef = useRef<DrawState | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setScreenSizeDraft(config.screenInches.toString());
@@ -91,6 +95,17 @@ export default function EditorPage() {
   useEffect(() => {
     configRef.current = config;
   }, [config]);
+
+  const getAppearancePreset = useCallback((_componentId: string | null | undefined) => {
+    return makeDefaultAppearance();
+  }, []);
+
+  const [sidebarWidth, setSidebarWidth] = useState(340);
+  const [settingsCollapsed, setSettingsCollapsed] = useState(false);
+  const [libraryCollapsed, setLibraryCollapsed] = useState(false);
+
+  const primarySelectedCell = selectedCells[0] ?? null;
+  const selectionCount = selectedCells.length;
 
   const getCellKeyFromPointer = useCallback((event: PointerEvent) => {
     const gridEl = gridRef.current;
@@ -141,6 +156,58 @@ export default function EditorPage() {
     return makeCellKey(row, column);
   }, []);
 
+  const handleSelectCell = useCallback(
+    (key: string, options?: { multi?: boolean }) => {
+      const rootKey = resolveRootKey(key, cells);
+      setSelectedCells((prev) => {
+        if (options?.multi) {
+          if (prev.includes(rootKey)) {
+            return prev.filter((existing) => existing !== rootKey);
+          }
+          return [...prev, rootKey];
+        }
+        return [rootKey];
+      });
+      setResizeState(null);
+    },
+    [cells],
+  );
+
+  const startSidebarResize = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>) => {
+      if (event.pointerType === "mouse" && event.button !== 0) {
+        return;
+      }
+      event.preventDefault();
+      const startX = event.clientX;
+      const sidebarElement = sidebarRef.current;
+      const initialWidth =
+        sidebarElement?.getBoundingClientRect().width ?? sidebarWidth;
+      const MIN_WIDTH = 260;
+      const MAX_WIDTH = 520;
+
+      const handlePointerMove = (moveEvent: PointerEvent) => {
+        const delta = moveEvent.clientX - startX;
+        const nextWidth = Math.min(
+          Math.max(initialWidth + delta, MIN_WIDTH),
+          MAX_WIDTH,
+        );
+        setSidebarWidth(nextWidth);
+      };
+
+      const stopResizing = () => {
+        window.removeEventListener("pointermove", handlePointerMove);
+        window.removeEventListener("pointerup", stopResizing);
+        window.removeEventListener("pointercancel", stopResizing);
+      };
+
+      window.addEventListener("pointermove", handlePointerMove);
+      window.addEventListener("pointerup", stopResizing);
+      window.addEventListener("pointercancel", stopResizing);
+    },
+    [sidebarWidth],
+  );
+
   const updateComponentSpan = useCallback(
     (targetKey: string) => {
       if (!resizeState) {
@@ -158,6 +225,9 @@ export default function EditorPage() {
           rootCell.componentId === FREEFORM_COMPONENT_ID
             ? clonePanelEntries(rootCell.panelEntries)
             : undefined;
+        const preservedAppearance =
+          cloneAppearance(rootCell.appearance) ??
+          getAppearancePreset(rootCell.componentId ?? null);
 
         const targetCoords = parseKey(targetKey);
         const gridRows = configRef.current.rows;
@@ -233,6 +303,7 @@ export default function EditorPage() {
           rootCell.componentId,
           nextColSpan,
           nextRowSpan,
+          preservedAppearance,
         );
         if (rootCell.componentId === FREEFORM_COMPONENT_ID) {
           draft[nextKey].panelEntries = preservedPanelEntries ?? [];
@@ -242,10 +313,10 @@ export default function EditorPage() {
         return draft;
       });
       if (didUpdate && updatedRootKey) {
-        setSelectedCell(updatedRootKey);
+        setSelectedCells([updatedRootKey]);
       }
     },
-    [resizeState],
+    [getAppearancePreset, resizeState],
   );
 
   useEffect(() => {
@@ -336,13 +407,14 @@ export default function EditorPage() {
           FREEFORM_COMPONENT_ID,
           colSpan,
           rowSpan,
+          getAppearancePreset(FREEFORM_COMPONENT_ID),
         );
         createdRoot = rootKey;
         return next;
       });
 
       if (createdRoot) {
-        setSelectedCell(createdRoot);
+        setSelectedCells([createdRoot]);
       }
       setDrawState(null);
     };
@@ -395,7 +467,6 @@ export default function EditorPage() {
       const next = createEmptyGrid(normalized.rows, normalized.columns);
       const storedCells = parsed?.cells ?? {};
       const roots = extractRootComponents(storedCells);
-
       for (const root of roots) {
         if (
           !isAreaAvailable(next, root.key, root.colSpan, root.rowSpan, normalized)
@@ -409,6 +480,7 @@ export default function EditorPage() {
           root.componentId,
           root.colSpan,
           root.rowSpan,
+          root.appearance ?? getAppearancePreset(root.componentId),
         );
         if (root.componentId === FREEFORM_COMPONENT_ID) {
           next[root.key].panelEntries = clonePanelEntries(root.panelEntries);
@@ -489,6 +561,7 @@ export default function EditorPage() {
             root.componentId,
             colSpan,
             rowSpan,
+            root.appearance ?? getAppearancePreset(root.componentId),
           );
           if (root.componentId === FREEFORM_COMPONENT_ID) {
             next[root.key].panelEntries = clonePanelEntries(root.panelEntries);
@@ -501,16 +574,12 @@ export default function EditorPage() {
   }, [config]);
 
   useEffect(() => {
-    setSelectedCell((prev) => {
-      if (!prev) {
-        return prev;
-      }
-      const { row, column } = parseKey(prev);
-      if (row >= config.rows || column >= config.columns) {
-        return null;
-      }
-      return prev;
-    });
+    setSelectedCells((prev) =>
+      prev.filter((key) => {
+        const { row, column } = parseKey(key);
+        return row < config.rows && column < config.columns;
+      }),
+    );
   }, [config.rows, config.columns]);
 
   const canvasTitle = useMemo(() => {
@@ -650,7 +719,7 @@ export default function EditorPage() {
       const { row, column } = parseKey(rootKey);
       const originalColSpan = cell.colSpan ?? 1;
       const originalRowSpan = cell.rowSpan ?? 1;
-      setSelectedCell(rootKey);
+      setSelectedCells([rootKey]);
       setResizeState({
         rootKey,
         originalColSpan,
@@ -674,6 +743,9 @@ export default function EditorPage() {
       if (event.button !== 0) {
         return;
       }
+      if (event.shiftKey) {
+        return;
+      }
       if (resizeState || drawState) {
         return;
       }
@@ -683,7 +755,7 @@ export default function EditorPage() {
         return;
       }
       event.preventDefault();
-      setSelectedCell(rootKey);
+      setSelectedCells([rootKey]);
       const { row, column } = parseKey(rootKey);
       setDrawState({
         anchorRow: row,
@@ -735,6 +807,9 @@ export default function EditorPage() {
                 colSpan: next[sourceRoot].colSpan ?? 1,
                 rowSpan: next[sourceRoot].rowSpan ?? 1,
                 panelEntries: clonePanelEntries(next[sourceRoot].panelEntries),
+                appearance:
+                  cloneAppearance(next[sourceRoot].appearance) ??
+                  getAppearancePreset(next[sourceRoot].componentId),
               }
             : null;
 
@@ -782,10 +857,14 @@ export default function EditorPage() {
               moving.componentId,
               moving.colSpan ?? 1,
               moving.rowSpan ?? 1,
+              moving.appearance,
             );
           }
           return prev;
         }
+
+        const placementAppearance =
+          moving?.appearance ?? getAppearancePreset(placementComponentId);
 
         assignComponentToRegion(
           targetRoot,
@@ -794,6 +873,7 @@ export default function EditorPage() {
           placementComponentId,
           desiredColSpan,
           desiredRowSpan,
+          placementAppearance,
         );
         if (placementComponentId === FREEFORM_COMPONENT_ID) {
           next[targetRoot].panelEntries = clonePanelEntries(moving.panelEntries);
@@ -802,13 +882,13 @@ export default function EditorPage() {
         return next;
       });
 
-      setSelectedCell(targetSelection);
+      setSelectedCells([targetSelection]);
       setResizeState(null);
     };
 
   const handlePanelEntryDurationChange =
     (entryId: string) => (event: ChangeEvent<HTMLInputElement>) => {
-      if (!selectedCell) {
+      if (selectionCount !== 1 || !primarySelectedCell) {
         return;
       }
       const rawValue = Number(event.target.value);
@@ -817,7 +897,7 @@ export default function EditorPage() {
       }
       const duration = clampInt(rawValue, 1, 86400);
       setCells((prev) => {
-        const rootKey = resolveRootKey(selectedCell, prev);
+        const rootKey = resolveRootKey(primarySelectedCell, prev);
         const cell = prev[rootKey];
         if (cell?.componentId !== FREEFORM_COMPONENT_ID) {
           return prev;
@@ -844,11 +924,11 @@ export default function EditorPage() {
     };
 
   const handleRemovePanelEntry = (entryId: string) => {
-    if (!selectedCell) {
+    if (selectionCount !== 1 || !primarySelectedCell) {
       return;
     }
     setCells((prev) => {
-      const rootKey = resolveRootKey(selectedCell, prev);
+      const rootKey = resolveRootKey(primarySelectedCell, prev);
       const cell = prev[rootKey];
       if (cell?.componentId !== FREEFORM_COMPONENT_ID) {
         return prev;
@@ -869,20 +949,35 @@ export default function EditorPage() {
     });
   };
 
+  const clearCells = useCallback(
+    (cellKeys: string[]) => {
+      if (cellKeys.length === 0) {
+        return;
+      }
+      const uniqueKeys = Array.from(new Set(cellKeys));
+      setCells((prev) => {
+        const next = structuredClone(prev);
+        for (const key of uniqueKeys) {
+          const rootKey = resolveRootKey(key, next);
+          clearComponentRegion(rootKey, next);
+        }
+        return next;
+      });
+      setSelectedCells((prev) =>
+        prev.filter((key) => !uniqueKeys.includes(key)),
+      );
+      setResizeState(null);
+    },
+    [],
+  );
+
   const clearCell = (cellKey: string) => {
-    const rootKey = resolveRootKey(cellKey, cells);
-    setCells((prev) => {
-      const next = structuredClone(prev);
-      clearComponentRegion(rootKey, next);
-      return next;
-    });
-    setSelectedCell((prev) => (prev === rootKey ? null : prev));
-    setResizeState(null);
+    clearCells([cellKey]);
   };
 
   const handleCanvasClick = () => {
     if (!resizeState) {
-      setSelectedCell(null);
+      setSelectedCells([]);
     }
   };
 
@@ -891,7 +986,7 @@ export default function EditorPage() {
     setCells(
       createEmptyGrid(DEFAULT_GRID_CONFIG.rows, DEFAULT_GRID_CONFIG.columns),
     );
-    setSelectedCell(null);
+    setSelectedCells([]);
     setResizeState(null);
   };
 
@@ -925,11 +1020,11 @@ export default function EditorPage() {
   const handleSpanChange =
     (dimension: "colSpan" | "rowSpan") => (event: ChangeEvent<HTMLInputElement>) => {
       const value = Number(event.target.value);
-      if (!selectedCell || Number.isNaN(value)) {
+      if (selectionCount !== 1 || !primarySelectedCell || Number.isNaN(value)) {
         return;
       }
       setCells((prev) => {
-        const rootKey = resolveRootKey(selectedCell, prev);
+        const rootKey = resolveRootKey(primarySelectedCell, prev);
         const cell = prev[rootKey];
         if (!cell?.componentId) {
           return prev;
@@ -938,6 +1033,8 @@ export default function EditorPage() {
           cell.componentId === FREEFORM_COMPONENT_ID
             ? clonePanelEntries(cell.panelEntries)
             : undefined;
+        const preservedAppearance =
+          cloneAppearance(cell.appearance) ?? getAppearancePreset(cell.componentId);
         const { row, column } = parseKey(rootKey);
         const maxColSpan = config.columns - column;
         const maxRowSpan = config.rows - row;
@@ -968,6 +1065,7 @@ export default function EditorPage() {
             cell.componentId,
             cell.colSpan ?? 1,
             cell.rowSpan ?? 1,
+            preservedAppearance,
           );
           return prev;
         }
@@ -978,6 +1076,7 @@ export default function EditorPage() {
           cell.componentId,
           desiredColSpan,
           desiredRowSpan,
+          preservedAppearance,
         );
         if (cell.componentId === FREEFORM_COMPONENT_ID) {
           next[rootKey].panelEntries = preservedPanelEntries ?? [];
@@ -986,12 +1085,14 @@ export default function EditorPage() {
       });
     };
 
-  const selectedCellData = selectedCell ? cells[selectedCell] : null;
+  const selectedCellData = primarySelectedCell ? cells[primarySelectedCell] : null;
   const selectedComponentId = selectedCellData?.componentId ?? null;
-  const isFreeformSelected = selectedComponentId === FREEFORM_COMPONENT_ID;
-  const selectedPanelEntries = isFreeformSelected
-    ? selectedCellData?.panelEntries ?? []
-    : [];
+  const isFreeformSelected =
+    selectionCount === 1 && selectedComponentId === FREEFORM_COMPONENT_ID;
+  const selectedPanelEntries =
+    isFreeformSelected && selectedCellData?.panelEntries
+      ? selectedCellData.panelEntries
+      : [];
   const selectedPanelEntriesCount = selectedPanelEntries.length;
   const totalPanelDuration = selectedPanelEntries.reduce(
     (acc, entry) => acc + entry.duration,
@@ -1011,6 +1112,41 @@ export default function EditorPage() {
           : "Panel";
     }
   }
+
+  const handleAppearanceChange = useCallback(
+    (changes: Partial<CellAppearance>) => {
+      if (selectedCells.length === 0) {
+        return;
+      }
+      const targetKeys = Array.from(new Set(selectedCells));
+      setCells((prev) => {
+        const next = structuredClone(prev);
+        let didUpdate = false;
+        for (const key of targetKeys) {
+          const rootKey = resolveRootKey(key, next);
+          const cell = next[rootKey];
+          if (!cell?.componentId) {
+            continue;
+          }
+          const baseAppearance =
+            cloneAppearance(cell.appearance) ?? getAppearancePreset(cell.componentId);
+          const updatedAppearance: CellAppearance = {
+            ...baseAppearance,
+            ...changes,
+          };
+          cell.appearance = updatedAppearance;
+          didUpdate = true;
+        }
+        return didUpdate ? next : prev;
+      });
+    },
+    [getAppearancePreset, selectedCells],
+  );
+
+  const selectedAppearance =
+    selectedComponentId != null
+      ? selectedCellData?.appearance ?? getAppearancePreset(selectedComponentId)
+      : null;
 
   return (
     <div className="min-h-screen bg-custom-color-100 text-black transition-colors duration-300 dark:bg-custom-color-900 dark:text-white">
@@ -1058,32 +1194,50 @@ export default function EditorPage() {
           </div>
         </header>
 
-        <div className="grid gap-8 lg:grid-cols-[320px_minmax(0,1fr)]">
-          <GridSettingsPanel
-            config={config}
-            screenSizeDraft={screenSizeDraft}
-            onScreenSizeChange={handleScreenSizeChange}
-            onScreenSizeBlur={handleScreenSizeBlur}
-            onDimensionChange={handleDimensionChange}
-            onGapChange={handleGapChange}
-            totalCells={totalCells}
-            occupiedSlots={occupiedSlots}
-            freeSlots={freeSlots}
-            geometryBuffer={geometryBuffer}
-            geometry={geometry}
-            onDragStartPalette={handleDragStartPalette}
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-6">
+          <div
+            ref={sidebarRef}
+            className="w-full lg:h-[calc(100vh-220px)] lg:flex-shrink-0"
+            style={{ width: sidebarWidth }}
+          >
+            <GridSettingsPanel
+              config={config}
+              screenSizeDraft={screenSizeDraft}
+              onScreenSizeChange={handleScreenSizeChange}
+              onScreenSizeBlur={handleScreenSizeBlur}
+              onDimensionChange={handleDimensionChange}
+              onGapChange={handleGapChange}
+              totalCells={totalCells}
+              occupiedSlots={occupiedSlots}
+              freeSlots={freeSlots}
+              geometryBuffer={geometryBuffer}
+              geometry={geometry}
+              onDragStartPalette={handleDragStartPalette}
+              isSettingsCollapsed={settingsCollapsed}
+              isLibraryCollapsed={libraryCollapsed}
+              onToggleSettings={() => setSettingsCollapsed((prev) => !prev)}
+              onToggleLibrary={() => setLibraryCollapsed((prev) => !prev)}
+            />
+          </div>
+          <div
+            className="hidden w-1.5 cursor-col-resize rounded-full bg-gradient-to-b from-custom-color-200/0 via-custom-color-200/70 to-custom-color-200/0 lg:block dark:via-white/50"
+            onPointerDown={startSidebarResize}
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize settings panel"
           />
-          <section className="flex flex-col gap-6">
+          <section className="flex flex-1 flex-col gap-6">
             <CanvasPreview
               canvasTitle={canvasTitle}
               geometry={geometry}
               config={config}
               gridItems={gridItems}
               drawBounds={drawBounds}
-              selectedCell={selectedCell}
+              selectedCells={selectedCells}
+              selectionCount={selectionCount}
               gridRef={gridRef}
               onCanvasClick={handleCanvasClick}
-              onSelectCell={setSelectedCell}
+              onSelectCell={handleSelectCell}
               onStartDraw={startDraw}
               onDragStartCell={handleDragStartCell}
               onDropOnCell={handleDropOnCell}
@@ -1099,13 +1253,16 @@ export default function EditorPage() {
               />
             ) : null}
             <SelectedComponentPanel
-              selectedCell={selectedCell}
+              selectionCount={selectionCount}
+              primarySelectedCell={primarySelectedCell}
               selectedCellData={selectedCellData ?? null}
               config={config}
               selectedComponentLabel={selectedComponentLabel}
               onSpanChange={handleSpanChange}
-              onClearCell={clearCell}
+              onClearSelection={() => clearCells(selectedCells)}
               isFreeformSelected={isFreeformSelected}
+              selectedAppearance={selectedAppearance}
+              onAppearanceChange={handleAppearanceChange}
             />
             <div className="glass-surface rounded-3xl border border-white/30 p-6 shadow-lg dark:border-white/10">
               <h2 className="text-lg font-semibold text-custom-color-800 dark:text-custom-color-100">

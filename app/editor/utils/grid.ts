@@ -1,11 +1,14 @@
 import {
   GRID_LIMITS,
+  type CellAppearance,
   type GridCell,
   type GridConfig,
   type PanelEntry,
   adjustGridToCapacity,
+  cloneAppearance,
   deriveGridGeometry,
   makeCellKey,
+  makeDefaultAppearance,
 } from "../../lib/layout-types";
 
 export const FREEFORM_COMPONENT_ID = "freeform-region";
@@ -116,6 +119,7 @@ export const clearComponentRegion = (
         cell.rowSpan = 1;
         cell.coveredBy = null;
         cell.panelEntries = [];
+        cell.appearance = makeDefaultAppearance();
       } else if (cell.coveredBy === key) {
         draft[currentKey] = {
           componentId: null,
@@ -123,6 +127,7 @@ export const clearComponentRegion = (
           rowSpan: 1,
           coveredBy: null,
           panelEntries: [],
+          appearance: makeDefaultAppearance(),
         };
       }
     }
@@ -136,6 +141,7 @@ export const assignComponentToRegion = (
   componentId: string,
   colSpan: number,
   rowSpan: number,
+  appearance?: CellAppearance,
 ) => {
   const { row, column } = parseKey(key);
   const maxColSpan = Math.max(1, config.columns - column);
@@ -149,6 +155,7 @@ export const assignComponentToRegion = (
     rowSpan: 1,
     coveredBy: null,
     panelEntries: [],
+    appearance: makeDefaultAppearance(),
   };
   root.componentId = componentId;
   root.colSpan = normalizedColSpan;
@@ -159,6 +166,12 @@ export const assignComponentToRegion = (
   } else {
     root.panelEntries = [];
   }
+  const nextAppearance = appearance
+    ? { ...appearance }
+    : root.appearance
+      ? { ...root.appearance }
+      : makeDefaultAppearance();
+  root.appearance = nextAppearance;
   draft[key] = root;
 
   for (let y = 0; y < normalizedRowSpan; y += 1) {
@@ -171,6 +184,7 @@ export const assignComponentToRegion = (
           rowSpan: 1,
           coveredBy: null,
           panelEntries: [],
+          appearance: makeDefaultAppearance(),
         };
       }
       if (currentKey === key) {
@@ -183,12 +197,14 @@ export const assignComponentToRegion = (
         } else {
           draft[currentKey].panelEntries = [];
         }
+        draft[currentKey].appearance = { ...nextAppearance };
       } else {
         draft[currentKey].componentId = null;
         draft[currentKey].colSpan = 1;
         draft[currentKey].rowSpan = 1;
         draft[currentKey].coveredBy = key;
         draft[currentKey].panelEntries = [];
+        draft[currentKey].appearance = makeDefaultAppearance();
       }
     }
   }
@@ -203,6 +219,7 @@ export const extractRootComponents = (grid: Record<string, GridCell>) =>
       colSpan: cell.colSpan ?? 1,
       rowSpan: cell.rowSpan ?? 1,
       panelEntries: clonePanelEntries(cell.panelEntries),
+      appearance: cloneAppearance(cell.appearance),
     }))
     .sort((a, b) => {
       const coordsA = parseKey(a.key);
