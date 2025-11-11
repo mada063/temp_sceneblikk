@@ -225,7 +225,6 @@ export function CanvasPreview({
                         className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/40 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] opacity-0 transition group-hover:opacity-100"
                       >
                         <FiTrash2 className="h-3 w-3" />
-                        Remove
                       </button>
                       <button
                         type="button"

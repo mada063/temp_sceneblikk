@@ -5,7 +5,7 @@ import type { ChangeEvent } from "react";
 import { FiTrash2 } from "react-icons/fi";
 
 import { PLACEHOLDER_MAP } from "../../lib/placeholders";
-import type { PanelEntry } from "../lib/layout-types";
+import type { PanelEntry } from "../../lib/layout-types";
 
 type PanelPlaybackPanelProps = {
   entries: PanelEntry[];
