@@ -4,6 +4,7 @@ import { useMemo, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   FiActivity,
+  FiArrowLeft,
   FiClock,
   FiEye,
   FiGlobe,
@@ -62,6 +63,7 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const [devices, setDevices] = useState<DeviceStatus[]>([]);
   const [recentEdits, setRecentEdits] = useState<RecentEdit[]>([]);
+  const [showChangelog, setShowChangelog] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -77,7 +79,7 @@ export default function DashboardPage() {
         layouts.slice(0, 4).map((layout) => ({
           id: layout.id,
           title: layout.name,
-          editor: user.email?.split("@")[0] || "User",
+          editor: user.displayName || user.email?.split("@")[0] || "User",
           timestamp: `Edited ${formatTimeAgo(layout.updatedAt)}`,
         })),
       );
@@ -108,9 +110,18 @@ export default function DashboardPage() {
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-12 px-6 pb-20 pt-16 sm:px-10 lg:px-16">
         <header className="flex flex-wrap items-center justify-between gap-6">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-custom-color-600 dark:text-custom-color-200">
-              Dashboard
-            </p>
+            <div className="flex items-center gap-4">
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 rounded-full border border-custom-color-400 px-4 py-2 text-sm font-semibold text-custom-color-600 transition hover:bg-custom-color-200/50 dark:border-custom-color-300/40 dark:text-custom-color-50 dark:hover:bg-custom-color-700/40"
+              >
+                <FiArrowLeft className="h-4 w-4" />
+                Back
+              </Link>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-custom-color-600 dark:text-custom-color-200">
+                Dashboard
+              </p>
+            </div>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
               Playback operations overview
             </h1>
@@ -135,6 +146,10 @@ export default function DashboardPage() {
               </h2>
               <button
                 type="button"
+                onClick={() => {
+                  // Reports functionality - placeholder for now
+                  alert("Reports feature coming soon! This will show detailed analytics and engagement metrics.");
+                }}
                 className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-custom-color-700 transition hover:border-white/40 hover:bg-white/20 dark:text-custom-color-100"
               >
                 <FiEye className="h-3.5 w-3.5" />
@@ -219,13 +234,14 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
-            <Link
-              href="/editor"
+            <button
+              type="button"
+              onClick={() => setShowChangelog(true)}
               className="mt-6 inline-flex items-center gap-2 rounded-full border border-custom-color-400 px-4 py-2 text-sm font-semibold text-custom-color-600 transition hover:bg-custom-color-200/50 dark:border-custom-color-300/40 dark:text-custom-color-50 dark:hover:bg-custom-color-700/40"
             >
               <FiActivity className="h-4 w-4" />
               Review change log
-            </Link>
+            </button>
           </div>
         </section>
 
@@ -285,6 +301,67 @@ export default function DashboardPage() {
           </div>
         </section>
       </div>
+
+      {/* Changelog Modal */}
+      {showChangelog && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+          onClick={() => setShowChangelog(false)}
+        >
+          <div
+            className="glass-surface w-full max-w-2xl rounded-3xl border border-white/30 p-8 shadow-xl dark:border-white/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-semibold text-custom-color-800 dark:text-custom-color-100">
+                Change Log
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowChangelog(false)}
+                className="rounded-full p-2 text-custom-color-600 transition hover:bg-custom-color-200/50 dark:text-custom-color-400 dark:hover:bg-custom-color-700/40"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="space-y-6 max-h-[60vh] overflow-y-auto">
+              {recentEdits.length === 0 ? (
+                <p className="text-sm text-custom-color-700/80 dark:text-custom-color-100/70">
+                  No recent changes to display.
+                </p>
+              ) : (
+                recentEdits.map((edit) => (
+                  <div
+                    key={edit.id}
+                    className="rounded-2xl border border-white/10 bg-white/70 p-4 shadow-sm dark:bg-custom-color-800/70"
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-custom-color-900 dark:text-white">
+                        {edit.title}
+                      </p>
+                      <span className="flex items-center gap-1 text-[11px] uppercase tracking-[0.18em] text-custom-color-700/70 dark:text-custom-color-100/70">
+                        <FiClock className="h-3 w-3" />
+                        {edit.timestamp}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-custom-color-700/80 dark:text-custom-color-100/60">
+                      Edited by {edit.editor}
+                    </p>
+                    <Link
+                      href={`/editor?layoutId=${edit.id}`}
+                      className="mt-2 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.22em] text-custom-color-500 transition hover:text-custom-color-400 dark:text-custom-color-200 dark:hover:text-custom-color-100"
+                    >
+                      Open layout →
+                    </Link>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

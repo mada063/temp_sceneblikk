@@ -1,7 +1,8 @@
+"use client";
+
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getAnalytics, isSupported, type Analytics } from "firebase/analytics";
 
 // NOTE:
 // For production, it's best practice to move these values into environment
@@ -23,21 +24,6 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 // Firebase services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-
-let analyticsInstance: Analytics | null = null;
-
-// Analytics must only be used in the browser and only if supported
-export const getAnalyticsClient = async (): Promise<Analytics | null> => {
-  if (analyticsInstance) return analyticsInstance;
-
-  if (typeof window === "undefined") return null;
-
-  const supported = await isSupported().catch(() => false);
-  if (!supported) return null;
-
-  analyticsInstance = getAnalytics(app);
-  return analyticsInstance;
-};
 
 export default app;
 

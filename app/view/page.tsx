@@ -8,6 +8,8 @@ import {
   FiMaximize,
   FiMinimize,
   FiMonitor,
+  FiSettings,
+  FiX,
 } from "react-icons/fi";
 import { useAuth } from "../lib/auth-context";
 import { updateDeviceHeartbeat, getLayout } from "../lib/firestore";
@@ -53,10 +55,12 @@ export default function ViewPage() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [layoutId, setLayoutId] = useState<string | null>(null);
   const [layoutName, setLayoutName] = useState<string | null>(null);
+  const [showDeviceSettings, setShowDeviceSettings] = useState(false);
+  const [deviceNameDraft, setDeviceNameDraft] = useState("");
   const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const deviceIdRef = useRef<string | null>(null);
 
-  // Initialize device ID
+  // Initialize device ID and load device name
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!deviceIdRef.current) {
@@ -66,6 +70,11 @@ export default function ViewPage() {
         localStorage.setItem("sceneblikk-device-id", stored);
       }
       deviceIdRef.current = stored;
+    }
+    // Load device name from localStorage
+    const storedName = localStorage.getItem("sceneblikk-device-name");
+    if (storedName) {
+      setDeviceNameDraft(storedName);
     }
   }, []);
 
@@ -212,9 +221,9 @@ export default function ViewPage() {
     };
   }, []);
 
-  // Heartbeat effect - send status updates when in fullscreen
+  // Heartbeat effect - send status updates periodically to keep device active
   useEffect(() => {
-    if (!user || !deviceIdRef.current || !isFullscreen) {
+    if (!user || !deviceIdRef.current) {
       if (heartbeatIntervalRef.current) {
         clearInterval(heartbeatIntervalRef.current);
         heartbeatIntervalRef.current = null;
@@ -239,10 +248,16 @@ export default function ViewPage() {
       }
     };
 
+    // Also update device name draft if localStorage changes
+    const storedName = localStorage.getItem("sceneblikk-device-name");
+    if (storedName && storedName !== deviceNameDraft) {
+      setDeviceNameDraft(storedName);
+    }
+
     // Send immediately
     sendHeartbeat();
 
-    // Then send every 30 seconds
+    // Then send every 30 seconds (even when not fullscreen to show device status)
     heartbeatIntervalRef.current = setInterval(sendHeartbeat, 30000);
 
     return () => {
@@ -251,7 +266,25 @@ export default function ViewPage() {
         heartbeatIntervalRef.current = null;
       }
     };
-  }, [user, isFullscreen, layoutId, layoutName]);
+  }, [user, isFullscreen, layoutId, layoutName, deviceNameDraft]);
+
+  const handleSaveDeviceName = () => {
+    if (typeof window === "undefined") return;
+    const name = deviceNameDraft.trim() || `Device ${deviceIdRef.current?.substr(-8)}`;
+    localStorage.setItem("sceneblikk-device-name", name);
+    setShowDeviceSettings(false);
+    // Trigger heartbeat update with new name
+    if (user && deviceIdRef.current) {
+      updateDeviceHeartbeat(
+        user.uid,
+        deviceIdRef.current,
+        name,
+        layoutId,
+        layoutName,
+        isFullscreen,
+      ).catch(console.error);
+    }
+  };
 
   const toggleFullscreen = async () => {
     if (typeof document === "undefined") {
@@ -353,6 +386,14 @@ export default function ViewPage() {
             </>
           )}
         </button>
+        <button
+          type="button"
+          onClick={() => setShowDeviceSettings(true)}
+          className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white transition hover:border-white/40 hover:bg-white/20"
+        >
+          <FiSettings className="h-3.5 w-3.5" />
+          Device name
+        </button>
         <Link
           href="/editor"
           className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white transition hover:border-white/40 hover:bg-white/20"
@@ -361,6 +402,72 @@ export default function ViewPage() {
           Back to editor
         </Link>
       </div>
+
+      {/* Device Settings Modal */}
+      {showDeviceSettings && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+          onClick={() => setShowDeviceSettings(false)}
+        >
+          <div
+            className="glass-surface w-full max-w-md rounded-3xl border border-white/30 p-6 shadow-xl dark:border-white/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white">Device Settings</h3>
+              <button
+                type="button"
+                onClick={() => setShowDeviceSettings(false)}
+                className="rounded-full p-2 text-white/70 transition hover:bg-white/10 hover:text-white"
+              >
+                <FiX className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label
+                  htmlFor="deviceName"
+                  className="mb-2 block text-sm font-semibold text-white/90"
+                >
+                  Device Name
+                </label>
+                <input
+                  id="deviceName"
+                  type="text"
+                  value={deviceNameDraft}
+                  onChange={(e) => setDeviceNameDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSaveDeviceName();
+                    }
+                  }}
+                  placeholder={`Device ${deviceIdRef.current?.substr(-8)}`}
+                  className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder-white/50 transition focus:border-white/40 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
+                />
+                <p className="mt-2 text-xs text-white/60">
+                  This name will appear in the dashboard for easy identification.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleSaveDeviceName}
+                  className="flex-1 rounded-full bg-white/20 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/30"
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowDeviceSettings(false)}
+                  className="flex-1 rounded-full border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex min-h-screen items-center justify-center">
         <div

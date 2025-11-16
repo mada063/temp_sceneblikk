@@ -3,11 +3,12 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../lib/auth-context";
-import { FiMail, FiLock, FiLogIn, FiUserPlus } from "react-icons/fi";
+import { FiMail, FiLock, FiLogIn, FiUserPlus, FiUser } from "react-icons/fi";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -21,7 +22,7 @@ export default function LoginPage() {
 
     try {
       if (isSignUp) {
-        await signUpWithEmail(email, password);
+        await signUpWithEmail(email, password, displayName || undefined);
       } else {
         await signInWithEmail(email, password);
       }
@@ -90,6 +91,28 @@ export default function LoginPage() {
                 />
               </div>
             </div>
+
+            {isSignUp && (
+              <div>
+                <label
+                  htmlFor="displayName"
+                  className="mb-2 block text-sm font-semibold text-custom-color-800 dark:text-custom-color-100"
+                >
+                  Name (optional)
+                </label>
+                <div className="relative">
+                  <FiUser className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-custom-color-500 dark:text-custom-color-300" />
+                  <input
+                    id="displayName"
+                    type="text"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    className="w-full rounded-xl border border-white/20 bg-white/50 px-10 py-3 text-sm text-custom-color-900 placeholder-custom-color-500/60 transition focus:border-custom-color-400 focus:bg-white/80 focus:outline-none focus:ring-2 focus:ring-custom-color-400/30 dark:border-white/10 dark:bg-custom-color-800/50 dark:text-white dark:placeholder-custom-color-300/50 dark:focus:border-custom-color-300 dark:focus:bg-custom-color-800/70"
+                    placeholder="Your name"
+                  />
+                </div>
+              </div>
+            )}
 
             <div>
               <label
