@@ -18,9 +18,14 @@ import {
   deriveGridGeometry,
   enforceGridCapacity,
   normalizeConfig,
+  makeDefaultAppearance,
+  cloneAppearance,
   type GridGeometry,
+  type CellAppearance,
 } from "../lib/layout-types";
-import { PLACEHOLDER_MAP } from "../lib/placeholders";
+import { FREEFORM_COMPONENT_ID } from "../editor/utils/grid";
+import { ComponentRenderer } from "./components/ComponentRenderer";
+import { PanelCell } from "./components/PanelCell";
 
 type PlayerState = {
   config: GridConfig;
@@ -41,6 +46,7 @@ const parseKey = (key: string) => {
 export default function ViewPage() {
   const [playerState, setPlayerState] = useState<PlayerState | null>(null);
   const [cursorHidden, setCursorHidden] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
@@ -91,18 +97,46 @@ export default function ViewPage() {
       return;
     }
     let inactivityTimer: ReturnType<typeof setTimeout>;
+    const INACTIVITY_DELAY = 5000; // 5 seconds
+    
     const resetTimer = () => {
+      // Show cursor and controls on any movement
       setCursorHidden(false);
+      setControlsVisible(true);
       clearTimeout(inactivityTimer);
-      inactivityTimer = setTimeout(() => setCursorHidden(true), 2500);
+      // Hide both after inactivity
+      inactivityTimer = setTimeout(() => {
+        setCursorHidden(true);
+        setControlsVisible(false);
+      }, INACTIVITY_DELAY);
     };
+    
+    // Initialize: show controls and cursor initially
     resetTimer();
-    window.addEventListener("mousemove", resetTimer);
-    window.addEventListener("touchstart", resetTimer);
+    
+    // Track movement events for cross-platform compatibility
+    // pointermove works for mouse, touch, and pen across all browsers
+    const events = [
+      "mousemove",      // Traditional mouse (all browsers)
+      "pointermove",    // Modern pointer events (all browsers, better for touch)
+      "touchstart",     // Touch devices (iOS, Android)
+      "touchmove",      // Touch drag (iOS, Android)
+      "mousedown",      // Mouse click (all browsers)
+      "keydown",        // Keyboard interaction (accessibility)
+      "wheel",          // Mouse wheel (all browsers)
+    ];
+    
+    // Add all event listeners
+    events.forEach((eventType) => {
+      window.addEventListener(eventType, resetTimer, { passive: true });
+    });
+    
     return () => {
       clearTimeout(inactivityTimer);
-      window.removeEventListener("mousemove", resetTimer);
-      window.removeEventListener("touchstart", resetTimer);
+      // Remove all event listeners
+      events.forEach((eventType) => {
+        window.removeEventListener(eventType, resetTimer);
+      });
     };
   }, []);
 
@@ -141,6 +175,7 @@ export default function ViewPage() {
     const { cells, config } = playerState;
     const baseline = createEmptyGrid(config.rows, config.columns);
     const merged = { ...baseline, ...cells };
+    // Only show root cells (cells that are not covered by other cells)
     return Object.entries(merged)
       .filter(([, cell]) => !cell.coveredBy)
       .sort((a, b) => {
@@ -188,7 +223,12 @@ export default function ViewPage() {
 
   return (
     <div className={containerClasses}>
-      <div className="absolute left-1/2 top-6 z-20 flex -translate-x-1/2 flex-wrap items-center justify-center gap-4 rounded-full border border-white/10 bg-white/5 px-6 py-3 backdrop-blur-xl">
+      {/* Control bar - positioned above content, shows/hides on mouse movement */}
+      <div
+        className={`fixed left-1/2 top-6 z-50 flex -translate-x-1/2 flex-wrap items-center justify-center gap-4 rounded-full border border-white/10 bg-white/5 px-6 py-3 backdrop-blur-xl transition-opacity duration-300 ${
+          controlsVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+      >
         <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-white/70">
           <FiMonitor className="h-4 w-4" />
           Live player
@@ -222,14 +262,15 @@ export default function ViewPage() {
         </Link>
       </div>
 
-      <div className="flex min-h-screen items-center justify-center px-10 py-16">
+      <div className="flex min-h-screen items-center justify-center">
         <div
-          className="relative w-full max-w-[90vw] rounded-[38px] border border-white/15 bg-black/90 p-8 shadow-[0_0_60px_rgba(1,121,200,0.2)]"
+          className="relative w-full max-w-[100vw] max-h-[100vh] p-4"
           style={{
             aspectRatio: `${Math.max(geometry.widthIn, 1)} / ${Math.max(
               geometry.heightIn,
               1,
             )}`,
+            backgroundColor: config.backgroundColor ?? "#0a3d62",
           }}
         >
           <div
@@ -241,32 +282,72 @@ export default function ViewPage() {
             }}
           >
             {orderedCells.map(([key, cell]) => {
-              const placeholder = cell.componentId
-                ? PLACEHOLDER_MAP[cell.componentId]
-                : undefined;
+              // Empty cells: render invisible placeholder to maintain grid position
+              if (!cell.componentId) {
+                return (
+                  <div
+                    key={key}
+                    style={{
+                      gridColumn: `span ${cell.colSpan ?? 1}`,
+                      gridRow: `span ${cell.rowSpan ?? 1}`,
+                    }}
+                  />
+                );
+              }
+
+              // Get appearance settings or use defaults
+              const appearance: CellAppearance = cell.appearance
+                ? cloneAppearance(cell.appearance) ?? makeDefaultAppearance()
+                : makeDefaultAppearance();
+
+              // Apply appearance styles
+              const backgroundColor =
+                appearance.backgroundColor && appearance.backgroundColor !== ""
+                  ? appearance.backgroundColor
+                  : "#0a3d62";
+              const borderColor =
+                appearance.borderColor && appearance.borderColor !== ""
+                  ? appearance.borderColor
+                  : "rgba(255, 255, 255, 0.15)";
+              const textColor =
+                appearance.textColor && appearance.textColor !== ""
+                  ? appearance.textColor
+                  : "#ffffff";
+
+              const borderStyle =
+                appearance.borderWidth > 0 ? "solid" : "none";
+              const borderWidth = appearance.borderWidth;
+              const borderRadius = appearance.borderRadius;
+
+              // Handle panel cycling for freeform components
+              const isPanel = cell.componentId === FREEFORM_COMPONENT_ID;
+              const panelEntries = isPanel ? cell.panelEntries ?? [] : [];
+
               return (
                 <div
                   key={key}
-                  className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-white/5 text-white shadow-[inset_0_0_35px_rgba(12,154,235,0.16)]"
+                  className="relative flex h-full w-full items-center justify-center overflow-hidden text-white"
                   style={{
                     gridColumn: `span ${cell.colSpan ?? 1}`,
                     gridRow: `span ${cell.rowSpan ?? 1}`,
+                    backgroundColor,
+                    borderColor: borderStyle !== "none" ? borderColor : "transparent",
+                    borderWidth,
+                    borderStyle,
+                    borderRadius: `${borderRadius}px`,
+                    boxShadow: "inset 0 0 35px rgba(12,154,235,0.16)",
                   }}
                 >
-                  {placeholder ? (
-                    <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-4 text-center">
-                      <placeholder.icon className="h-10 w-10 text-white/90" />
-                      <span className="text-sm font-semibold uppercase tracking-[0.24em] text-white/80">
-                        {placeholder.label}
-                      </span>
-                      <span className="text-xs text-white/50">
-                        Placeholder content
-                      </span>
-                    </div>
+                  {isPanel && panelEntries.length > 0 ? (
+                    <PanelCell
+                      panelEntries={panelEntries}
+                      appearance={appearance}
+                    />
                   ) : (
-                    <span className="text-[10px] uppercase tracking-[0.32em] text-white/30">
-                      Empty slot
-                    </span>
+                    <ComponentRenderer
+                      componentId={cell.componentId}
+                      appearance={appearance}
+                    />
                   )}
                 </div>
               );

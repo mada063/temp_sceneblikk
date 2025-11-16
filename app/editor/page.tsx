@@ -676,6 +676,14 @@ export default function EditorPage() {
     }));
   };
 
+  const handleBackgroundColorChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value.trim();
+    setConfig((prev) => ({
+      ...prev,
+      backgroundColor: value || DEFAULT_GRID_CONFIG.backgroundColor,
+    }));
+  };
+
   const handleDimensionChange =
     (key: "columns" | "rows") => (event: ChangeEvent<HTMLInputElement>) => {
       const value = Number(event.target.value);
@@ -1197,7 +1205,7 @@ export default function EditorPage() {
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-6">
           <div
             ref={sidebarRef}
-            className="w-full lg:h-[calc(100vh-220px)] lg:flex-shrink-0"
+            className="w-full lg:h-[calc(100vh-10vh)] lg:flex-shrink-0"
             style={{ width: sidebarWidth }}
           >
             <GridSettingsPanel
@@ -1207,6 +1215,7 @@ export default function EditorPage() {
               onScreenSizeBlur={handleScreenSizeBlur}
               onDimensionChange={handleDimensionChange}
               onGapChange={handleGapChange}
+              onBackgroundColorChange={handleBackgroundColorChange}
               totalCells={totalCells}
               occupiedSlots={occupiedSlots}
               freeSlots={freeSlots}

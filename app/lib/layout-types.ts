@@ -6,6 +6,7 @@ export type GridConfig = {
   columns: number;
   rows: number;
   gap: number;
+  backgroundColor?: string;
 };
 
 export type PanelEntry = {
@@ -20,6 +21,13 @@ export type CellAppearance = {
   borderRadius: number;
   borderWidth: number;
   textColor: string;
+  /**
+   * Clock-specific options (used when componentId === "clock").
+   * They live on the appearance object so they persist with the cell.
+   */
+  showClockSeconds?: boolean;
+  showClockDate?: boolean;
+  clockFormat?: "12h" | "24h";
 };
 
 export const makeDefaultAppearance = (): CellAppearance => ({
@@ -28,6 +36,9 @@ export const makeDefaultAppearance = (): CellAppearance => ({
   borderRadius: 20,
   borderWidth: 2,
   textColor: "#ffffff",
+  showClockSeconds: true,
+  showClockDate: false,
+  clockFormat: "24h",
 });
 
 export const cloneAppearance = (appearance?: CellAppearance | null) =>
@@ -78,6 +89,7 @@ export const DEFAULT_GRID_CONFIG: GridConfig = {
   columns: 6,
   rows: 4,
   gap: 16,
+  backgroundColor: "#0a3d62",
 };
 
 const clampNumber = (value: number, min: number, max: number) =>
@@ -268,12 +280,18 @@ export const normalizeConfig = (raw?: LegacyConfig | null): GridConfig => {
   const { maxSlots } = deriveGridGeometry({ screenInches, orientation });
   const adjusted = adjustGridToCapacity(columns, rows, maxSlots);
 
+  const backgroundColor =
+    typeof raw.backgroundColor === "string" && raw.backgroundColor.trim() !== ""
+      ? raw.backgroundColor.trim()
+      : DEFAULT_GRID_CONFIG.backgroundColor;
+
   return {
     screenInches,
     orientation,
     columns: adjusted.columns,
     rows: adjusted.rows,
     gap,
+    backgroundColor,
   };
 };
 

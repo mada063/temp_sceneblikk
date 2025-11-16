@@ -1,0 +1,53 @@
+"use client";
+
+import { ComponentRenderer } from "./ComponentRenderer";
+import { usePanelCycle } from "../hooks/usePanelCycle";
+import type { PanelEntry, CellAppearance } from "../../lib/layout-types";
+
+type PanelCellProps = {
+  panelEntries: PanelEntry[];
+  appearance: CellAppearance;
+};
+
+/**
+ * Cell component for panels that cycles through multiple entries.
+ */
+export function PanelCell({ panelEntries, appearance }: PanelCellProps) {
+  const { activeEntry } = usePanelCycle(
+    panelEntries.length > 1 ? panelEntries : undefined,
+  );
+
+  // If there's only one entry or no active entry, render the first one
+  const entryToRender = panelEntries.length > 1 && activeEntry
+    ? activeEntry
+    : panelEntries[0];
+
+  if (!entryToRender) {
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-4 text-center">
+        <span
+          className="text-sm font-semibold uppercase tracking-[0.24em]"
+          style={{ color: appearance.textColor }}
+        >
+          Panel
+        </span>
+        <span
+          className="text-xs"
+          style={{ color: appearance.textColor, opacity: 0.6 }}
+        >
+          Empty
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <ComponentRenderer
+      componentId={entryToRender.componentId}
+      appearance={appearance}
+      panelEntries={panelEntries.length > 1 ? panelEntries : undefined}
+    />
+  );
+}
+
+

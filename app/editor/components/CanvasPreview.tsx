@@ -112,18 +112,22 @@ export function CanvasPreview({
           <div className="rounded-full bg-white/70 px-3 py-1 dark:bg-custom-color-800/70">
             {config.columns} × {config.rows} grid
           </div>
+          <div className="rounded-full bg-white/70 px-3 py-1 dark:bg-custom-color-800/70">
+            {config.orientation === "landscape" ? "Landscape" : "Portrait"}
+          </div>
         </div>
       </div>
 
       <div className="mt-6 flex justify-center">
         <div
-          className="relative w-full max-w-4xl rounded-[36px] border border-custom-color-200/80 bg-white/95 p-6 shadow-[inset_0_0_45px_rgba(12,154,235,0.15)] transition-colors dark:border-white/10 dark:bg-black/70"
+          className="relative w-full max-w-4xl rounded-[36px] border border-custom-color-200/80 p-6 shadow-[inset_0_0_45px_rgba(12,154,235,0.15)] transition-colors dark:border-white/10"
           onClick={onCanvasClick}
           style={{
             aspectRatio: `${Math.max(geometry.widthIn, 1)} / ${Math.max(
               geometry.heightIn,
               1,
             )}`,
+            backgroundColor: config.backgroundColor ?? "#0a3d62",
           }}
         >
           <div
@@ -314,10 +318,7 @@ export function CanvasPreview({
                           onClearCell(key);
                         }}
                         className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] opacity-0 transition group-hover:opacity-100"
-                        style={{
-                          backgroundColor: hexToRgba(borderColor, 0.2),
-                          color: textColor,
-                        }}
+        
                       >
                         <FiTrash2 className="h-3 w-3" />
                       </button>

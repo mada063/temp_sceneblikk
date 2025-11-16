@@ -51,6 +51,15 @@ export function SelectedComponentPanel({
       : 1;
   const appearance = selectedAppearance ?? makeDefaultAppearance();
 
+  const isDirectClock =
+    isSingleSelection && selectedCellData?.componentId === "clock";
+  const hasClockInPanel =
+    isFreeformSelected &&
+    !!selectedCellData?.panelEntries?.some(
+      (entry) => entry.componentId === "clock",
+    );
+  const isClock = isDirectClock || hasClockInPanel;
+
   return (
     <div className="glass-surface rounded-3xl border border-white/40 p-6 shadow-lg dark:border-white/10">
       <h2 className="text-lg font-semibold text-custom-color-800 dark:text-custom-color-100">
@@ -197,6 +206,77 @@ export function SelectedComponentPanel({
                   className="w-full accent-custom-color-500 dark:accent-custom-color-300"
                 />
               </div>
+
+              {isClock ? (
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    Clock options
+                  </p>
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Show seconds
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={appearance.showClockSeconds ?? true}
+                      onChange={(event) =>
+                        onAppearanceChange({
+                          showClockSeconds: event.target.checked,
+                        })
+                      }
+                      className="h-4 w-4 rounded border border-custom-color-400 bg-white text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                    />
+                  </label>
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Show date
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={appearance.showClockDate ?? false}
+                      onChange={(event) =>
+                        onAppearanceChange({
+                          showClockDate: event.target.checked,
+                        })
+                      }
+                      className="h-4 w-4 rounded border border-custom-color-400 bg-white text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                    />
+                  </label>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Time format
+                    </span>
+                    <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      <label className="inline-flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name="clock-format"
+                          value="24h"
+                          checked={(appearance.clockFormat ?? "24h") === "24h"}
+                          onChange={() =>
+                            onAppearanceChange({ clockFormat: "24h" })
+                          }
+                          className="h-3.5 w-3.5 border border-custom-color-400 text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                        />
+                        <span>24H</span>
+                      </label>
+                      <label className="inline-flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name="clock-format"
+                          value="12h"
+                          checked={appearance.clockFormat === "12h"}
+                          onChange={() =>
+                            onAppearanceChange({ clockFormat: "12h" })
+                          }
+                          className="h-3.5 w-3.5 border border-custom-color-400 text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                        />
+                        <span>12H</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
           <button

@@ -55,3 +55,90 @@ body {
   background: var(--surface-strong);
   backdrop-filter: blur(20px);
 }
+
+/* Custom scrollbar styles that adapt to dark/light mode */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--custom-color-300) transparent;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--custom-color-300);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--custom-color-400);
+}
+
+/* Dark mode scrollbar */
+@media (prefers-color-scheme: dark) {
+  .custom-scrollbar {
+    scrollbar-color: var(--custom-color-400) transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--custom-color-400);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: var(--custom-color-300);
+  }
+}
+
+/* Global scrollbar styles - apply to all scrollable elements */
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--custom-color-300) transparent;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--custom-color-300);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--custom-color-400);
+}
+
+/* Dark mode scrollbars */
+@media (prefers-color-scheme: dark) {
+  * {
+    scrollbar-color: var(--custom-color-400) transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--custom-color-400);
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--custom-color-300);
+  }
+}
