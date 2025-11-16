@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import Link from "next/link";
 import {
   FiAlertTriangle,
@@ -9,6 +9,8 @@ import {
   FiMinimize,
   FiMonitor,
 } from "react-icons/fi";
+import { useAuth } from "../lib/auth-context";
+import { updateDeviceHeartbeat, getLayout } from "../lib/firestore";
 import {
   GridCell,
   GridConfig,
@@ -44,53 +46,110 @@ const parseKey = (key: string) => {
 };
 
 export default function ViewPage() {
+  const { user } = useAuth();
   const [playerState, setPlayerState] = useState<PlayerState | null>(null);
   const [cursorHidden, setCursorHidden] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [layoutId, setLayoutId] = useState<string | null>(null);
+  const [layoutName, setLayoutName] = useState<string | null>(null);
+  const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const deviceIdRef = useRef<string | null>(null);
+
+  // Initialize device ID
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!deviceIdRef.current) {
+      let stored = localStorage.getItem("sceneblikk-device-id");
+      if (!stored) {
+        stored = `device-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem("sceneblikk-device-id", stored);
+      }
+      deviceIdRef.current = stored;
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
-    try {
-      const raw = localStorage.getItem(LAYOUT_STORAGE_KEY);
-      if (!raw) {
-        setPlayerState(null);
-        return;
-      }
-      const parsed = JSON.parse(raw) as Partial<PersistedLayoutState>;
-      if (!parsed.config) {
-        setPlayerState(null);
-        return;
-      }
-      const normalizedConfig = enforceGridCapacity(
-        normalizeConfig(parsed.config),
-      );
-      const geometry = deriveGridGeometry({
-        screenInches: normalizedConfig.screenInches,
-        orientation: normalizedConfig.orientation,
-      });
-      const baseline = createEmptyGrid(
-        normalizedConfig.rows,
-        normalizedConfig.columns,
-      );
-      const storedCells = parsed.cells ?? {};
-      for (const key of Object.keys(baseline)) {
-        if (storedCells[key]) {
-          baseline[key] = storedCells[key];
+    const loadLayout = async () => {
+      try {
+        // Try to get layout ID from URL params or localStorage
+        const urlParams = new URLSearchParams(window.location.search);
+        const layoutIdParam = urlParams.get("layoutId");
+        
+        if (layoutIdParam && user) {
+          // Load from Firestore
+          const layout = await getLayout(layoutIdParam);
+          if (layout) {
+            setLayoutId(layout.id);
+            setLayoutName(layout.name);
+            const normalizedConfig = enforceGridCapacity(
+              normalizeConfig(layout.config),
+            );
+            const geometry = deriveGridGeometry({
+              screenInches: normalizedConfig.screenInches,
+              orientation: normalizedConfig.orientation,
+            });
+            const baseline = createEmptyGrid(
+              normalizedConfig.rows,
+              normalizedConfig.columns,
+            );
+            for (const key of Object.keys(baseline)) {
+              if (layout.cells[key]) {
+                baseline[key] = layout.cells[key];
+              }
+            }
+            setPlayerState({
+              config: normalizedConfig,
+              geometry,
+              cells: baseline,
+            });
+            return;
+          }
         }
+
+        // Fallback to localStorage
+        const raw = localStorage.getItem(LAYOUT_STORAGE_KEY);
+        if (!raw) {
+          setPlayerState(null);
+          return;
+        }
+        const parsed = JSON.parse(raw) as Partial<PersistedLayoutState>;
+        if (!parsed.config) {
+          setPlayerState(null);
+          return;
+        }
+        const normalizedConfig = enforceGridCapacity(
+          normalizeConfig(parsed.config),
+        );
+        const geometry = deriveGridGeometry({
+          screenInches: normalizedConfig.screenInches,
+          orientation: normalizedConfig.orientation,
+        });
+        const baseline = createEmptyGrid(
+          normalizedConfig.rows,
+          normalizedConfig.columns,
+        );
+        const storedCells = parsed.cells ?? {};
+        for (const key of Object.keys(baseline)) {
+          if (storedCells[key]) {
+            baseline[key] = storedCells[key];
+          }
+        }
+        setPlayerState({
+          config: normalizedConfig,
+          geometry,
+          cells: baseline,
+        });
+      } catch (error) {
+        console.warn("Unable to read layout for player view", error);
+        setPlayerState(null);
       }
-      setPlayerState({
-        config: normalizedConfig,
-        geometry,
-        cells: baseline,
-      });
-    } catch (error) {
-      console.warn("Unable to read layout for player view", error);
-      setPlayerState(null);
-    }
-  }, []);
+    };
+    loadLayout();
+  }, [user]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -152,6 +211,47 @@ export default function ViewPage() {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
   }, []);
+
+  // Heartbeat effect - send status updates when in fullscreen
+  useEffect(() => {
+    if (!user || !deviceIdRef.current || !isFullscreen) {
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current);
+        heartbeatIntervalRef.current = null;
+      }
+      return;
+    }
+
+    const sendHeartbeat = async () => {
+      try {
+        const deviceName = localStorage.getItem("sceneblikk-device-name") || 
+          `Device ${deviceIdRef.current?.substr(-8)}`;
+        await updateDeviceHeartbeat(
+          user.uid,
+          deviceIdRef.current!,
+          deviceName,
+          layoutId,
+          layoutName,
+          isFullscreen,
+        );
+      } catch (error) {
+        console.error("Failed to send heartbeat:", error);
+      }
+    };
+
+    // Send immediately
+    sendHeartbeat();
+
+    // Then send every 30 seconds
+    heartbeatIntervalRef.current = setInterval(sendHeartbeat, 30000);
+
+    return () => {
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current);
+        heartbeatIntervalRef.current = null;
+      }
+    };
+  }, [user, isFullscreen, layoutId, layoutName]);
 
   const toggleFullscreen = async () => {
     if (typeof document === "undefined") {

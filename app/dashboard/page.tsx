@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   FiActivity,
@@ -11,15 +11,8 @@ import {
   FiMonitor,
   FiPlusCircle,
 } from "react-icons/fi";
-
-type ActiveView = {
-  id: string;
-  screenName: string;
-  location: string;
-  status: "Live" | "Offline" | "Standby";
-  layoutName: string;
-  lastCheckIn: string;
-};
+import { useAuth } from "../lib/auth-context";
+import { subscribeToUserDevices, getUserLayouts, type DeviceStatus, type SavedLayout } from "../lib/firestore";
 
 type RecentEdit = {
   id: string;
@@ -28,68 +21,6 @@ type RecentEdit = {
   timestamp: string;
 };
 
-const activeViews: ActiveView[] = [
-  {
-    id: "hq-lobby",
-    screenName: "HQ Lobby Wall",
-    location: "Oslo HQ · Level 1",
-    status: "Live",
-    layoutName: "November Welcome Loop",
-    lastCheckIn: "Online · 1m ago",
-  },
-  {
-    id: "expo-01",
-    screenName: "Expo Demo Screen",
-    location: "Trade Expo · Booth D4",
-    status: "Standby",
-    layoutName: "Product Spotlight",
-    lastCheckIn: "Standby · 12m ago",
-  },
-  {
-    id: "retail-02",
-    screenName: "Retail Window",
-    location: "Flagship Store · Karl Johans Gate",
-    status: "Live",
-    layoutName: "Holiday Countdown",
-    lastCheckIn: "Online · 5m ago",
-  },
-  {
-    id: "canteen-01",
-    screenName: "Canteen Menu",
-    location: "Campus South · Food Court",
-    status: "Live",
-    layoutName: "Lunch Menu · Week 45",
-    lastCheckIn: "Online · 2m ago",
-  },
-];
-
-const recentEdits: RecentEdit[] = [
-  {
-    id: "edit-1",
-    title: "Holiday Countdown",
-    editor: "Amelia Johansen",
-    timestamp: "Edited 12 minutes ago",
-  },
-  {
-    id: "edit-2",
-    title: "Campus Events Board",
-    editor: "Jonas Mikkelsen",
-    timestamp: "Edited 38 minutes ago",
-  },
-  {
-    id: "edit-3",
-    title: "HQ Lobby Loop",
-    editor: "Elise Iversen",
-    timestamp: "Edited 58 minutes ago",
-  },
-  {
-    id: "edit-4",
-    title: "Product Spotlight",
-    editor: "Sanjay Patel",
-    timestamp: "Edited 1 hour ago",
-  },
-];
-
 const chartData = [34, 64, 49, 92, 76, 88, 120, 105, 140, 125, 160, 182];
 const playbackHealth = [
   { title: "Live playback", value: 92, accent: "from-custom-color-400 to-custom-color-300" },
@@ -97,17 +28,80 @@ const playbackHealth = [
   { title: "Alerts", value: 2, accent: "from-rose-200/90 to-rose-400/60" },
 ];
 
-const statusStyles: Record<ActiveView["status"], string> = {
-  Live: "bg-emerald-400/20 text-emerald-200 border border-emerald-400/40",
-  Offline: "bg-rose-500/20 text-rose-200 border border-rose-400/40",
-  Standby: "bg-amber-400/20 text-amber-200 border border-amber-400/40",
+const statusStyles: Record<string, string> = {
+  online: "bg-emerald-400/20 text-emerald-200 border border-emerald-400/40",
+  offline: "bg-rose-500/20 text-rose-200 border border-rose-400/40",
+  standby: "bg-amber-400/20 text-amber-200 border border-amber-400/40",
 };
 
+function formatTimeAgo(date: Date): string {
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+function getStatusLabel(status: string): string {
+  switch (status) {
+    case "online":
+      return "Live";
+    case "offline":
+      return "Offline";
+    case "standby":
+      return "Standby";
+    default:
+      return "Unknown";
+  }
+}
+
 export default function DashboardPage() {
+  const { user } = useAuth();
+  const [devices, setDevices] = useState<DeviceStatus[]>([]);
+  const [recentEdits, setRecentEdits] = useState<RecentEdit[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    // Subscribe to device updates
+    const unsubscribe = subscribeToUserDevices(user.uid, (updatedDevices) => {
+      setDevices(updatedDevices);
+    });
+
+    // Load recent layouts as "edits"
+    getUserLayouts(user.uid).then((layouts) => {
+      setRecentEdits(
+        layouts.slice(0, 4).map((layout) => ({
+          id: layout.id,
+          title: layout.name,
+          editor: user.email?.split("@")[0] || "User",
+          timestamp: `Edited ${formatTimeAgo(layout.updatedAt)}`,
+        })),
+      );
+    });
+
+    return () => unsubscribe();
+  }, [user]);
+
   const maxChartValue = useMemo(
     () => Math.max(...chartData, 1),
     [],
   );
+
+  // Filter devices by status and determine if they're online (heartbeat within last 2 minutes)
+  const activeDevices = useMemo(() => {
+    return devices
+      .map((device) => {
+        const timeSinceHeartbeat = Date.now() - device.lastHeartbeat.getTime();
+        const isRecentlyActive = timeSinceHeartbeat < 120000; // 2 minutes
+        const effectiveStatus = isRecentlyActive ? device.status : "offline";
+        return { ...device, effectiveStatus, timeSinceHeartbeat };
+      })
+      .filter((device) => device.effectiveStatus !== "offline" || device.isFullscreen);
+  }, [devices]);
 
   return (
     <div className="min-h-screen bg-custom-color-100 text-black transition-colors duration-300 dark:bg-custom-color-900 dark:text-white">
@@ -149,42 +143,54 @@ export default function DashboardPage() {
             </div>
 
             <div className="mt-6 grid gap-4">
-              {activeViews.map((view) => (
-                <div
-                  key={view.id}
-                  className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/15 bg-white/80 p-4 shadow-md transition hover:-translate-y-0.5 hover:shadow-xl dark:border-white/10 dark:bg-custom-color-800/70"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-custom-color-900 dark:text-white">
-                      {view.screenName}
-                    </p>
-                    <p className="text-xs text-custom-color-700/80 dark:text-custom-color-100/70">
-                      {view.location}
-                    </p>
-                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-semibold uppercase tracking-[0.2em] ${statusStyles[view.status]}`}
+              {activeDevices.length === 0 ? (
+                <div className="rounded-2xl border border-white/15 bg-white/80 p-6 text-center dark:border-white/10 dark:bg-custom-color-800/70">
+                  <p className="text-sm text-custom-color-700/80 dark:text-custom-color-100/70">
+                    No active devices. Open the player view in fullscreen to see device status here.
+                  </p>
+                </div>
+              ) : (
+                activeDevices.map((device) => (
+                  <div
+                    key={device.id}
+                    className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/15 bg-white/80 p-4 shadow-md transition hover:-translate-y-0.5 hover:shadow-xl dark:border-white/10 dark:bg-custom-color-800/70"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-custom-color-900 dark:text-white">
+                        {device.deviceName}
+                      </p>
+                      <p className="text-xs text-custom-color-700/80 dark:text-custom-color-100/70">
+                        Device ID: {device.id.substring(0, 12)}...
+                      </p>
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-semibold uppercase tracking-[0.2em] ${statusStyles[device.effectiveStatus] || statusStyles.offline}`}
+                        >
+                          <FiMonitor className="h-3 w-3" />
+                          {getStatusLabel(device.effectiveStatus)}
+                        </span>
+                        {device.layoutName && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2.5 py-1 text-custom-color-700 dark:bg-custom-color-700/60 dark:text-custom-color-100/80">
+                            <FiLayers className="h-3 w-3" />
+                            {device.layoutName}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right text-xs text-custom-color-700/70 dark:text-custom-color-100/70">
+                      <p>
+                        {device.isFullscreen ? "Fullscreen" : "Windowed"} · {formatTimeAgo(device.lastHeartbeat)}
+                      </p>
+                      <Link
+                        href={`/view?layoutId=${device.layoutId || ""}`}
+                        className="mt-2 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.22em] text-custom-color-500 transition hover:text-custom-color-400 dark:text-custom-color-200 dark:hover:text-custom-color-100"
                       >
-                        <FiMonitor className="h-3 w-3" />
-                        {view.status}
-                      </span>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2.5 py-1 text-custom-color-700 dark:bg-custom-color-700/60 dark:text-custom-color-100/80">
-                        <FiLayers className="h-3 w-3" />
-                        {view.layoutName}
-                      </span>
+                        Inspect view →
+                      </Link>
                     </div>
                   </div>
-                  <div className="text-right text-xs text-custom-color-700/70 dark:text-custom-color-100/70">
-                    <p>{view.lastCheckIn}</p>
-                    <Link
-                      href="/view"
-                      className="mt-2 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.22em] text-custom-color-500 transition hover:text-custom-color-400 dark:text-custom-color-200 dark:hover:text-custom-color-100"
-                    >
-                      Inspect view →
-                    </Link>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "./lib/auth-context";
+import { RequireAuth } from "./components/RequireAuth";
 
 const interSans = Inter({
   variable: "--font-inter-sans",
@@ -22,7 +24,11 @@ export default function RootLayout({
       <body
         className={`${interSans.variable} antialiased`}
       >
-        {children}
+        <AuthProvider>
+          <RequireAuth>
+            {children}
+          </RequireAuth>
+        </AuthProvider>
       </body>
     </html>
   );

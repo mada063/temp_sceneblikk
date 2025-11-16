@@ -48,6 +48,9 @@ import { CanvasPreview } from "./components/CanvasPreview";
 import { GridSettingsPanel } from "./components/GridSettingsPanel";
 import { PanelPlaybackPanel } from "./components/PanelPlaybackPanel";
 import { SelectedComponentPanel } from "./components/SelectedComponentPanel";
+import { LayoutSelector } from "./components/LayoutSelector";
+import { useAuth } from "../lib/auth-context";
+import type { SavedLayout } from "../lib/firestore";
 import type {
   DrawSelectionBounds,
   DrawState,
@@ -59,6 +62,7 @@ import type {
 
 export default function EditorPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [config, setConfig] = useState<GridConfig>(() => ({
     ...DEFAULT_GRID_CONFIG,
   }));
@@ -66,6 +70,7 @@ export default function EditorPage() {
     createEmptyGrid(DEFAULT_GRID_CONFIG.rows, DEFAULT_GRID_CONFIG.columns),
   );
   const [isHydrated, setHydrated] = useState(false);
+  const [currentLayoutId, setCurrentLayoutId] = useState<string | null>(null);
   const [selectedCells, setSelectedCells] = useState<string[]>([]);
   const [resizeState, setResizeState] = useState<ResizeState>(null);
   const [drawState, setDrawState] = useState<DrawState | null>(null);
@@ -1151,6 +1156,34 @@ export default function EditorPage() {
     [getAppearancePreset, selectedCells],
   );
 
+  const handleLoadLayout = useCallback((layout: SavedLayout) => {
+    const normalized = applyCapacity(normalizeConfig(layout.config), "balance");
+    const next = createEmptyGrid(normalized.rows, normalized.columns);
+    const roots = extractRootComponents(layout.cells);
+    for (const root of roots) {
+      if (
+        !isAreaAvailable(next, root.key, root.colSpan, root.rowSpan, normalized)
+      ) {
+        continue;
+      }
+      assignComponentToRegion(
+        root.key,
+        next,
+        normalized,
+        root.componentId,
+        root.colSpan,
+        root.rowSpan,
+        root.appearance ?? getAppearancePreset(root.componentId),
+      );
+      if (root.componentId === FREEFORM_COMPONENT_ID) {
+        next[root.key].panelEntries = clonePanelEntries(root.panelEntries);
+      }
+    }
+    setConfig(normalized);
+    setCells(next);
+    setCurrentLayoutId(layout.id);
+  }, [getAppearancePreset]);
+
   const selectedAppearance =
     selectedComponentId != null
       ? selectedCellData?.appearance ?? getAppearancePreset(selectedComponentId)
@@ -1208,25 +1241,32 @@ export default function EditorPage() {
             className="w-full lg:h-[calc(100vh-10vh)] lg:flex-shrink-0"
             style={{ width: sidebarWidth }}
           >
-            <GridSettingsPanel
-              config={config}
-              screenSizeDraft={screenSizeDraft}
-              onScreenSizeChange={handleScreenSizeChange}
-              onScreenSizeBlur={handleScreenSizeBlur}
-              onDimensionChange={handleDimensionChange}
-              onGapChange={handleGapChange}
-              onBackgroundColorChange={handleBackgroundColorChange}
-              totalCells={totalCells}
-              occupiedSlots={occupiedSlots}
-              freeSlots={freeSlots}
-              geometryBuffer={geometryBuffer}
-              geometry={geometry}
-              onDragStartPalette={handleDragStartPalette}
-              isSettingsCollapsed={settingsCollapsed}
-              isLibraryCollapsed={libraryCollapsed}
-              onToggleSettings={() => setSettingsCollapsed((prev) => !prev)}
-              onToggleLibrary={() => setLibraryCollapsed((prev) => !prev)}
-            />
+            <div className="space-y-4">
+              <LayoutSelector
+                currentConfig={config}
+                currentCells={cells}
+                onLoadLayout={handleLoadLayout}
+              />
+              <GridSettingsPanel
+                config={config}
+                screenSizeDraft={screenSizeDraft}
+                onScreenSizeChange={handleScreenSizeChange}
+                onScreenSizeBlur={handleScreenSizeBlur}
+                onDimensionChange={handleDimensionChange}
+                onGapChange={handleGapChange}
+                onBackgroundColorChange={handleBackgroundColorChange}
+                totalCells={totalCells}
+                occupiedSlots={occupiedSlots}
+                freeSlots={freeSlots}
+                geometryBuffer={geometryBuffer}
+                geometry={geometry}
+                onDragStartPalette={handleDragStartPalette}
+                isSettingsCollapsed={settingsCollapsed}
+                isLibraryCollapsed={libraryCollapsed}
+                onToggleSettings={() => setSettingsCollapsed((prev) => !prev)}
+                onToggleLibrary={() => setLibraryCollapsed((prev) => !prev)}
+              />
+            </div>
           </div>
           <div
             className="hidden w-1.5 cursor-col-resize rounded-full bg-gradient-to-b from-custom-color-200/0 via-custom-color-200/70 to-custom-color-200/0 lg:block dark:via-white/50"
