@@ -549,11 +549,17 @@ export default function ViewPage() {
                     <PanelCell
                       panelEntries={panelEntries}
                       appearance={appearance}
+                      colSpan={cell.colSpan}
+                      rowSpan={cell.rowSpan}
+                      totalGridSize={config.columns * config.rows}
                     />
                   ) : (
                     <ComponentRenderer
                       componentId={cell.componentId}
                       appearance={appearance}
+                      colSpan={cell.colSpan}
+                      rowSpan={cell.rowSpan}
+                      totalGridSize={config.columns * config.rows}
                     />
                   )}
                 </div>

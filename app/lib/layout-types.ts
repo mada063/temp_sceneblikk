@@ -28,6 +28,14 @@ export type CellAppearance = {
   showClockSeconds?: boolean;
   showClockDate?: boolean;
   clockFormat?: "12h" | "24h";
+  /**
+   * Weather-specific options (used when componentId === "weather").
+   * Location format: "lat,lon" or "lat,lon,altitude" (e.g., "59.9139,10.7522")
+   */
+  weatherLocation?: string;
+  showAirQuality?: boolean;
+  showLocationForecast?: boolean;
+  weatherTimeFormat?: "12h" | "24h";
 };
 
 export const makeDefaultAppearance = (): CellAppearance => ({
@@ -39,6 +47,10 @@ export const makeDefaultAppearance = (): CellAppearance => ({
   showClockSeconds: true,
   showClockDate: false,
   clockFormat: "24h",
+  weatherLocation: "59.9139,10.7522", // Default to Oslo
+  showAirQuality: true,
+  showLocationForecast: true,
+  weatherTimeFormat: "24h", // Default to 24-hour format
 });
 
 export const cloneAppearance = (appearance?: CellAppearance | null) =>

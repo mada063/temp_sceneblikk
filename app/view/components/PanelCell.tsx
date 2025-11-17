@@ -7,12 +7,15 @@ import type { PanelEntry, CellAppearance } from "../../lib/layout-types";
 type PanelCellProps = {
   panelEntries: PanelEntry[];
   appearance: CellAppearance;
+  colSpan?: number;
+  rowSpan?: number;
+  totalGridSize?: number;
 };
 
 /**
  * Cell component for panels that cycles through multiple entries.
  */
-export function PanelCell({ panelEntries, appearance }: PanelCellProps) {
+export function PanelCell({ panelEntries, appearance, colSpan, rowSpan, totalGridSize }: PanelCellProps) {
   const { activeEntry } = usePanelCycle(
     panelEntries.length > 1 ? panelEntries : undefined,
   );
@@ -46,8 +49,12 @@ export function PanelCell({ panelEntries, appearance }: PanelCellProps) {
       componentId={entryToRender.componentId}
       appearance={appearance}
       panelEntries={panelEntries.length > 1 ? panelEntries : undefined}
+      colSpan={colSpan}
+      rowSpan={rowSpan}
+      totalGridSize={totalGridSize}
     />
   );
 }
+
 
 

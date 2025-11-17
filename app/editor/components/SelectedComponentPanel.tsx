@@ -60,6 +60,15 @@ export function SelectedComponentPanel({
     );
   const isClock = isDirectClock || hasClockInPanel;
 
+  const isDirectWeather =
+    isSingleSelection && selectedCellData?.componentId === "weather";
+  const hasWeatherInPanel =
+    isFreeformSelected &&
+    !!selectedCellData?.panelEntries?.some(
+      (entry) => entry.componentId === "weather",
+    );
+  const isWeather = isDirectWeather || hasWeatherInPanel;
+
   return (
     <div className="glass-surface rounded-3xl border border-white/40 p-6 shadow-lg dark:border-white/10">
       <h2 className="text-lg font-semibold text-custom-color-800 dark:text-custom-color-100">
@@ -268,6 +277,96 @@ export function SelectedComponentPanel({
                           checked={appearance.clockFormat === "12h"}
                           onChange={() =>
                             onAppearanceChange({ clockFormat: "12h" })
+                          }
+                          className="h-3.5 w-3.5 border border-custom-color-400 text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                        />
+                        <span>12H</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {isWeather ? (
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    Weather options
+                  </p>
+                  <label className="space-y-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Location (lat,lon)
+                    </span>
+                    <input
+                      type="text"
+                      value={appearance.weatherLocation ?? "59.9139,10.7522"}
+                      onChange={(event) =>
+                        onAppearanceChange({
+                          weatherLocation: event.target.value,
+                        })
+                      }
+                      placeholder="59.9139,10.7522"
+                      className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
+                    />
+                    <span className="text-[10px] text-custom-color-600/70 dark:text-custom-color-200/70">
+                      Format: latitude,longitude (e.g., 59.9139,10.7522 for Oslo)
+                    </span>
+                  </label>
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Show air quality
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={appearance.showAirQuality ?? true}
+                      onChange={(event) =>
+                        onAppearanceChange({
+                          showAirQuality: event.target.checked,
+                        })
+                      }
+                      className="h-4 w-4 rounded border border-custom-color-400 bg-white text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                    />
+                  </label>
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Show location forecast
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={appearance.showLocationForecast ?? true}
+                      onChange={(event) =>
+                        onAppearanceChange({
+                          showLocationForecast: event.target.checked,
+                        })
+                      }
+                      className="h-4 w-4 rounded border border-custom-color-400 bg-white text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                    />
+                  </label>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Time format
+                    </span>
+                    <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      <label className="inline-flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name="weather-time-format"
+                          value="24h"
+                          checked={(appearance.weatherTimeFormat ?? "24h") === "24h"}
+                          onChange={() =>
+                            onAppearanceChange({ weatherTimeFormat: "24h" })
+                          }
+                          className="h-3.5 w-3.5 border border-custom-color-400 text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                        />
+                        <span>24H</span>
+                      </label>
+                      <label className="inline-flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name="weather-time-format"
+                          value="12h"
+                          checked={appearance.weatherTimeFormat === "12h"}
+                          onChange={() =>
+                            onAppearanceChange({ weatherTimeFormat: "12h" })
                           }
                           className="h-3.5 w-3.5 border border-custom-color-400 text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
                         />
