@@ -3,6 +3,8 @@
 import type { ChangeEvent } from "react";
 
 import { FiTrash2 } from "react-icons/fi";
+import timezones from "../../lib/timezones.json";
+import weatherLocations from "../../lib/weather-locations.json";
 
 import type {
   CellAppearance,
@@ -68,6 +70,22 @@ export function SelectedComponentPanel({
       (entry) => entry.componentId === "weather",
     );
   const isWeather = isDirectWeather || hasWeatherInPanel;
+  
+  // Check if panel is full screen (takes up entire grid)
+  const isFullScreen = isSingleSelection && selectedCellData && 
+    selectedCellData.colSpan === config.columns && 
+    selectedCellData.rowSpan === config.rows;
+  
+  // Check if clock panel is 1/4 or more of the grid
+  const isClockQuarterOrMore = isClock && isSingleSelection && selectedCellData && (() => {
+    const totalGridSize = config.columns * config.rows;
+    const panelArea = (selectedCellData.colSpan ?? 1) * (selectedCellData.rowSpan ?? 1);
+    if (totalGridSize === 0) {
+      return panelArea >= 4; // At least 4 grid cells
+    }
+    const fraction = panelArea / totalGridSize;
+    return fraction >= 0.25; // 1/4 or more
+  })();
 
   return (
     <div className="glass-surface rounded-3xl border border-white/40 p-6 shadow-lg dark:border-white/10">
@@ -284,6 +302,148 @@ export function SelectedComponentPanel({
                       </label>
                     </div>
                   </div>
+                  <label className="space-y-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Timezone
+                    </span>
+                    <select
+                      value={appearance.clockTimezone ?? "Europe/Oslo"}
+                      onChange={(event) =>
+                        onAppearanceChange({
+                          clockTimezone: event.target.value,
+                        })
+                      }
+                      className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
+                    >
+                      {timezones.map((tz) => (
+                        <option key={tz.value} value={tz.value}>
+                          {tz.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Clock style
+                    </span>
+                    <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      <label className="inline-flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name="clock-style"
+                          value="digital"
+                          checked={(appearance.clockStyle ?? "digital") === "digital"}
+                          onChange={() =>
+                            onAppearanceChange({ clockStyle: "digital" })
+                          }
+                          className="h-3.5 w-3.5 border border-custom-color-400 text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                        />
+                        <span>Digital</span>
+                      </label>
+                      <label className="inline-flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name="clock-style"
+                          value="analog"
+                          checked={appearance.clockStyle === "analog"}
+                          onChange={() =>
+                            onAppearanceChange({ clockStyle: "analog" })
+                          }
+                          className="h-3.5 w-3.5 border border-custom-color-400 text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                        />
+                        <span>Analog</span>
+                      </label>
+                    </div>
+                  </div>
+                  {isClockQuarterOrMore && (
+                    <>
+                      <label className="flex items-center justify-between gap-3">
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                          Show multiple clocks
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={appearance.showMultipleClocks ?? false}
+                          onChange={(event) =>
+                            onAppearanceChange({
+                              showMultipleClocks: event.target.checked,
+                              // Set default second timezone if enabling
+                              clockTimezone2: event.target.checked && !appearance.clockTimezone2 
+                                ? "Europe/London"
+                                : appearance.clockTimezone2,
+                            })
+                          }
+                          className="h-4 w-4 rounded border border-custom-color-400 bg-white text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                        />
+                      </label>
+                      {appearance.showMultipleClocks && (
+                        <>
+                          <label className="space-y-1">
+                            <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                              Second Timezone
+                            </span>
+                            <select
+                              value={appearance.clockTimezone2 ?? "Europe/London"}
+                              onChange={(event) =>
+                                onAppearanceChange({
+                                  clockTimezone2: event.target.value,
+                                })
+                              }
+                              className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
+                            >
+                              {timezones.map((tz) => (
+                                <option key={tz.value} value={tz.value}>
+                                  {tz.label}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label className="space-y-1">
+                            <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                              Third Timezone
+                            </span>
+                            <select
+                              value={appearance.clockTimezone3 ?? ""}
+                              onChange={(event) =>
+                                onAppearanceChange({
+                                  clockTimezone3: event.target.value || undefined,
+                                })
+                              }
+                              className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
+                            >
+                              <option value="">None</option>
+                              {timezones.map((tz) => (
+                                <option key={tz.value} value={tz.value}>
+                                  {tz.label}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label className="space-y-1">
+                            <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                              Fourth Timezone
+                            </span>
+                            <select
+                              value={appearance.clockTimezone4 ?? ""}
+                              onChange={(event) =>
+                                onAppearanceChange({
+                                  clockTimezone4: event.target.value || undefined,
+                                })
+                              }
+                              className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
+                            >
+                              <option value="">None</option>
+                              {timezones.map((tz) => (
+                                <option key={tz.value} value={tz.value}>
+                                  {tz.label}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        </>
+                      )}
+                    </>
+                  )}
                 </div>
               ) : null}
 
@@ -294,22 +454,23 @@ export function SelectedComponentPanel({
                   </p>
                   <label className="space-y-1">
                     <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
-                      Location (lat,lon)
+                      Location
                     </span>
-                    <input
-                      type="text"
+                    <select
                       value={appearance.weatherLocation ?? "59.9139,10.7522"}
                       onChange={(event) =>
                         onAppearanceChange({
                           weatherLocation: event.target.value,
                         })
                       }
-                      placeholder="59.9139,10.7522"
                       className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
-                    />
-                    <span className="text-[10px] text-custom-color-600/70 dark:text-custom-color-200/70">
-                      Format: latitude,longitude (e.g., 59.9139,10.7522 for Oslo)
-                    </span>
+                    >
+                      {weatherLocations.map((loc) => (
+                        <option key={loc.value} value={loc.value}>
+                          {loc.label}
+                        </option>
+                      ))}
+                    </select>
                   </label>
                   <label className="flex items-center justify-between gap-3">
                     <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
@@ -341,6 +502,51 @@ export function SelectedComponentPanel({
                       className="h-4 w-4 rounded border border-custom-color-400 bg-white text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
                     />
                   </label>
+                  {isFullScreen && (
+                    <>
+                      <label className="flex items-center justify-between gap-3">
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                          Show 2 charts
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={appearance.showTwoCharts ?? false}
+                          onChange={(event) =>
+                            onAppearanceChange({
+                              showTwoCharts: event.target.checked,
+                              // Set default second location if enabling
+                              weatherLocation2: event.target.checked && !appearance.weatherLocation2 
+                                ? "60.3913,5.3221" // Default to Bergen
+                                : appearance.weatherLocation2,
+                            })
+                          }
+                          className="h-4 w-4 rounded border border-custom-color-400 bg-white text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                        />
+                      </label>
+                      {appearance.showTwoCharts && (
+                        <label className="space-y-1">
+                          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                            Second Location
+                          </span>
+                          <select
+                            value={appearance.weatherLocation2 ?? "60.3913,5.3221"}
+                            onChange={(event) =>
+                              onAppearanceChange({
+                                weatherLocation2: event.target.value,
+                              })
+                            }
+                            className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
+                          >
+                            {weatherLocations.map((loc) => (
+                              <option key={loc.value} value={loc.value}>
+                                {loc.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      )}
+                    </>
+                  )}
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       Time format

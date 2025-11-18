@@ -4,7 +4,7 @@ import { PLACEHOLDER_MAP } from "../../lib/placeholders";
 import type { CellAppearance, PanelEntry } from "../../lib/layout-types";
 import { FREEFORM_COMPONENT_ID } from "../../editor/utils/grid";
 import { Clock } from "./Clock";
-import { Weather } from "./Weather";
+import { Weather } from "./weather";
 
 type ComponentRendererProps = {
   componentId: string;
@@ -30,7 +30,7 @@ export function ComponentRenderer({
 }: ComponentRendererProps) {
   // Dedicated implementation for the clock component
   if (componentId === "clock") {
-    return <Clock appearance={appearance} />;
+    return <Clock appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
   }
 
   // Dedicated implementation for the weather component

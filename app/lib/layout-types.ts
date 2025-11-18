@@ -28,13 +28,21 @@ export type CellAppearance = {
   showClockSeconds?: boolean;
   showClockDate?: boolean;
   clockFormat?: "12h" | "24h";
+  clockStyle?: "digital" | "analog";
+  clockTimezone?: string;
+  showMultipleClocks?: boolean; // Show multiple clocks when panel is 1/4 or more
+  clockTimezone2?: string; // Second timezone for multiple clocks
+  clockTimezone3?: string; // Third timezone for multiple clocks
+  clockTimezone4?: string; // Fourth timezone for multiple clocks
   /**
    * Weather-specific options (used when componentId === "weather").
    * Location format: "lat,lon" or "lat,lon,altitude" (e.g., "59.9139,10.7522")
    */
   weatherLocation?: string;
+  weatherLocation2?: string; // Second location for dual charts (full screen only)
   showAirQuality?: boolean;
   showLocationForecast?: boolean;
+  showTwoCharts?: boolean; // Show 2 charts side by side (full screen only)
   weatherTimeFormat?: "12h" | "24h";
 };
 
@@ -47,6 +55,7 @@ export const makeDefaultAppearance = (): CellAppearance => ({
   showClockSeconds: true,
   showClockDate: false,
   clockFormat: "24h",
+  clockTimezone: "Europe/Oslo",
   weatherLocation: "59.9139,10.7522", // Default to Oslo
   showAirQuality: true,
   showLocationForecast: true,
