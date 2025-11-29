@@ -142,3 +142,42 @@ body {
     background-color: var(--custom-color-300);
   }
 }
+
+/* News ticker animations */
+@keyframes newsScrollUp {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes newsScrollHorizontal {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.news-scroll-horizontal-tiny {
+  animation: newsScrollHorizontal 20s linear infinite;
+}
+
+.news-scroll-horizontal-small {
+  animation: newsScrollHorizontal 25s linear infinite;
+}
+
+.news-scroll-medium {
+  animation: newsScrollUp 8s linear infinite;
+}
+
+.news-scroll-large {
+  animation: newsScrollUp 10s linear infinite;
+}
+
+.news-scroll-xlarge {
+  animation: newsScrollUp 15s linear infinite;
+}

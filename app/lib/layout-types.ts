@@ -44,6 +44,13 @@ export type CellAppearance = {
   showLocationForecast?: boolean;
   showTwoCharts?: boolean; // Show 2 charts side by side (full screen only)
   weatherTimeFormat?: "12h" | "24h";
+  /**
+   * News-specific options (used when componentId === "news").
+   */
+  newsFeed?: string; // RSS feed key (e.g., "nrk_main", "tv2_nyheter", "dn_main")
+  newsScrollSpeed?: number; // Scroll speed in pixels per second (default: 50)
+  newsMaxItems?: number; // Maximum number of items to display (default: 10)
+  newsShowSource?: boolean; // Show source name for each item
 };
 
 export const makeDefaultAppearance = (): CellAppearance => ({
@@ -60,6 +67,10 @@ export const makeDefaultAppearance = (): CellAppearance => ({
   showAirQuality: true,
   showLocationForecast: true,
   weatherTimeFormat: "24h", // Default to 24-hour format
+  newsFeed: "nrk_main",
+  newsScrollSpeed: 50,
+  newsMaxItems: 10,
+  newsShowSource: true,
 });
 
 export const cloneAppearance = (appearance?: CellAppearance | null) =>

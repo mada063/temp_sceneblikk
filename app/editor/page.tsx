@@ -1098,8 +1098,28 @@ export default function EditorPage() {
       });
     };
 
-  const selectedCellData = primarySelectedCell ? cells[primarySelectedCell] : null;
+  // Resolve the root key for the primary selected cell to get the actual cell data
+  const selectedCellData = primarySelectedCell ? cells[resolveRootKey(primarySelectedCell, cells)] : null;
   const selectedComponentId = selectedCellData?.componentId ?? null;
+  
+  // Get all selected cells data to check if they all have the same component type
+  const allSelectedCellsData = useMemo(() => {
+    return selectedCells.map(key => {
+      const rootKey = resolveRootKey(key, cells);
+      return { key: rootKey, cell: cells[rootKey] };
+    }).filter(item => item.cell);
+  }, [selectedCells, cells]);
+  
+  // Check if all selected cells have the same component type
+  const allHaveSameComponent = useMemo(() => {
+    if (allSelectedCellsData.length <= 1) return true;
+    const firstComponentId = allSelectedCellsData[0]?.cell?.componentId;
+    if (!firstComponentId) return false;
+    // Filter out cells without componentId (empty cells)
+    const cellsWithComponents = allSelectedCellsData.filter(item => item.cell?.componentId);
+    if (cellsWithComponents.length === 0) return false;
+    return cellsWithComponents.every(item => item.cell?.componentId === firstComponentId);
+  }, [allSelectedCellsData]);
   const isFreeformSelected =
     selectionCount === 1 && selectedComponentId === FREEFORM_COMPONENT_ID;
   const selectedPanelEntries =
@@ -1132,6 +1152,8 @@ export default function EditorPage() {
         return;
       }
       const targetKeys = Array.from(new Set(selectedCells));
+      const primaryComponentId = selectedCellData?.componentId;
+      
       setCells((prev) => {
         const next = structuredClone(prev);
         let didUpdate = false;
@@ -1139,6 +1161,10 @@ export default function EditorPage() {
           const rootKey = resolveRootKey(key, next);
           const cell = next[rootKey];
           if (!cell?.componentId) {
+            continue;
+          }
+          // When multiple cells are selected, only update cells with the same component type
+          if (targetKeys.length > 1 && cell.componentId !== primaryComponentId) {
             continue;
           }
           const baseAppearance =
@@ -1153,7 +1179,7 @@ export default function EditorPage() {
         return didUpdate ? next : prev;
       });
     },
-    [getAppearancePreset, selectedCells],
+    [getAppearancePreset, selectedCells, selectedCellData],
   );
 
   const handleLoadLayout = useCallback((layout: SavedLayout) => {
@@ -1312,6 +1338,8 @@ export default function EditorPage() {
               isFreeformSelected={isFreeformSelected}
               selectedAppearance={selectedAppearance}
               onAppearanceChange={handleAppearanceChange}
+              allHaveSameComponent={allHaveSameComponent}
+              allSelectedCellsData={allSelectedCellsData}
             />
             <div className="glass-surface rounded-3xl border border-white/30 p-6 shadow-lg dark:border-white/10">
               <h2 className="text-lg font-semibold text-custom-color-800 dark:text-custom-color-100">

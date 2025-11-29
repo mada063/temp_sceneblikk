@@ -27,6 +27,8 @@ type SelectedComponentPanelProps = {
   isFreeformSelected: boolean;
   selectedAppearance: CellAppearance | null;
   onAppearanceChange: (changes: Partial<CellAppearance>) => void;
+  allHaveSameComponent?: boolean;
+  allSelectedCellsData?: Array<{ key: string; cell: GridCell }>;
 };
 
 export function SelectedComponentPanel({
@@ -40,9 +42,13 @@ export function SelectedComponentPanel({
   isFreeformSelected,
   selectedAppearance,
   onAppearanceChange,
+  allHaveSameComponent = true,
+  allSelectedCellsData = [],
 }: SelectedComponentPanelProps) {
   const hasSelection = selectionCount > 0;
   const isSingleSelection = selectionCount === 1;
+  // Allow component options to be shown if all selected cells have the same component type
+  const canShowComponentOptions = isSingleSelection || allHaveSameComponent;
   const widthLimit =
     primarySelectedCell != null
       ? Math.max(config.columns - parseKey(primarySelectedCell).column, 1)
@@ -53,23 +59,59 @@ export function SelectedComponentPanel({
       : 1;
   const appearance = selectedAppearance ?? makeDefaultAppearance();
 
+  // Get the component ID - prioritize selectedCellData, but also check allSelectedCellsData when multiple are selected
+  // When multiple cells are selected and all have the same component, get componentId from any of them
+  let componentId = selectedCellData?.componentId ?? null;
+  
+  // If componentId is not available from selectedCellData, try to get it from allSelectedCellsData
+  if (!componentId && allSelectedCellsData.length > 0) {
+    componentId = allSelectedCellsData.find(item => item.cell?.componentId)?.cell?.componentId ?? null;
+  }
+  
+  // Check if we're dealing with freeform regions - if so, check panelEntries for component type
+  // When multiple freeform regions are selected, check if they all have the same component in panelEntries
+  let effectiveComponentId = componentId;
+  if (componentId === "freeform-region" && allSelectedCellsData.length > 0) {
+    // Get the first component from panelEntries of each selected cell
+    const panelEntryComponents = allSelectedCellsData
+      .map(item => {
+        const entries = item.cell?.panelEntries ?? [];
+        return entries.length > 0 ? entries[0]?.componentId : null;
+      })
+      .filter(id => id != null);
+    
+    // If all selected freeform regions have the same component in their first panelEntry, use that
+    if (panelEntryComponents.length > 0 && panelEntryComponents.every(id => id === panelEntryComponents[0])) {
+      effectiveComponentId = panelEntryComponents[0] ?? componentId;
+    }
+  }
+
   const isDirectClock =
-    isSingleSelection && selectedCellData?.componentId === "clock";
+    canShowComponentOptions && effectiveComponentId === "clock";
   const hasClockInPanel =
-    isFreeformSelected &&
+    (isFreeformSelected || (componentId === "freeform-region" && allHaveSameComponent)) &&
     !!selectedCellData?.panelEntries?.some(
       (entry) => entry.componentId === "clock",
     );
   const isClock = isDirectClock || hasClockInPanel;
 
   const isDirectWeather =
-    isSingleSelection && selectedCellData?.componentId === "weather";
+    canShowComponentOptions && effectiveComponentId === "weather";
   const hasWeatherInPanel =
-    isFreeformSelected &&
+    (isFreeformSelected || (componentId === "freeform-region" && allHaveSameComponent)) &&
     !!selectedCellData?.panelEntries?.some(
       (entry) => entry.componentId === "weather",
     );
   const isWeather = isDirectWeather || hasWeatherInPanel;
+
+  const isDirectNews =
+    canShowComponentOptions && effectiveComponentId === "news";
+  const hasNewsInPanel =
+    (isFreeformSelected || (componentId === "freeform-region" && allHaveSameComponent)) &&
+    !!selectedCellData?.panelEntries?.some(
+      (entry) => entry.componentId === "news",
+    );
+  const isNews = isDirectNews || hasNewsInPanel;
   
   // Check if panel is full screen (takes up entire grid)
   const isFullScreen = isSingleSelection && selectedCellData && 
@@ -92,14 +134,19 @@ export function SelectedComponentPanel({
       <h2 className="text-lg font-semibold text-custom-color-800 dark:text-custom-color-100">
         Selected component
       </h2>
-      {hasSelection && selectedCellData?.componentId ? (
+      {hasSelection && (effectiveComponentId || (selectionCount > 1 && allHaveSameComponent)) ? (
         <div className="mt-4 space-y-4 text-sm text-custom-color-900 dark:text-custom-color-50">
           <p className="text-xs uppercase tracking-[0.2em] text-custom-color-700/70 dark:text-custom-color-100/70">
             {selectedComponentLabel ?? "Custom component"}
+            {!isSingleSelection && allHaveSameComponent && (
+              <span className="ml-2 text-[10px] font-normal normal-case opacity-70">
+                ({selectionCount} selected)
+              </span>
+            )}
           </p>
-          {selectionCount > 1 ? (
+          {selectionCount > 1 && !allHaveSameComponent ? (
             <p className="rounded-full bg-custom-color-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:bg-custom-color-200/10 dark:text-custom-color-100/80">
-              {selectionCount} components selected
+              {selectionCount} components selected (different types)
             </p>
           ) : null}
           {isFreeformSelected ? (
@@ -579,6 +626,99 @@ export function SelectedComponentPanel({
                         <span>12H</span>
                       </label>
                     </div>
+                  </div>
+                </div>
+              ) : null}
+              {isNews ? (
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    News options
+                  </p>
+                  <label className="space-y-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      News feed
+                    </span>
+                    <select
+                      value={appearance.newsFeed ?? "nrk_main"}
+                      onChange={(event) =>
+                        onAppearanceChange({
+                          newsFeed: event.target.value,
+                        })
+                      }
+                      className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
+                    >
+                      <optgroup label="NRK">
+                        <option value="nrk_main">NRK Hovedside</option>
+                        <option value="nrk_nyheter">NRK Nyheter</option>
+                        <option value="nrk_sport">NRK Sport</option>
+                        <option value="nrk_kultur">NRK Kultur</option>
+                        <option value="nrk_innenriks">NRK Innenriks</option>
+                        <option value="nrk_urix">NRK Urix</option>
+                      </optgroup>
+                      <optgroup label="TV2">
+                        <option value="tv2_nyheter">TV2 Nyheter</option>
+                        <option value="tv2_sport">TV2 Sport</option>
+                        <option value="tv2_innenriks">TV2 Innenriks</option>
+                        <option value="tv2_utenriks">TV2 Utenriks</option>
+                        <option value="tv2_fotball">TV2 Fotball</option>
+                      </optgroup>
+                      <optgroup label="Dagens Næringsliv">
+                        <option value="dn_main">DN Hovedside</option>
+                      </optgroup>
+                    </select>
+                  </label>
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Show source
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={appearance.newsShowSource ?? true}
+                      onChange={(event) =>
+                        onAppearanceChange({
+                          newsShowSource: event.target.checked,
+                        })
+                      }
+                      className="h-4 w-4 rounded border border-custom-color-400 bg-white text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                    />
+                  </label>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      <span>Max items</span>
+                      <span>{appearance.newsMaxItems ?? 10}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={5}
+                      max={20}
+                      step={1}
+                      value={appearance.newsMaxItems ?? 10}
+                      onChange={(event) =>
+                        onAppearanceChange({
+                          newsMaxItems: Number(event.target.value),
+                        })
+                      }
+                      className="w-full accent-custom-color-500 dark:accent-custom-color-300"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      <span>Scroll speed</span>
+                      <span>{appearance.newsScrollSpeed ?? 50} px/s</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={20}
+                      max={100}
+                      step={10}
+                      value={appearance.newsScrollSpeed ?? 50}
+                      onChange={(event) =>
+                        onAppearanceChange({
+                          newsScrollSpeed: Number(event.target.value),
+                        })
+                      }
+                      className="w-full accent-custom-color-500 dark:accent-custom-color-300"
+                    />
                   </div>
                 </div>
               ) : null}

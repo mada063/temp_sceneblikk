@@ -5,6 +5,7 @@ import type { CellAppearance, PanelEntry } from "../../lib/layout-types";
 import { FREEFORM_COMPONENT_ID } from "../../editor/utils/grid";
 import { Clock } from "./Clock";
 import { Weather } from "./weather";
+import { News } from "./news";
 
 type ComponentRendererProps = {
   componentId: string;
@@ -36,6 +37,11 @@ export function ComponentRenderer({
   // Dedicated implementation for the weather component
   if (componentId === "weather") {
     return <Weather appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
+  }
+
+  // Dedicated implementation for the news component
+  if (componentId === "news") {
+    return <News appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
   }
 
   // Handle panels (freeform regions) that cycle through entries
