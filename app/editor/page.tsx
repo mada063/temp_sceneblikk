@@ -43,6 +43,10 @@ import {
   isAreaAvailable,
   parseKey,
   resolveRootKey,
+  findNeighboringPanels,
+  addConnection,
+  removeConnection,
+  getConnectionGroup,
 } from "./utils/grid";
 import { CanvasPreview } from "./components/CanvasPreview";
 import { GridSettingsPanel } from "./components/GridSettingsPanel";
@@ -58,6 +62,7 @@ import type {
   GridItem,
   ResizeHandle,
   ResizeState,
+  ConnectionState,
 } from "./types";
 
 export default function EditorPage() {
@@ -70,10 +75,13 @@ export default function EditorPage() {
     createEmptyGrid(DEFAULT_GRID_CONFIG.rows, DEFAULT_GRID_CONFIG.columns),
   );
   const [isHydrated, setHydrated] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [currentLayoutId, setCurrentLayoutId] = useState<string | null>(null);
   const [selectedCells, setSelectedCells] = useState<string[]>([]);
   const [resizeState, setResizeState] = useState<ResizeState>(null);
   const [drawState, setDrawState] = useState<DrawState | null>(null);
+  const [hoveredPanelKey, setHoveredPanelKey] = useState<string | null>(null);
+  const [connectionState, setConnectionState] = useState<ConnectionState>(null);
   const [screenSizeDraft, setScreenSizeDraft] = useState<string>(
     () => DEFAULT_GRID_CONFIG.screenInches.toString(),
   );
@@ -455,7 +463,227 @@ export default function EditorPage() {
   useEffect(() => {
     setResizeState(null);
     setDrawState(null);
+    setConnectionState(null);
   }, [config.columns, config.rows, config.orientation]);
+
+  // Handle connection creation
+  const handleStartConnection = useCallback(
+    (key: string) => (event: ReactPointerEvent<HTMLButtonElement>) => {
+      if (!event) {
+        return;
+      }
+      event.stopPropagation();
+      event.preventDefault();
+      const rootKey = resolveRootKey(key, cells);
+      const cell = cells[rootKey];
+      if (cell?.componentId !== FREEFORM_COMPONENT_ID) {
+        return;
+      }
+      
+      // Calculate border position from the button's position
+      const buttonRect = event.currentTarget.getBoundingClientRect();
+      const gridEl = gridRef.current;
+      if (!gridEl) {
+        return;
+      }
+      const gridRect = gridEl.getBoundingClientRect();
+      const borderX = buttonRect.left + buttonRect.width / 2 - gridRect.left;
+      const borderY = buttonRect.top + buttonRect.height / 2 - gridRect.top;
+      
+      console.log("Starting connection from", rootKey, "at border position:", { borderX, borderY });
+      
+      // Set pointer capture on the button to ensure we get all pointer events
+      if (event.currentTarget.setPointerCapture) {
+        event.currentTarget.setPointerCapture(event.pointerId);
+        console.log("Pointer capture set");
+      }
+      
+      setConnectionState({
+        fromKey: rootKey,
+        borderX,
+        borderY,
+        mouseX: event.clientX,
+        mouseY: event.clientY,
+      });
+    },
+    [cells, gridRef],
+  );
+
+  const handleCancelConnection = useCallback(() => {
+    setConnectionState(null);
+  }, []);
+
+  const handleCompleteConnection = useCallback(
+    (targetKey: string) => {
+      console.log("handleCompleteConnection called with targetKey:", targetKey);
+      if (!connectionState) {
+        console.log("No connection state, aborting");
+        return;
+      }
+      const fromRootKey = resolveRootKey(connectionState.fromKey, cells);
+      const targetRootKey = resolveRootKey(targetKey, cells);
+      console.log("From root key:", fromRootKey, "Target root key:", targetRootKey);
+      const fromCell = cells[fromRootKey];
+      const targetCell = cells[targetRootKey];
+
+      // Only connect panels (freeform components)
+      if (
+        fromCell?.componentId !== FREEFORM_COMPONENT_ID ||
+        targetCell?.componentId !== FREEFORM_COMPONENT_ID ||
+        fromRootKey === targetRootKey
+      ) {
+        console.log("Invalid connection:", {
+          fromComponentId: fromCell?.componentId,
+          targetComponentId: targetCell?.componentId,
+          sameKey: fromRootKey === targetRootKey,
+        });
+        setConnectionState(null);
+        return;
+      }
+
+      // Check if they are neighbors
+      const neighbors = findNeighboringPanels(fromRootKey, cells, config);
+      console.log("Neighbors of", fromRootKey, ":", neighbors);
+      if (!neighbors.includes(targetRootKey)) {
+        console.log("Not neighbors, aborting connection");
+        setConnectionState(null);
+        return;
+      }
+
+      // Add connection
+      console.log("Creating connection between", fromRootKey, "and", targetRootKey);
+      setConfig((prev) => {
+        const newConnections = addConnection(fromRootKey, targetRootKey, prev.connections);
+        console.log("New connections:", newConnections);
+        console.log("Connection group for", fromRootKey, ":", getConnectionGroup(fromRootKey, newConnections));
+        console.log("Connection group for", targetRootKey, ":", getConnectionGroup(targetRootKey, newConnections));
+        return {
+          ...prev,
+          connections: newConnections,
+        };
+      });
+      setConnectionState(null);
+      console.log("Connection completed successfully! Panels", fromRootKey, "and", targetRootKey, "are now connected.");
+    },
+    [connectionState, cells, config],
+  );
+
+  const handleRemoveConnection = useCallback(
+    (key: string) => {
+      const rootKey = resolveRootKey(key, cells);
+      setConfig((prev) => {
+        const newConnections = removeConnection(rootKey, prev.connections);
+        return {
+          ...prev,
+          connections: newConnections,
+        };
+      });
+    },
+    [cells],
+  );
+
+  const connectionStateRef = useRef(connectionState);
+  useEffect(() => {
+    connectionStateRef.current = connectionState;
+  }, [connectionState]);
+
+  // Track mouse position during connection
+  useEffect(() => {
+    if (!connectionState) {
+      return;
+    }
+
+    const handlePointerMove = (event: PointerEvent) => {
+      // Use ref to avoid dependency issues
+      const currentState = connectionStateRef.current;
+      if (!currentState) return;
+      
+      setConnectionState({
+        ...currentState,
+        mouseX: event.clientX,
+        mouseY: event.clientY,
+      });
+    };
+
+    const handlePointerCancel = () => {
+      console.log("Pointer canceled, canceling connection");
+      setConnectionState(null);
+    };
+
+    const handlePointerUp = (event: PointerEvent) => {
+      console.log("handlePointerUp called", { clientX: event.clientX, clientY: event.clientY });
+      const currentState = connectionStateRef.current;
+      if (!currentState) {
+        console.log("No connection state in pointer up");
+        return;
+      }
+      
+      // Release pointer capture
+      if (event.target instanceof HTMLElement && event.target.releasePointerCapture) {
+        try {
+          event.target.releasePointerCapture(event.pointerId);
+        } catch (e) {
+          // Ignore errors
+        }
+      }
+      
+      // Don't complete connection if clicking on the same button
+      const target = event.target as HTMLElement;
+      if (target.closest('button[aria-label="Connect panel"]')) {
+        console.log("Clicked on connection button, canceling");
+        setConnectionState(null);
+        return;
+      }
+      
+      // Prevent default to avoid triggering other handlers
+      event.preventDefault();
+      event.stopPropagation();
+      
+      // Use pointer capture to ensure we get the correct target
+      const element = document.elementFromPoint(event.clientX, event.clientY);
+      console.log("Element at point:", element, element?.tagName, element?.className);
+      if (!element) {
+        console.log("No element at point, canceling");
+        setConnectionState(null);
+        return;
+      }
+      
+      // Look for the cell element - might be nested
+      let targetEl = element.closest<HTMLElement>("[data-cell-key]");
+      console.log("Target element from closest:", targetEl, targetEl?.dataset.cellKey);
+      
+      // If not found, try looking at the parent or walking up the tree
+      if (!targetEl) {
+        let current: HTMLElement | null = element as HTMLElement;
+        let depth = 0;
+        while (current && !targetEl && depth < 10) {
+          targetEl = current.closest<HTMLElement>("[data-cell-key]");
+          current = current.parentElement;
+          depth++;
+        }
+        console.log("Target element after walking up:", targetEl, targetEl?.dataset.cellKey);
+      }
+      
+      const targetKey = targetEl?.dataset.cellKey;
+      if (targetKey) {
+        console.log("Found target key:", targetKey, "calling handleCompleteConnection");
+        handleCompleteConnection(targetKey);
+      } else {
+        console.log("No target key found, canceling connection");
+        setConnectionState(null);
+      }
+    };
+
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerCancel);
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerCancel);
+    };
+  }, [connectionState, handleCompleteConnection]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -494,10 +722,29 @@ export default function EditorPage() {
 
       setConfig(normalized);
       setCells(next);
+      
+      // Restore selected cells if they still exist in the grid
+      if (parsed.selectedCells && Array.isArray(parsed.selectedCells)) {
+        const validSelectedCells = parsed.selectedCells.filter((key) => {
+          const { row, column } = parseKey(key);
+          // Check if the cell key is valid and exists in the new grid
+          return (
+            row >= 0 &&
+            row < normalized.rows &&
+            column >= 0 &&
+            column < normalized.columns &&
+            next[key] !== undefined
+          );
+        });
+        if (validSelectedCells.length > 0) {
+          setSelectedCells(validSelectedCells);
+        }
+      }
     } catch (error) {
       console.warn("Unable to restore editor state", error);
     } finally {
       setHydrated(true);
+      setIsInitialLoad(false);
     }
   }, []);
 
@@ -505,9 +752,9 @@ export default function EditorPage() {
     if (!isHydrated || typeof window === "undefined") {
       return;
     }
-    const payload: PersistedLayoutState = { config, cells };
+    const payload: PersistedLayoutState = { config, cells, selectedCells };
     localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(payload));
-  }, [cells, config, isHydrated]);
+  }, [cells, config, selectedCells, isHydrated]);
 
   const geometry = useMemo<GridGeometry>(
     () =>
@@ -542,7 +789,13 @@ export default function EditorPage() {
     };
   }, [drawState, cells, config]);
 
+  // Only recreate grid when dimensions change, and skip during initial load
   useEffect(() => {
+    // Skip during initial load to avoid clobbering restored state
+    if (isInitialLoad || !isHydrated) {
+      return;
+    }
+    
     setCells((prev) => {
       const next = createEmptyGrid(config.rows, config.columns);
       const roots = extractRootComponents(prev);
@@ -552,8 +805,14 @@ export default function EditorPage() {
         if (row >= config.rows || column >= config.columns) {
           continue;
         }
-        const colSpan = Math.min(root.colSpan, config.columns - column);
-        const rowSpan = Math.min(root.rowSpan, config.rows - row);
+        // Only clamp if the panel would exceed the grid boundaries
+        // Preserve the original size if it fits within the new grid
+        const originalColSpan = root.colSpan ?? 1;
+        const originalRowSpan = root.rowSpan ?? 1;
+        const maxColSpan = config.columns - column;
+        const maxRowSpan = config.rows - row;
+        const colSpan = Math.min(originalColSpan, maxColSpan);
+        const rowSpan = Math.min(originalRowSpan, maxRowSpan);
         if (
           colSpan > 0 &&
           rowSpan > 0 &&
@@ -576,7 +835,8 @@ export default function EditorPage() {
 
       return next;
     });
-  }, [config]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.columns, config.rows, config.orientation, isInitialLoad, isHydrated]);
 
   useEffect(() => {
     setSelectedCells((prev) =>
@@ -759,7 +1019,7 @@ export default function EditorPage() {
       if (event.shiftKey) {
         return;
       }
-      if (resizeState || drawState) {
+      if (resizeState || drawState || connectionState) {
         return;
       }
       const rootKey = resolveRootKey(key, cells);
@@ -1318,6 +1578,12 @@ export default function EditorPage() {
               onDropOnCell={handleDropOnCell}
               onClearCell={clearCell}
               onStartResize={startResize}
+              hoveredPanelKey={hoveredPanelKey}
+              onHoverPanel={setHoveredPanelKey}
+              connectionState={connectionState}
+              onStartConnection={handleStartConnection}
+              onRemoveConnection={handleRemoveConnection}
+              cells={cells}
             />
             {isFreeformSelected ? (
               <PanelPlaybackPanel

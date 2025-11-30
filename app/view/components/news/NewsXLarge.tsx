@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { FiActivity } from "react-icons/fi";
-import type { NewsProps, NewsFeed, PanelSize } from "./types";
+import type { NewsProps, NewsFeed, NewsItem, PanelSize } from "./types";
 
 type NewsXLargeProps = NewsProps & {
   newsData: NewsFeed | null;
@@ -17,14 +17,33 @@ export function NewsXLarge({ appearance, newsData, loading, error, scrollSpeed =
   const primaryColor = appearance.textColor || "#ffffff";
   const tickerRef = useRef<HTMLDivElement>(null);
 
-  // Calculate font sizes based on panel dimensions
+  // Current date/time state
+  const [now, setNow] = useState<Date>(() => new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 60000); // Update every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  // Calculate font sizes based on panel dimensions - XLarge container
   const panelArea = (colSpan ?? 1) * (rowSpan ?? 1);
-  const titleFontSize = panelArea <= 24 ? "1rem" : "1.125rem"; // 16px or 18px
-  const descFontSize = "0.75rem"; // 12px
-  const dateFontSize = "0.625rem"; // 10px
-  const sourceFontSize = "0.625rem"; // 10px
+  const titleFontSize = panelArea <= 24 ? "1.125rem" : "1.25rem"; // 18px or 20px - largest size
+  const descFontSize = "0.875rem"; // 14px
+  const dateFontSize = "0.75rem"; // 12px
+  const sourceFontSize = "0.75rem"; // 12px
+  const dateTimeFontSize = "0.6875rem"; // 11px
 
   const itemsToShow = newsData?.items.slice(0, maxItems) || [];
+  
+  // Format date/time for display
+  const dateTimeString = now.toLocaleDateString("no-NO", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   if (loading) {
     return (
@@ -65,90 +84,101 @@ export function NewsXLarge({ appearance, newsData, loading, error, scrollSpeed =
     );
   }
 
+  // Create multiple duplicates for seamless scrolling (4 copies total) with gaps between copies
+  const createDuplicatedItemsWithGaps = () => {
+    if (itemsToShow.length <= 1) return itemsToShow;
+    
+    const copies = [];
+    for (let i = 0; i < 4; i++) {
+      copies.push(...itemsToShow.map((item, idx) => ({ ...item, copyIndex: i, originalIndex: idx })));
+      // Add gap spacer between copies (except after last copy)
+      if (i < 3) {
+        copies.push({ isSpacer: true, copyIndex: i });
+      }
+    }
+    return copies;
+  };
+
+  const duplicatedItems = createDuplicatedItemsWithGaps();
+  const itemGap = "2.5rem"; // gap-10 = 2.5rem
+
   return (
-    <div className="flex h-full w-full flex-col gap-4 px-6 py-4">
-      {appearance.newsShowSource && (
+    <div className="flex h-full w-full flex-col gap-4 px-6 py-4 relative">
+      <div className="flex items-start justify-between gap-2">
+        {newsData && (
+          <div
+            className="font-medium uppercase tracking-wider opacity-70 px-1"
+            style={{ color: primaryColor, fontSize: sourceFontSize }}
+          >
+            {newsData.title}
+          </div>
+        )}
         <div
-          className="font-medium uppercase tracking-wider"
-          style={{ color: `${primaryColor}AA`, fontSize: sourceFontSize }}
+          className="opacity-60 whitespace-nowrap"
+          style={{ color: primaryColor, fontSize: dateTimeFontSize }}
         >
-          {newsData.title}
+          {dateTimeString}
         </div>
-      )}
-      <div className="flex-1 min-h-0 overflow-hidden">
+      </div>
+      <div className="flex-1 min-h-0 overflow-hidden relative">
         <div
           ref={tickerRef}
-          className={`flex flex-col gap-10 h-full ${itemsToShow.length > 1 ? "news-scroll-xlarge" : ""}`}
+          className={`flex flex-col ${itemsToShow.length > 1 ? "news-scroll-xlarge" : ""}`}
+          style={{ gap: itemGap }}
         >
-          {itemsToShow.map((item, idx) => (
-            <div
-              key={`${item.link}-${idx}`}
-              className="flex-shrink-0"
-            >
+          {duplicatedItems.map((item, idx) => {
+            if ('isSpacer' in item && item.isSpacer) {
+              // Gap spacer between copy sets
+              return (
+                <div
+                  key={`spacer-${item.copyIndex}`}
+                  className="flex-shrink-0"
+                  style={{ height: itemGap }}
+                />
+              );
+            }
+            const newsItem = item as NewsItem & { copyIndex: number; originalIndex: number };
+            const isLastInCopy = newsItem.originalIndex === itemsToShow.length - 1;
+            return (
               <div
-                className="font-semibold line-clamp-2"
-                style={{ color: primaryColor, fontSize: titleFontSize }}
+                key={`${newsItem.link}-${newsItem.copyIndex}-${newsItem.originalIndex}`}
+                className="flex-shrink-0 flex flex-col gap-2 border-b border-opacity-30"
+                style={{ 
+                  borderColor: `${primaryColor}50`,
+                  borderWidth: isLastInCopy ? 0 : undefined,
+                  paddingBottom: "2rem"
+                }}
               >
-                {item.title}
+                <div
+                  className="font-semibold line-clamp-2"
+                  style={{ color: primaryColor, fontSize: titleFontSize }}
+                >
+                  {newsItem.title}
+                </div>
+                {newsItem.description && (
+                  <div
+                    className="line-clamp-2 opacity-85"
+                    style={{ color: primaryColor, fontSize: descFontSize }}
+                  >
+                    {newsItem.description}
+                  </div>
+                )}
+                {newsItem.pubDate && (
+                  <div
+                    className="opacity-70"
+                    style={{ color: primaryColor, fontSize: dateFontSize }}
+                  >
+                    {new Date(newsItem.pubDate).toLocaleDateString("no-NO", {
+                      day: "numeric",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </div>
+                )}
               </div>
-              {item.description && (
-                <div
-                  className="mt-2 line-clamp-2"
-                  style={{ color: `${primaryColor}CC`, fontSize: descFontSize }}
-                >
-                  {item.description.replace(/<[^>]*>/g, "")} {/* Strip HTML tags */}
-                </div>
-              )}
-              {item.pubDate && (
-                <div
-                  className="mt-1"
-                  style={{ color: `${primaryColor}99`, fontSize: dateFontSize }}
-                >
-                  {new Date(item.pubDate).toLocaleDateString("no-NO", {
-                    day: "numeric",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </div>
-              )}
-            </div>
-          ))}
-          {/* Duplicate items for seamless loop */}
-          {itemsToShow.length > 1 && itemsToShow.map((item, idx) => (
-            <div
-              key={`${item.link}-${idx}-dup`}
-              className="flex-shrink-0"
-            >
-              <div
-                className="font-semibold line-clamp-2"
-                style={{ color: primaryColor, fontSize: titleFontSize }}
-              >
-                {item.title}
-              </div>
-              {item.description && (
-                <div
-                  className="mt-2 line-clamp-2"
-                  style={{ color: `${primaryColor}CC`, fontSize: descFontSize }}
-                >
-                  {item.description.replace(/<[^>]*>/g, "")}
-                </div>
-              )}
-              {item.pubDate && (
-                <div
-                  className="mt-1"
-                  style={{ color: `${primaryColor}99`, fontSize: dateFontSize }}
-                >
-                  {new Date(item.pubDate).toLocaleDateString("no-NO", {
-                    day: "numeric",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

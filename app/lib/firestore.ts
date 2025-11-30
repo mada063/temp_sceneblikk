@@ -6,11 +6,13 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
+  addDoc,
   query,
   where,
   orderBy,
   serverTimestamp,
   onSnapshot,
+  Timestamp,
   type Firestore,
 } from "firebase/firestore";
 import { db } from "./firebase";
@@ -209,5 +211,249 @@ export function subscribeToUserDevices(
     });
     callback(devices);
   });
+}
+
+// Engagement tracking types
+export type ViewSession = {
+  id: string;
+  userId: string;
+  deviceId: string;
+  deviceName: string;
+  layoutId: string | null;
+  layoutName: string | null;
+  startTime: Date;
+  endTime: Date | null;
+  durationSeconds: number;
+  isFullscreen: boolean;
+};
+
+export type LayoutViewEvent = {
+  id: string;
+  userId: string;
+  deviceId: string;
+  layoutId: string;
+  layoutName: string;
+  timestamp: Date;
+  durationSeconds: number;
+};
+
+export type EngagementAnalytics = {
+  totalViewTime: number; // in seconds
+  totalSessions: number;
+  averageSessionDuration: number; // in seconds
+  peakHour: number; // 0-23
+  layoutViews: Array<{
+    layoutId: string;
+    layoutName: string;
+    viewCount: number;
+    totalViewTime: number;
+  }>;
+  hourlyDistribution: number[]; // 24 hours
+  deviceUptime: Array<{
+    deviceId: string;
+    deviceName: string;
+    uptimePercentage: number;
+    totalUptime: number;
+  }>;
+};
+
+// Engagement tracking operations
+export async function startViewSession(
+  userId: string,
+  deviceId: string,
+  deviceName: string,
+  layoutId: string | null,
+  layoutName: string | null,
+  isFullscreen: boolean,
+): Promise<string> {
+  const sessionsRef = collection(db, "viewSessions");
+  const sessionDoc = doc(sessionsRef);
+  
+  await setDoc(sessionDoc, {
+    userId,
+    deviceId,
+    deviceName,
+    layoutId,
+    layoutName,
+    startTime: serverTimestamp(),
+    endTime: null,
+    durationSeconds: 0,
+    isFullscreen,
+  });
+  
+  return sessionDoc.id;
+}
+
+export async function endViewSession(sessionId: string): Promise<void> {
+  const sessionDoc = doc(db, "viewSessions", sessionId);
+  const snapshot = await getDoc(sessionDoc);
+  
+  if (!snapshot.exists()) {
+    return;
+  }
+  
+  const data = snapshot.data();
+  const startTime = data.startTime?.toDate() ?? new Date();
+  const endTime = new Date();
+  const durationSeconds = Math.floor((endTime.getTime() - startTime.getTime()) / 1000);
+  
+  await updateDoc(sessionDoc, {
+    endTime: serverTimestamp(),
+    durationSeconds,
+  });
+  
+  // Also record a layout view event if there's a layout
+  if (data.layoutId && data.layoutName) {
+    await recordLayoutView(
+      data.userId,
+      data.deviceId,
+      data.layoutId,
+      data.layoutName,
+      durationSeconds,
+    );
+  }
+}
+
+export async function recordLayoutView(
+  userId: string,
+  deviceId: string,
+  layoutId: string,
+  layoutName: string,
+  durationSeconds: number,
+): Promise<void> {
+  const viewsRef = collection(db, "layoutViews");
+  await addDoc(viewsRef, {
+    userId,
+    deviceId,
+    layoutId,
+    layoutName,
+    timestamp: serverTimestamp(),
+    durationSeconds,
+  });
+}
+
+export async function getEngagementAnalytics(
+  userId: string,
+  days: number = 7,
+): Promise<EngagementAnalytics> {
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - days);
+  const cutoffTimestamp = Timestamp.fromDate(cutoffDate);
+  
+  // Get view sessions
+  const sessionsRef = collection(db, "viewSessions");
+  const sessionsQuery = query(
+    sessionsRef,
+    where("userId", "==", userId),
+    where("startTime", ">=", cutoffTimestamp),
+    orderBy("startTime", "desc"),
+  );
+  const sessionsSnapshot = await getDocs(sessionsQuery);
+  
+  // Get layout views
+  const viewsRef = collection(db, "layoutViews");
+  const viewsQuery = query(
+    viewsRef,
+    where("userId", "==", userId),
+    where("timestamp", ">=", cutoffTimestamp),
+    orderBy("timestamp", "desc"),
+  );
+  const viewsSnapshot = await getDocs(viewsQuery);
+  
+  // Process sessions
+  const sessions = sessionsSnapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      durationSeconds: data.durationSeconds ?? 0,
+      startTime: data.startTime?.toDate() ?? new Date(),
+      layoutId: data.layoutId ?? null,
+      layoutName: data.layoutName ?? null,
+      deviceId: data.deviceId,
+    };
+  });
+  
+  // Process layout views
+  const layoutViews = viewsSnapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      layoutId: data.layoutId,
+      layoutName: data.layoutName,
+      durationSeconds: data.durationSeconds ?? 0,
+      timestamp: data.timestamp?.toDate() ?? new Date(),
+    };
+  });
+  
+  // Calculate metrics
+  const totalViewTime = sessions.reduce((sum, s) => sum + s.durationSeconds, 0);
+  const totalSessions = sessions.length;
+  const averageSessionDuration = totalSessions > 0 ? totalViewTime / totalSessions : 0;
+  
+  // Hourly distribution
+  const hourlyDistribution = new Array(24).fill(0);
+  sessions.forEach((session) => {
+    const hour = session.startTime.getHours();
+    hourlyDistribution[hour] += session.durationSeconds;
+  });
+  const peakHour = hourlyDistribution.indexOf(Math.max(...hourlyDistribution));
+  
+  // Layout views aggregation
+  const layoutMap = new Map<string, { name: string; count: number; totalTime: number }>();
+  layoutViews.forEach((view) => {
+    const existing = layoutMap.get(view.layoutId) || { name: view.layoutName, count: 0, totalTime: 0 };
+    layoutMap.set(view.layoutId, {
+      name: view.layoutName,
+      count: existing.count + 1,
+      totalTime: existing.totalTime + view.durationSeconds,
+    });
+  });
+  
+  const layoutViewsArray = Array.from(layoutMap.entries())
+    .map(([layoutId, data]) => ({
+      layoutId,
+      layoutName: data.name,
+      viewCount: data.count,
+      totalViewTime: data.totalTime,
+    }))
+    .sort((a, b) => b.viewCount - a.viewCount);
+  
+  // Device uptime (based on sessions)
+  // First, get device names from devices collection
+  const devicesRef = collection(db, "devices");
+  const devicesQuery = query(devicesRef, where("userId", "==", userId));
+  const devicesSnapshot = await getDocs(devicesQuery);
+  const deviceNames = new Map<string, string>();
+  devicesSnapshot.docs.forEach((doc) => {
+    const data = doc.data();
+    deviceNames.set(doc.id, data.deviceName || `Device ${doc.id.substring(0, 8)}`);
+  });
+  
+  const deviceMap = new Map<string, { totalTime: number; sessionCount: number }>();
+  sessions.forEach((session) => {
+    const existing = deviceMap.get(session.deviceId) || { totalTime: 0, sessionCount: 0 };
+    deviceMap.set(session.deviceId, {
+      totalTime: existing.totalTime + session.durationSeconds,
+      sessionCount: existing.sessionCount + 1,
+    });
+  });
+  
+  // Calculate uptime percentage (assuming 24/7 operation, so uptime = total time / (days * 24 * 3600))
+  const totalPossibleTime = days * 24 * 3600;
+  const deviceUptime = Array.from(deviceMap.entries()).map(([deviceId, data]) => ({
+    deviceId,
+    deviceName: deviceNames.get(deviceId) || `Device ${deviceId.substring(0, 8)}`,
+    uptimePercentage: totalPossibleTime > 0 ? (data.totalTime / totalPossibleTime) * 100 : 0,
+    totalUptime: data.totalTime,
+  }));
+  
+  return {
+    totalViewTime,
+    totalSessions,
+    averageSessionDuration,
+    peakHour,
+    layoutViews: layoutViewsArray,
+    hourlyDistribution,
+    deviceUptime,
+  };
 }
 

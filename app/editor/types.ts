@@ -45,3 +45,11 @@ export type GridItem = {
   cell: GridCell;
 };
 
+export type ConnectionState = {
+  fromKey: string;
+  borderX: number;
+  borderY: number;
+  mouseX: number;
+  mouseY: number;
+} | null;
+

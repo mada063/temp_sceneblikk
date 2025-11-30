@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { FiActivity } from "react-icons/fi";
 import type { NewsProps, NewsFeed, PanelSize } from "./types";
 
@@ -16,11 +16,30 @@ export function NewsTiny({ appearance, newsData, loading, error, scrollSpeed = 5
   const primaryColor = appearance.textColor || "#ffffff";
   const tickerRef = useRef<HTMLDivElement>(null);
 
-  // Calculate font size based on panel dimensions
+  // Current date/time state
+  const [now, setNow] = useState<Date>(() => new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 60000); // Update every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  // Calculate font size based on panel dimensions - Tiny container
   const panelArea = (colSpan ?? 1) * (rowSpan ?? 1);
-  const fontSize = panelArea <= 1 ? "0.5625rem" : "0.625rem"; // 9px or 10px
+  const fontSize = panelArea <= 1 ? "0.5rem" : "0.5625rem"; // 8px or 9px - smallest for tiny containers
+  const dateTimeFontSize = "0.375rem"; // 6px - very small for tiny
 
   const itemsToShow = newsData?.items.slice(0, 3) || [];
+  
+  // Format date/time for display
+  const dateTimeString = now.toLocaleDateString("no-NO", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   if (loading) {
     return (
@@ -62,16 +81,39 @@ export function NewsTiny({ appearance, newsData, loading, error, scrollSpeed = 5
   }
 
   return (
-    <div className="flex h-full w-full items-center overflow-hidden px-2">
-      <div
-        ref={tickerRef}
-        className={`flex items-center gap-16 whitespace-nowrap ${itemsToShow.length > 1 ? "news-scroll-horizontal-tiny" : ""}`}
-      >
+    <div className="flex h-full w-full flex-col justify-center gap-0.5 px-2 overflow-hidden relative">
+      <div className="flex items-start justify-between gap-1">
+        {newsData && (
+          <div
+            className="font-medium uppercase tracking-wider opacity-70 px-1"
+            style={{ color: primaryColor, fontSize: "0.4375rem" }} // 7px - very small for tiny
+          >
+            {newsData.title}
+          </div>
+        )}
+        <div
+          className="opacity-60 whitespace-nowrap"
+          style={{ color: primaryColor, fontSize: dateTimeFontSize }}
+        >
+          {dateTimeString}
+        </div>
+      </div>
+      <div className="flex h-full items-center overflow-hidden">
+        <div
+          ref={tickerRef}
+          className={`flex items-center gap-12 whitespace-nowrap ${itemsToShow.length > 1 ? "news-scroll-horizontal-tiny" : ""}`}
+        >
         {itemsToShow.map((item, idx) => (
           <div
             key={`${item.link}-${idx}`}
-            className="flex-shrink-0"
+            className="flex items-center gap-3 flex-shrink-0"
           >
+            {idx > 0 && (
+              <div
+                className="h-3 opacity-30"
+                style={{ backgroundColor: primaryColor, width: "1px" }}
+              />
+            )}
             <div
               className="font-semibold"
               style={{ color: primaryColor, fontSize }}
@@ -84,8 +126,12 @@ export function NewsTiny({ appearance, newsData, loading, error, scrollSpeed = 5
         {itemsToShow.length > 1 && itemsToShow.map((item, idx) => (
           <div
             key={`${item.link}-${idx}-dup`}
-            className="flex-shrink-0"
+            className="flex items-center gap-3 flex-shrink-0"
           >
+            <div
+              className="h-3 opacity-30"
+              style={{ backgroundColor: primaryColor, width: "1px" }}
+            />
             <div
               className="font-semibold"
               style={{ color: primaryColor, fontSize }}
@@ -94,6 +140,7 @@ export function NewsTiny({ appearance, newsData, loading, error, scrollSpeed = 5
             </div>
           </div>
         ))}
+        </div>
       </div>
     </div>
   );

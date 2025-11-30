@@ -1,10 +1,15 @@
 "use client";
 
-import type { ChangeEvent } from "react";
+import { useState, useEffect, useRef, type ChangeEvent } from "react";
 
-import { FiTrash2 } from "react-icons/fi";
+import { FiTrash2, FiSearch } from "react-icons/fi";
 import timezones from "../../lib/timezones.json";
 import weatherLocations from "../../lib/weather-locations.json";
+import transportLocations from "../../lib/transport-locations.json";
+import { searchStopPlaces } from "../../view/components/transport/utils";
+import type { StopPlace } from "../../view/components/transport/types";
+import { AnnouncementEditor } from "./AnnouncementEditor";
+import { ChartsEditor } from "./ChartsEditor";
 
 import type {
   CellAppearance,
@@ -30,6 +35,168 @@ type SelectedComponentPanelProps = {
   allHaveSameComponent?: boolean;
   allSelectedCellsData?: Array<{ key: string; cell: GridCell }>;
 };
+
+/**
+ * Helper component for searchable stop place selector
+ */
+function StopPlaceSelector({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (stopPlaceId: string) => void;
+}) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<StopPlace[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Extract numeric ID from NSR:StopPlace:XXX format for display
+  const extractNumericId = (id: string): string => {
+    const match = id.match(/NSR:StopPlace:(\d+)/);
+    return match ? match[1] : id;
+  };
+
+  // Handle search with debouncing
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (searchQuery.trim().length < 2) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const results = await searchStopPlaces(searchQuery.trim(), 8);
+        setSearchResults(results);
+      } catch (error) {
+        console.error("Error searching stop places:", error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300); // 300ms debounce
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchQuery]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSelectStopPlace = (stopPlace: StopPlace) => {
+    // Store just the numeric ID (e.g., "32214") for simplicity
+    // The utils will convert it to NSR:StopPlace:32214 format when needed
+    const idToStore = extractNumericId(stopPlace.id);
+    
+    onChange(idToStore);
+    setSearchQuery("");
+    setSearchResults([]);
+    setShowDropdown(false);
+  };
+
+  // Display value: show search query if active, otherwise show stored value
+  const displayValue = searchQuery !== "" ? searchQuery : (value || "");
+
+  return (
+    <div ref={containerRef} className="relative">
+      <div className="relative">
+        <input
+          type="text"
+          value={displayValue}
+          onChange={(event) => {
+            const newValue = event.target.value;
+            setSearchQuery(newValue);
+            setShowDropdown(true);
+            // Also update the value directly if user is typing
+            onChange(newValue.trim());
+          }}
+          onFocus={() => {
+            // Clear search query on focus to show current value and allow searching
+            if (!searchQuery) {
+              setSearchQuery("");
+            }
+            if (searchResults.length > 0 || searchQuery.length >= 2) {
+              setShowDropdown(true);
+            }
+          }}
+          onBlur={() => {
+            // Don't hide dropdown immediately to allow clicking on results
+            setTimeout(() => setShowDropdown(false), 200);
+          }}
+          placeholder="Search stop place or enter ID (e.g., 32214)"
+          className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 pr-10 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
+        />
+        <FiSearch className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-custom-color-400 dark:text-custom-color-500" />
+      </div>
+      
+      {showDropdown && (searchResults.length > 0 || isSearching) && (
+        <div className="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-custom-color-300/50 bg-white shadow-lg dark:border-white/10 dark:bg-custom-color-800">
+          {isSearching ? (
+            <div className="px-4 py-3 text-sm text-custom-color-600 dark:text-custom-color-400">
+              Searching...
+            </div>
+          ) : searchResults.length === 0 ? (
+            <div className="px-4 py-3 text-sm text-custom-color-600 dark:text-custom-color-400">
+              No results found. You can enter a stop place ID directly (e.g., 32214).
+            </div>
+          ) : (
+            searchResults.map((stopPlace) => (
+              <button
+                key={stopPlace.id}
+                type="button"
+                onClick={() => handleSelectStopPlace(stopPlace)}
+                className="w-full px-4 py-2 text-left text-sm text-custom-color-800 hover:bg-custom-color-100 dark:text-custom-color-50 dark:hover:bg-custom-color-700"
+              >
+                <div className="font-medium">{stopPlace.name}</div>
+                <div className="text-xs text-custom-color-500 dark:text-custom-color-400">
+                  ID: {extractNumericId(stopPlace.id)}
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      )}
+      
+      {value && !searchQuery && (
+        <p className="mt-1 text-xs text-custom-color-500 dark:text-custom-color-400">
+          Stop place ID: {value}
+          <span className="ml-2 text-[10px] opacity-70">
+            (from{" "}
+            <a
+              href="https://stoppested.entur.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-custom-color-600 dark:hover:text-custom-color-300"
+            >
+              stoppested.entur.org
+            </a>
+            )
+          </span>
+        </p>
+      )}
+    </div>
+  );
+}
 
 export function SelectedComponentPanel({
   selectionCount,
@@ -112,6 +279,51 @@ export function SelectedComponentPanel({
       (entry) => entry.componentId === "news",
     );
   const isNews = isDirectNews || hasNewsInPanel;
+
+  const isDirectAnnouncement =
+    canShowComponentOptions && effectiveComponentId === "announcement";
+  const hasAnnouncementInPanel =
+    (isFreeformSelected || (componentId === "freeform-region" && allHaveSameComponent)) &&
+    !!selectedCellData?.panelEntries?.some(
+      (entry) => entry.componentId === "announcement",
+    );
+  const isAnnouncement = isDirectAnnouncement || hasAnnouncementInPanel;
+
+  const isDirectBrand =
+    canShowComponentOptions && effectiveComponentId === "brand";
+  const hasBrandInPanel =
+    (isFreeformSelected || (componentId === "freeform-region" && allHaveSameComponent)) &&
+    !!selectedCellData?.panelEntries?.some(
+      (entry) => entry.componentId === "brand",
+    );
+  const isBrand = isDirectBrand || hasBrandInPanel;
+
+  const isDirectTransport =
+    canShowComponentOptions && effectiveComponentId === "transport";
+  const hasTransportInPanel =
+    (isFreeformSelected || (componentId === "freeform-region" && allHaveSameComponent)) &&
+    !!selectedCellData?.panelEntries?.some(
+      (entry) => entry.componentId === "transport",
+    );
+  const isTransport = isDirectTransport || hasTransportInPanel;
+
+  const isDirectMedia =
+    canShowComponentOptions && effectiveComponentId === "media";
+  const hasMediaInPanel =
+    (isFreeformSelected || (componentId === "freeform-region" && allHaveSameComponent)) &&
+    !!selectedCellData?.panelEntries?.some(
+      (entry) => entry.componentId === "media",
+    );
+  const isMedia = isDirectMedia || hasMediaInPanel;
+
+  const isDirectCharts =
+    canShowComponentOptions && effectiveComponentId === "charts";
+  const hasChartsInPanel =
+    (isFreeformSelected || (componentId === "freeform-region" && allHaveSameComponent)) &&
+    !!selectedCellData?.panelEntries?.some(
+      (entry) => entry.componentId === "charts",
+    );
+  const isCharts = isDirectCharts || hasChartsInPanel;
   
   // Check if panel is full screen (takes up entire grid)
   const isFullScreen = isSingleSelection && selectedCellData && 
@@ -164,7 +376,7 @@ export function SelectedComponentPanel({
                 type="number"
                 min={1}
                 max={widthLimit}
-                value={selectedCellData.colSpan ?? 1}
+                value={selectedCellData?.colSpan ?? 1}
                 onChange={onSpanChange("colSpan")}
                 disabled={!isSingleSelection}
                 className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
@@ -178,7 +390,7 @@ export function SelectedComponentPanel({
                 type="number"
                 min={1}
                 max={heightLimit}
-                value={selectedCellData.rowSpan ?? 1}
+                value={selectedCellData?.rowSpan ?? 1}
                 onChange={onSpanChange("rowSpan")}
                 disabled={!isSingleSelection}
                 className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
@@ -720,6 +932,343 @@ export function SelectedComponentPanel({
                       className="w-full accent-custom-color-500 dark:accent-custom-color-300"
                     />
                   </div>
+                </div>
+              ) : null}
+              {isAnnouncement ? (
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    Announcement options
+                  </p>
+                  <label className="space-y-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Announcement text
+                    </span>
+                    <AnnouncementEditor
+                      value={appearance.announcementText ?? ""}
+                      onChange={(value) =>
+                        onAppearanceChange({
+                          announcementText: value,
+                        })
+                      }
+                      placeholder="Enter announcement text..."
+                    />
+                  </label>
+                </div>
+              ) : null}
+              {isBrand ? (
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    Branding options
+                  </p>
+                  <label className="space-y-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Logo URL
+                    </span>
+                    <input
+                      type="url"
+                      value={appearance.brandingLogoUrl ?? ""}
+                      onChange={(event) =>
+                        onAppearanceChange({
+                          brandingLogoUrl: event.target.value,
+                        })
+                      }
+                      placeholder="https://example.com/logo.png"
+                      className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
+                    />
+                  </label>
+                  <label className="space-y-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Branding text
+                    </span>
+                    <input
+                      type="text"
+                      value={appearance.brandingText ?? ""}
+                      onChange={(event) =>
+                        onAppearanceChange({
+                          brandingText: event.target.value,
+                        })
+                      }
+                      placeholder="Company name or tagline"
+                      className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
+                    />
+                  </label>
+                </div>
+              ) : null}
+              {isTransport ? (
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    Transport options
+                  </p>
+                  <label className="space-y-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Stop place ID
+                    </span>
+                    <StopPlaceSelector
+                      value={appearance.transportStopPlace ?? "Oslo S"}
+                      onChange={(stopPlaceId) =>
+                        onAppearanceChange({
+                          transportStopPlace: stopPlaceId,
+                        })
+                      }
+                    />
+                  </label>
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Time format
+                    </span>
+                    <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      <label className="inline-flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name="transport-time-format"
+                          value="24h"
+                          checked={(appearance.transportTimeFormat ?? "24h") === "24h"}
+                          onChange={() =>
+                            onAppearanceChange({ transportTimeFormat: "24h" })
+                          }
+                          className="h-3.5 w-3.5 border border-custom-color-400 text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                        />
+                        <span>24H</span>
+                      </label>
+                      <label className="inline-flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name="transport-time-format"
+                          value="12h"
+                          checked={appearance.transportTimeFormat === "12h"}
+                          onChange={() =>
+                            onAppearanceChange({ transportTimeFormat: "12h" })
+                          }
+                          className="h-3.5 w-3.5 border border-custom-color-400 text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                        />
+                        <span>12H</span>
+                      </label>
+                    </div>
+                  </label>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      <span>Max departures</span>
+                      <span>{appearance.transportMaxDepartures ?? 10}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={3}
+                      max={20}
+                      step={1}
+                      value={appearance.transportMaxDepartures ?? 10}
+                      onChange={(event) =>
+                        onAppearanceChange({
+                          transportMaxDepartures: Number(event.target.value),
+                        })
+                      }
+                      className="w-full accent-custom-color-500 dark:accent-custom-color-300"
+                    />
+                  </div>
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Badge color
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={appearance.transportBadgeColor || appearance.textColor || "#ffffff"}
+                        onChange={(event) =>
+                          onAppearanceChange({
+                            transportBadgeColor: event.target.value,
+                          })
+                        }
+                        className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm"
+                      />
+                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+                        {(appearance.transportBadgeColor || appearance.textColor || "#ffffff").toUpperCase()}
+                      </span>
+                    </div>
+                  </label>
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Badge border color
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={appearance.transportBadgeBorder || appearance.textColor || "#ffffff"}
+                        onChange={(event) =>
+                          onAppearanceChange({
+                            transportBadgeBorder: event.target.value,
+                          })
+                        }
+                        className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm"
+                      />
+                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+                        {(appearance.transportBadgeBorder || appearance.textColor || "#ffffff").toUpperCase()}
+                      </span>
+                    </div>
+                  </label>
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Badge text color
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={appearance.transportBadgeTextColor || "#000000"}
+                        onChange={(event) =>
+                          onAppearanceChange({
+                            transportBadgeTextColor: event.target.value,
+                          })
+                        }
+                        className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm"
+                      />
+                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+                        {(appearance.transportBadgeTextColor || "#000000").toUpperCase()}
+                      </span>
+                    </div>
+                  </label>
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Delay text color
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={appearance.transportDelayColor || "#ef4444"}
+                        onChange={(event) =>
+                          onAppearanceChange({
+                            transportDelayColor: event.target.value,
+                          })
+                        }
+                        className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm"
+                      />
+                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+                        {(appearance.transportDelayColor || "#ef4444").toUpperCase()}
+                      </span>
+                    </div>
+                  </label>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      <span>Badge roundedness</span>
+                      <span>{appearance.transportBadgeRadius ?? appearance.borderRadius ?? 8}px</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={30}
+                      step={1}
+                      value={appearance.transportBadgeRadius ?? appearance.borderRadius ?? 8}
+                      onChange={(event) =>
+                        onAppearanceChange({
+                          transportBadgeRadius: Number(event.target.value),
+                        })
+                      }
+                      className="w-full accent-custom-color-500 dark:accent-custom-color-300"
+                    />
+                  </div>
+                </div>
+              ) : null}
+              {isMedia ? (
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    Media options
+                  </p>
+                  <div className="space-y-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Media type
+                    </span>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="media-type"
+                          value="image"
+                          checked={appearance.mediaType === "image"}
+                          onChange={() =>
+                            onAppearanceChange({ mediaType: "image" })
+                          }
+                          className="h-3.5 w-3.5 border border-custom-color-400 text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                        />
+                        <span>Image</span>
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="media-type"
+                          value="video"
+                          checked={appearance.mediaType === "video"}
+                          onChange={() =>
+                            onAppearanceChange({ mediaType: "video" })
+                          }
+                          className="h-3.5 w-3.5 border border-custom-color-400 text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                        />
+                        <span>Video</span>
+                      </label>
+                    </div>
+                  </div>
+                  <label className="space-y-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Media URLs
+                    </span>
+                    <textarea
+                      value={appearance.mediaUrls ?? ""}
+                      onChange={(event) =>
+                        onAppearanceChange({
+                          mediaUrls: event.target.value,
+                        })
+                      }
+                      placeholder="https://example.com/image1.jpg https://example.com/image2.jpg"
+                      rows={4}
+                      className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
+                    />
+                    <p className="text-[10px] text-custom-color-500 dark:text-custom-color-400">
+                      Enter URLs separated by commas or spaces. One per line also works.
+                    </p>
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={appearance.mediaAutoPlay ?? true}
+                        onChange={(event) =>
+                          onAppearanceChange({
+                            mediaAutoPlay: event.target.checked,
+                          })
+                        }
+                        className="h-3.5 w-3.5 border border-custom-color-400 text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                      />
+                      <span>Auto-play carousel</span>
+                    </label>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      <span>Transition duration</span>
+                      <span>{appearance.mediaTransitionDuration ?? 5}s</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={1}
+                      max={30}
+                      step={1}
+                      value={appearance.mediaTransitionDuration ?? 5}
+                      onChange={(event) =>
+                        onAppearanceChange({
+                          mediaTransitionDuration: Number(event.target.value),
+                        })
+                      }
+                      className="w-full accent-custom-color-500 dark:accent-custom-color-300"
+                    />
+                  </div>
+                </div>
+              ) : null}
+              {isCharts ? (
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    Chart options
+                  </p>
+                  <ChartsEditor
+                    value={appearance.chartsConfig ?? ""}
+                    onChange={(value) =>
+                      onAppearanceChange({ chartsConfig: value })
+                    }
+                  />
                 </div>
               ) : null}
             </div>

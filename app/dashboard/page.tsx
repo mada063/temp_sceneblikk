@@ -13,7 +13,7 @@ import {
   FiPlusCircle,
 } from "react-icons/fi";
 import { useAuth } from "../lib/auth-context";
-import { subscribeToUserDevices, getUserLayouts, type DeviceStatus, type SavedLayout } from "../lib/firestore";
+import { subscribeToUserDevices, getUserLayouts, getEngagementAnalytics, type DeviceStatus, type SavedLayout, type EngagementAnalytics } from "../lib/firestore";
 
 type RecentEdit = {
   id: string;
@@ -22,12 +22,13 @@ type RecentEdit = {
   timestamp: string;
 };
 
-const chartData = [34, 64, 49, 92, 76, 88, 120, 105, 140, 125, 160, 182];
-const playbackHealth = [
-  { title: "Live playback", value: 92, accent: "from-custom-color-400 to-custom-color-300" },
-  { title: "Pending sync", value: 6, accent: "from-amber-200/90 to-amber-400/60" },
-  { title: "Alerts", value: 2, accent: "from-rose-200/90 to-rose-400/60" },
-];
+function formatDuration(seconds: number): string {
+  if (seconds < 60) return `${Math.round(seconds)}s`;
+  if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.round((seconds % 3600) / 60);
+  return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+}
 
 const statusStyles: Record<string, string> = {
   online: "bg-emerald-400/20 text-emerald-200 border border-emerald-400/40",
@@ -64,6 +65,9 @@ export default function DashboardPage() {
   const [devices, setDevices] = useState<DeviceStatus[]>([]);
   const [recentEdits, setRecentEdits] = useState<RecentEdit[]>([]);
   const [showChangelog, setShowChangelog] = useState(false);
+  const [analytics, setAnalytics] = useState<EngagementAnalytics | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState<7 | 30>(7);
 
   useEffect(() => {
     if (!user) return;
@@ -85,12 +89,38 @@ export default function DashboardPage() {
       );
     });
 
+    // Load engagement analytics
+    setAnalyticsLoading(true);
+    getEngagementAnalytics(user.uid, timeRange)
+      .then((data) => {
+        setAnalytics(data);
+        setAnalyticsLoading(false);
+      })
+      .catch((error) => {
+        console.error("Failed to load analytics:", error);
+        setAnalyticsLoading(false);
+      });
+
     return () => unsubscribe();
-  }, [user]);
+  }, [user, timeRange]);
+
+  // Calculate chart data from hourly distribution
+  const chartData = useMemo(() => {
+    if (!analytics) return new Array(12).fill(0);
+    // Convert 24-hour data to 12-hour display (last 12 hours)
+    const now = new Date();
+    const currentHour = now.getHours();
+    const data: number[] = [];
+    for (let i = 11; i >= 0; i--) {
+      const hour = (currentHour - i + 24) % 24;
+      data.push(analytics.hourlyDistribution[hour] || 0);
+    }
+    return data;
+  }, [analytics]);
 
   const maxChartValue = useMemo(
     () => Math.max(...chartData, 1),
-    [],
+    [chartData],
   );
 
   // Filter devices by status and determine if they're online (heartbeat within last 2 minutes)
@@ -104,6 +134,35 @@ export default function DashboardPage() {
       })
       .filter((device) => device.effectiveStatus !== "offline" || device.isFullscreen);
   }, [devices]);
+  
+  // Calculate playback health from device status
+  const playbackHealth = useMemo(() => {
+    const onlineCount = activeDevices.filter(d => d.effectiveStatus === "online").length;
+    const standbyCount = activeDevices.filter(d => d.effectiveStatus === "standby").length;
+    const offlineCount = devices.filter(d => {
+      const timeSinceHeartbeat = Date.now() - d.lastHeartbeat.getTime();
+      return timeSinceHeartbeat >= 120000 && !d.isFullscreen;
+    }).length;
+    const total = devices.length || 1;
+    
+    return [
+      { 
+        title: "Live playback", 
+        value: Math.round((onlineCount / total) * 100), 
+        accent: "from-custom-color-400 to-custom-color-300" 
+      },
+      { 
+        title: "Standby", 
+        value: Math.round((standbyCount / total) * 100), 
+        accent: "from-amber-200/90 to-amber-400/60" 
+      },
+      { 
+        title: "Offline", 
+        value: Math.round((offlineCount / total) * 100), 
+        accent: "from-rose-200/90 to-rose-400/60" 
+      },
+    ];
+  }, [devices, activeDevices]);
 
   return (
     <div className="min-h-screen bg-custom-color-100 text-black transition-colors duration-300 dark:bg-custom-color-900 dark:text-white">
@@ -252,53 +311,192 @@ export default function DashboardPage() {
                 Audience engagement
               </h2>
               <p className="text-xs text-custom-color-700/80 dark:text-custom-color-100/70">
-                Impressions across primary display locations (last 12 hours)
+                View time and activity metrics (last {timeRange} days)
               </p>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-custom-color-700 dark:bg-custom-color-800/70 dark:text-custom-color-100">
-              <FiGlobe className="h-3.5 w-3.5" />
-              Live sync
-            </span>
+            <div className="flex items-center gap-3">
+              <div className="flex rounded-full border border-white/20 bg-white/10 p-1 dark:border-white/10 dark:bg-custom-color-800/70">
+                <button
+                  type="button"
+                  onClick={() => setTimeRange(7)}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] transition ${
+                    timeRange === 7
+                      ? "bg-custom-color-500 text-white dark:bg-custom-color-400"
+                      : "text-custom-color-700 dark:text-custom-color-100/70"
+                  }`}
+                >
+                  7d
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTimeRange(30)}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] transition ${
+                    timeRange === 30
+                      ? "bg-custom-color-500 text-white dark:bg-custom-color-400"
+                      : "text-custom-color-700 dark:text-custom-color-100/70"
+                  }`}
+                >
+                  30d
+                </button>
+              </div>
+              <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-custom-color-700 dark:bg-custom-color-800/70 dark:text-custom-color-100">
+                <FiGlobe className="h-3.5 w-3.5" />
+                Live sync
+              </span>
+            </div>
           </div>
 
-          <div className="mt-8 grid gap-8 lg:grid-cols-[2fr_1fr]">
-            <div className="flex flex-col justify-end gap-2 rounded-2xl border border-white/15 bg-white/70 p-6 dark:bg-custom-color-800/70">
-              <div className="flex h-48 items-end gap-3">
-                {chartData.map((value, index) => (
-                  <div key={index} className="group flex w-full flex-col justify-end text-center">
-                    <div
-                      className="mx-auto w-full rounded-t-full bg-gradient-to-t from-custom-color-500/25 via-custom-color-400/70 to-custom-color-300/90 shadow-[0_15px_35px_rgba(12,154,235,0.25)] transition group-hover:from-custom-color-400/50 group-hover:to-custom-color-200/90"
-                      style={{ height: `${(value / maxChartValue) * 100}%` }}
-                    />
-                    <span className="mt-2 text-[10px] uppercase tracking-[0.26em] text-custom-color-700/70 dark:text-custom-color-100/60">
-                      {index + 1}h
-                    </span>
-                  </div>
-                ))}
-              </div>
+          {analyticsLoading ? (
+            <div className="mt-8 flex items-center justify-center py-12">
+              <p className="text-sm text-custom-color-700/80 dark:text-custom-color-100/70">
+                Loading analytics...
+              </p>
             </div>
-
-            <div className="flex flex-col gap-4">
-              {playbackHealth.map((item) => (
-                <div
-                  key={item.title}
-                  className={`rounded-2xl border border-white/15 bg-white/70 p-5 shadow-md dark:bg-custom-color-800/70`}
-                >
-                  <p className="text-xs uppercase tracking-[0.22em] text-custom-color-700/70 dark:text-custom-color-100/70">
-                    {item.title}
-                  </p>
-                  <div className="mt-3 flex items-end justify-between">
-                    <div
-                      className={`h-2 w-3/4 rounded-full bg-gradient-to-r ${item.accent}`}
-                    />
-                    <span className="text-lg font-semibold text-custom-color-900 dark:text-white">
-                      {item.value}%
-                    </span>
+          ) : analytics ? (
+            <>
+              <div className="mt-8 grid gap-8 lg:grid-cols-[2fr_1fr]">
+                <div className="flex flex-col justify-end gap-2 rounded-2xl border border-white/15 bg-white/70 p-6 dark:bg-custom-color-800/70">
+                  <div className="mb-4 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.22em] text-custom-color-700/70 dark:text-custom-color-100/70">
+                        Hourly view time (last 12 hours)
+                      </p>
+                      <p className="mt-1 text-lg font-semibold text-custom-color-900 dark:text-white">
+                        {formatDuration(chartData.reduce((a, b) => a + b, 0))}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs uppercase tracking-[0.22em] text-custom-color-700/70 dark:text-custom-color-100/70">
+                        Peak hour
+                      </p>
+                      <p className="mt-1 text-lg font-semibold text-custom-color-900 dark:text-white">
+                        {analytics.peakHour}:00
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex h-48 items-end gap-3">
+                    {chartData.map((value, index) => {
+                      const now = new Date();
+                      const hour = (now.getHours() - (11 - index) + 24) % 24;
+                      return (
+                        <div key={index} className="group flex w-full flex-col justify-end text-center">
+                          <div
+                            className="mx-auto w-full rounded-t-full bg-gradient-to-t from-custom-color-500/25 via-custom-color-400/70 to-custom-color-300/90 shadow-[0_15px_35px_rgba(12,154,235,0.25)] transition group-hover:from-custom-color-400/50 group-hover:to-custom-color-200/90"
+                            style={{ height: `${(value / maxChartValue) * 100}%` }}
+                            title={`${hour}:00 - ${formatDuration(value)}`}
+                          />
+                          <span className="mt-2 text-[10px] uppercase tracking-[0.26em] text-custom-color-700/70 dark:text-custom-color-100/60">
+                            {hour}h
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-              ))}
+
+                <div className="flex flex-col gap-4">
+                  <div className="rounded-2xl border border-white/15 bg-white/70 p-5 shadow-md dark:bg-custom-color-800/70">
+                    <p className="text-xs uppercase tracking-[0.22em] text-custom-color-700/70 dark:text-custom-color-100/70">
+                      Total view time
+                    </p>
+                    <p className="mt-2 text-2xl font-semibold text-custom-color-900 dark:text-white">
+                      {formatDuration(analytics.totalViewTime)}
+                    </p>
+                    <p className="mt-1 text-xs text-custom-color-700/70 dark:text-custom-color-100/60">
+                      {analytics.totalSessions} sessions · Avg {formatDuration(analytics.averageSessionDuration)}
+                    </p>
+                  </div>
+                  {playbackHealth.map((item) => (
+                    <div
+                      key={item.title}
+                      className={`rounded-2xl border border-white/15 bg-white/70 p-5 shadow-md dark:bg-custom-color-800/70`}
+                    >
+                      <p className="text-xs uppercase tracking-[0.22em] text-custom-color-700/70 dark:text-custom-color-100/70">
+                        {item.title}
+                      </p>
+                      <div className="mt-3 flex items-end justify-between">
+                        <div
+                          className={`h-2 w-3/4 rounded-full bg-gradient-to-r ${item.accent}`}
+                        />
+                        <span className="text-lg font-semibold text-custom-color-900 dark:text-white">
+                          {item.value}%
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Popular Layouts */}
+              {analytics.layoutViews.length > 0 && (
+                <div className="mt-8 rounded-2xl border border-white/15 bg-white/70 p-6 dark:bg-custom-color-800/70">
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.22em] text-custom-color-800 dark:text-custom-color-100 mb-4">
+                    Most viewed layouts
+                  </h3>
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {analytics.layoutViews.slice(0, 6).map((layout) => (
+                      <div
+                        key={layout.layoutId}
+                        className="rounded-xl border border-white/10 bg-white/50 p-4 dark:bg-custom-color-700/50"
+                      >
+                        <p className="text-sm font-semibold text-custom-color-900 dark:text-white truncate">
+                          {layout.layoutName}
+                        </p>
+                        <div className="mt-2 flex items-center justify-between text-xs">
+                          <span className="text-custom-color-700/70 dark:text-custom-color-100/60">
+                            {layout.viewCount} views
+                          </span>
+                          <span className="font-semibold text-custom-color-600 dark:text-custom-color-200">
+                            {formatDuration(layout.totalViewTime)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Device Uptime */}
+              {analytics.deviceUptime.length > 0 && (
+                <div className="mt-6 rounded-2xl border border-white/15 bg-white/70 p-6 dark:bg-custom-color-800/70">
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.22em] text-custom-color-800 dark:text-custom-color-100 mb-4">
+                    Device uptime
+                  </h3>
+                  <div className="space-y-3">
+                    {analytics.deviceUptime.map((device) => (
+                      <div key={device.deviceId} className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-custom-color-900 dark:text-white">
+                            {device.deviceName}
+                          </p>
+                          <p className="text-xs text-custom-color-700/70 dark:text-custom-color-100/60">
+                            {formatDuration(device.totalUptime)} total
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-24 h-2 rounded-full bg-white/20 dark:bg-custom-color-700/50 overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-custom-color-400 to-custom-color-300 transition-all"
+                              style={{ width: `${Math.min(device.uptimePercentage, 100)}%` }}
+                            />
+                          </div>
+                          <span className="text-sm font-semibold text-custom-color-900 dark:text-white w-12 text-right">
+                            {device.uptimePercentage.toFixed(1)}%
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="mt-8 rounded-2xl border border-white/15 bg-white/70 p-6 text-center dark:bg-custom-color-800/70">
+              <p className="text-sm text-custom-color-700/80 dark:text-custom-color-100/70">
+                No engagement data available yet. Start viewing layouts in fullscreen to track engagement.
+              </p>
             </div>
-          </div>
+          )}
         </section>
       </div>
 

@@ -7,6 +7,11 @@ export type GridConfig = {
   rows: number;
   gap: number;
   backgroundColor?: string;
+  /**
+   * Panel connections: array of arrays, where each inner array contains root keys of connected panels.
+   * Panels in the same array share a connected background.
+   */
+  connections?: string[][];
 };
 
 export type PanelEntry = {
@@ -51,6 +56,37 @@ export type CellAppearance = {
   newsScrollSpeed?: number; // Scroll speed in pixels per second (default: 50)
   newsMaxItems?: number; // Maximum number of items to display (default: 10)
   newsShowSource?: boolean; // Show source name for each item
+  /**
+   * Announcements-specific options (used when componentId === "announcement").
+   */
+  announcementText?: string; // Simple text announcement with HTML formatting
+  /**
+   * Branding-specific options (used when componentId === "brand").
+   */
+  brandingLogoUrl?: string; // URL to logo image
+  brandingText?: string; // Branding text/name
+  /**
+   * Transport-specific options (used when componentId === "transport").
+   */
+  transportStopPlace?: string; // Stop place name or ID (e.g., "Oslo S", "NSR:StopPlace:582")
+  transportTimeFormat?: "12h" | "24h"; // Time format (default: "24h")
+  transportMaxDepartures?: number; // Maximum number of departures to display (default: 10)
+  transportBadgeColor?: string; // Badge background color for line number (default: textColor)
+  transportBadgeBorder?: string; // Badge border color (default: textColor)
+  transportBadgeTextColor?: string; // Badge text color (default: "#000000" black)
+  transportBadgeRadius?: number; // Badge border radius (default: matches panel borderRadius)
+  transportDelayColor?: string; // Color for delay text (default: "#ef4444" red)
+  /**
+   * Media-specific options (used when componentId === "media").
+   */
+  mediaType?: "image" | "video"; // Media type for all items (default: "image")
+  mediaUrls?: string; // Comma or space separated URLs
+  mediaAutoPlay?: boolean; // Auto-play carousel (default: true)
+  mediaTransitionDuration?: number; // Transition duration in seconds (default: 5)
+  /**
+   * Charts-specific options (used when componentId === "charts").
+   */
+  chartsConfig?: string; // JSON string of chart configuration (built from input fields)
 };
 
 export const makeDefaultAppearance = (): CellAppearance => ({
@@ -71,6 +107,21 @@ export const makeDefaultAppearance = (): CellAppearance => ({
   newsScrollSpeed: 50,
   newsMaxItems: 10,
   newsShowSource: true,
+  announcementText: "",
+  brandingLogoUrl: "",
+  brandingText: "",
+  transportStopPlace: "62356",
+  transportTimeFormat: "24h",
+  transportMaxDepartures: 10,
+  transportBadgeColor: "",
+  transportBadgeBorder: "",
+  transportBadgeTextColor: "#000000",
+  transportDelayColor: "#ef4444",
+  mediaType: "image",
+  mediaUrls: "",
+  mediaAutoPlay: true,
+  mediaTransitionDuration: 5,
+  chartsConfig: "",
 });
 
 export const cloneAppearance = (appearance?: CellAppearance | null) =>
@@ -88,6 +139,7 @@ export type GridCell = {
 export type PersistedLayoutState = {
   config: GridConfig;
   cells: Record<string, GridCell>;
+  selectedCells?: string[];
 };
 
 export type GridGeometry = {
@@ -122,6 +174,7 @@ export const DEFAULT_GRID_CONFIG: GridConfig = {
   rows: 4,
   gap: 16,
   backgroundColor: "#0a3d62",
+  connections: [],
 };
 
 const clampNumber = (value: number, min: number, max: number) =>
@@ -317,6 +370,11 @@ export const normalizeConfig = (raw?: LegacyConfig | null): GridConfig => {
       ? raw.backgroundColor.trim()
       : DEFAULT_GRID_CONFIG.backgroundColor;
 
+  const connections =
+    Array.isArray(raw.connections) && raw.connections.every((g) => Array.isArray(g))
+      ? raw.connections
+      : DEFAULT_GRID_CONFIG.connections;
+
   return {
     screenInches,
     orientation,
@@ -324,6 +382,7 @@ export const normalizeConfig = (raw?: LegacyConfig | null): GridConfig => {
     rows: adjusted.rows,
     gap,
     backgroundColor,
+    connections,
   };
 };
 

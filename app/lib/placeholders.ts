@@ -1,13 +1,14 @@
 import { IconType } from "react-icons";
 import {
   FiActivity,
+  FiBarChart2,
   FiCloud,
   FiClock,
   FiImage,
   FiMapPin,
+  FiNavigation,
   FiType,
   FiVideo,
-  FiZap,
 } from "react-icons/fi";
 
 export type PlaceholderDefinition = {
@@ -19,34 +20,28 @@ export type PlaceholderDefinition = {
 
 export const PLACEHOLDER_LIBRARY: PlaceholderDefinition[] = [
   {
-    id: "clock",
-    label: "Clock",
-    description: "Digital clocks or countdown timers",
-    icon: FiClock,
-  },
-  {
-    id: "weather",
-    label: "Weather",
-    description: "Forecasts and live weather cards",
-    icon: FiCloud,
-  },
-  {
-    id: "news",
-    label: "News ticker",
-    description: "RSS headlines or custom tickers",
-    icon: FiActivity,
-  },
-  {
-    id: "media",
-    label: "Media",
-    description: "Video or image carousels",
-    icon: FiVideo,
-  },
-  {
     id: "announcement",
     label: "Announcements",
     description: "Text callouts and rich messaging",
     icon: FiType,
+  },
+  {
+    id: "brand",
+    label: "Branding",
+    description: "Logos, identity elements, QR codes",
+    icon: FiImage,
+  },
+  {
+    id: "charts",
+    label: "Charts",
+    description: "Data visualizations and graphs",
+    icon: FiBarChart2,
+  },
+  {
+    id: "clock",
+    label: "Clock",
+    description: "Digital clocks or countdown timers",
+    icon: FiClock,
   },
   {
     id: "map",
@@ -55,16 +50,28 @@ export const PLACEHOLDER_LIBRARY: PlaceholderDefinition[] = [
     icon: FiMapPin,
   },
   {
-    id: "metrics",
-    label: "Metrics",
-    description: "KPIs and live dashboards",
-    icon: FiZap,
+    id: "media",
+    label: "Media",
+    description: "Video or image carousels",
+    icon: FiVideo,
   },
   {
-    id: "brand",
-    label: "Branding",
-    description: "Logos, identity elements, QR codes",
-    icon: FiImage,
+    id: "news",
+    label: "News ticker",
+    description: "RSS headlines or custom tickers",
+    icon: FiActivity,
+  },
+  {
+    id: "transport",
+    label: "Transport",
+    description: "Public transport departures and schedules",
+    icon: FiNavigation,
+  },
+  {
+    id: "weather",
+    label: "Weather",
+    description: "Forecasts and live weather cards",
+    icon: FiCloud,
   },
 ];
 

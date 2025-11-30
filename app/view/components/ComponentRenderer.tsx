@@ -6,6 +6,11 @@ import { FREEFORM_COMPONENT_ID } from "../../editor/utils/grid";
 import { Clock } from "./Clock";
 import { Weather } from "./weather";
 import { News } from "./news";
+import { Announcements } from "./announcements";
+import { Branding } from "./branding";
+import { Transport } from "./transport";
+import { Media } from "./media";
+import { Charts } from "./charts";
 
 type ComponentRendererProps = {
   componentId: string;
@@ -42,6 +47,31 @@ export function ComponentRenderer({
   // Dedicated implementation for the news component
   if (componentId === "news") {
     return <News appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
+  }
+
+  // Dedicated implementation for the announcements component
+  if (componentId === "announcement") {
+    return <Announcements appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
+  }
+
+  // Dedicated implementation for the branding component
+  if (componentId === "brand") {
+    return <Branding appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
+  }
+
+  // Dedicated implementation for the transport component
+  if (componentId === "transport") {
+    return <Transport appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
+  }
+
+  // Dedicated implementation for the media component
+  if (componentId === "media") {
+    return <Media appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
+  }
+
+  // Dedicated implementation for the charts component
+  if (componentId === "charts") {
+    return <Charts appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
   }
 
   // Handle panels (freeform regions) that cycle through entries

@@ -70,6 +70,7 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
     });
 
     // Calculate chart dimensions using standardized utility
+    // For xlarge, use a larger base height to add more spacing between y-axis temperatures
     const dimensions = calculateChartDimensions({
       dataPointCount: dataToShow.length,
       colSpan,
@@ -78,7 +79,7 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
       containerHeight: containerDimensions.height,
       minSpacingHorizontal: 30,
       minSpacingVertical: 25,
-      baseHeight: 300,
+      baseHeight: 450, // Increased from 300 to 450 for more y-axis spacing
     });
 
     const { width: chartWidth, height: chartHeight, graphWidth, graphHeight, padding } = dimensions;

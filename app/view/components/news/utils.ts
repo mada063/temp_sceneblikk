@@ -29,7 +29,11 @@ export function parseRSSFeed(xmlText: string, sourceName: string): NewsFeed {
       if (!link) {
         link = item.querySelector("guid")?.textContent?.trim() || "";
       }
-      const description = item.querySelector("description")?.textContent?.trim() || "";
+      let description = item.querySelector("description")?.textContent?.trim() || "";
+      // Strip HTML tags and decode entities from description
+      if (description) {
+        description = description.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
+      }
       const pubDate = item.querySelector("pubDate")?.textContent?.trim() || "";
 
       return {
@@ -59,7 +63,11 @@ export function parseRSSFeed(xmlText: string, sourceName: string): NewsFeed {
       const linkElement = entry.querySelector("link");
       const link = linkElement?.getAttribute("href") || linkElement?.textContent?.trim() || "";
       const summary = entry.querySelector("summary") || entry.querySelector("content");
-      const description = summary?.textContent?.trim() || "";
+      let description = summary?.textContent?.trim() || "";
+      // Strip HTML tags and decode entities from description
+      if (description) {
+        description = description.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
+      }
       const pubDate = entry.querySelector("published")?.textContent?.trim() || 
                      entry.querySelector("updated")?.textContent?.trim() || "";
 

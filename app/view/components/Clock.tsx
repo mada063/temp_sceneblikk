@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import type { CellAppearance } from "../../lib/layout-types";
-import { SingleClock } from "./clock/SingleClock";
+import { SingleClock } from "./Clock/SingleClock";
 // @ts-ignore - JSON import
 import timezones from "../../lib/timezones.json";
 

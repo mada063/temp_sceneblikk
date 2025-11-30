@@ -328,6 +328,200 @@ export const applyCapacity = (
   };
 };
 
+/**
+ * Find all neighboring panels (panels that share an edge) with a given panel.
+ * Returns an array of root keys of neighboring panels.
+ */
+export const findNeighboringPanels = (
+  rootKey: string,
+  grid: Record<string, GridCell>,
+  config: GridConfig,
+): string[] => {
+  const rootCell = grid[rootKey];
+  if (!rootCell || rootCell.componentId !== FREEFORM_COMPONENT_ID) {
+    return [];
+  }
+
+  const { row, column } = parseKey(rootKey);
+  const colSpan = rootCell.colSpan ?? 1;
+  const rowSpan = rootCell.rowSpan ?? 1;
+  const neighbors: Set<string> = new Set();
+
+  // Check cells to the north (top edge)
+  if (row > 0) {
+    for (let c = column; c < column + colSpan; c += 1) {
+      const neighborKey = makeCellKey(row - 1, c);
+      const neighborCell = grid[neighborKey];
+      if (neighborCell?.componentId === FREEFORM_COMPONENT_ID && !neighborCell.coveredBy) {
+        neighbors.add(neighborKey);
+      } else if (neighborCell?.coveredBy) {
+        const coveredRoot = resolveRootKey(neighborKey, grid);
+        const coveredCell = grid[coveredRoot];
+        if (coveredCell?.componentId === FREEFORM_COMPONENT_ID) {
+          neighbors.add(coveredRoot);
+        }
+      }
+    }
+  }
+
+  // Check cells to the south (bottom edge)
+  if (row + rowSpan < config.rows) {
+    for (let c = column; c < column + colSpan; c += 1) {
+      const neighborKey = makeCellKey(row + rowSpan, c);
+      const neighborCell = grid[neighborKey];
+      if (neighborCell?.componentId === FREEFORM_COMPONENT_ID && !neighborCell.coveredBy) {
+        neighbors.add(neighborKey);
+      } else if (neighborCell?.coveredBy) {
+        const coveredRoot = resolveRootKey(neighborKey, grid);
+        const coveredCell = grid[coveredRoot];
+        if (coveredCell?.componentId === FREEFORM_COMPONENT_ID) {
+          neighbors.add(coveredRoot);
+        }
+      }
+    }
+  }
+
+  // Check cells to the west (left edge)
+  if (column > 0) {
+    for (let r = row; r < row + rowSpan; r += 1) {
+      const neighborKey = makeCellKey(r, column - 1);
+      const neighborCell = grid[neighborKey];
+      if (neighborCell?.componentId === FREEFORM_COMPONENT_ID && !neighborCell.coveredBy) {
+        neighbors.add(neighborKey);
+      } else if (neighborCell?.coveredBy) {
+        const coveredRoot = resolveRootKey(neighborKey, grid);
+        const coveredCell = grid[coveredRoot];
+        if (coveredCell?.componentId === FREEFORM_COMPONENT_ID) {
+          neighbors.add(coveredRoot);
+        }
+      }
+    }
+  }
+
+  // Check cells to the east (right edge)
+  if (column + colSpan < config.columns) {
+    for (let r = row; r < row + rowSpan; r += 1) {
+      const neighborKey = makeCellKey(r, column + colSpan);
+      const neighborCell = grid[neighborKey];
+      if (neighborCell?.componentId === FREEFORM_COMPONENT_ID && !neighborCell.coveredBy) {
+        neighbors.add(neighborKey);
+      } else if (neighborCell?.coveredBy) {
+        const coveredRoot = resolveRootKey(neighborKey, grid);
+        const coveredCell = grid[coveredRoot];
+        if (coveredCell?.componentId === FREEFORM_COMPONENT_ID) {
+          neighbors.add(coveredRoot);
+        }
+      }
+    }
+  }
+
+  return Array.from(neighbors);
+};
+
+/**
+ * Get the connection group that a panel belongs to, or null if not connected.
+ */
+export const getConnectionGroup = (
+  rootKey: string,
+  connections: string[][] | undefined,
+): string[] | null => {
+  if (!connections || connections.length === 0) {
+    return null;
+  }
+  
+  for (const group of connections) {
+    if (group.includes(rootKey)) {
+      return group;
+    }
+  }
+  
+  return null;
+};
+
+/**
+ * Add a connection between two panels, merging groups if necessary.
+ */
+export const addConnection = (
+  key1: string,
+  key2: string,
+  existingConnections: string[][] | undefined,
+): string[][] => {
+  const connections = existingConnections ? [...existingConnections] : [];
+  
+  // Find groups containing key1 and key2
+  let group1Index = -1;
+  let group2Index = -1;
+  
+  for (let i = 0; i < connections.length; i++) {
+    if (connections[i].includes(key1)) {
+      group1Index = i;
+    }
+    if (connections[i].includes(key2)) {
+      group2Index = i;
+    }
+  }
+  
+  if (group1Index === -1 && group2Index === -1) {
+    // Neither key is in a group, create a new group
+    connections.push([key1, key2]);
+  } else if (group1Index === -1) {
+    // key1 is not in a group, add it to key2's group
+    connections[group2Index].push(key1);
+  } else if (group2Index === -1) {
+    // key2 is not in a group, add it to key1's group
+    connections[group1Index].push(key2);
+  } else if (group1Index !== group2Index) {
+    // Both keys are in different groups, merge them
+    const merged = [...connections[group1Index], ...connections[group2Index]];
+    // Remove duplicates
+    const unique = Array.from(new Set(merged));
+    // Remove the two old groups and add the merged one
+    connections.splice(Math.max(group1Index, group2Index), 1);
+    connections.splice(Math.min(group1Index, group2Index), 1);
+    connections.push(unique);
+  }
+  // If both keys are already in the same group, do nothing
+  
+  return connections;
+};
+
+/**
+ * Remove a panel from all connections, splitting groups if necessary.
+ */
+export const removeConnection = (
+  key: string,
+  existingConnections: string[][] | undefined,
+): string[][] => {
+  if (!existingConnections || existingConnections.length === 0) {
+    return [];
+  }
+  
+  const connections = [...existingConnections];
+  
+  // Find the group containing the key
+  for (let i = 0; i < connections.length; i++) {
+    const group = connections[i];
+    if (group.includes(key)) {
+      // Remove the key from the group
+      const newGroup = group.filter(k => k !== key);
+      
+      if (newGroup.length === 0) {
+        // Group is empty, remove it
+        connections.splice(i, 1);
+      } else if (newGroup.length === 1) {
+        // Only one panel left, remove the group (single panels aren't connected)
+        connections.splice(i, 1);
+      } else {
+        // Update the group
+        connections[i] = newGroup;
+      }
+      break;
+    }
+  }
+  
+  return connections;
+};
+
 export type { GridCell, GridConfig, PanelEntry };
 export { GRID_LIMITS, makeCellKey };
 

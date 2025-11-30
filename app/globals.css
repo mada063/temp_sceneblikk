@@ -143,41 +143,46 @@ body {
   }
 }
 
-/* News ticker animations */
+/* News ticker animations - seamless loop without snap */
 @keyframes newsScrollUp {
-  0% {
+  from {
     transform: translateY(0);
   }
-  100% {
+  to {
     transform: translateY(-50%);
   }
 }
 
 @keyframes newsScrollHorizontal {
-  0% {
+  from {
     transform: translateX(0);
   }
-  100% {
+  to {
     transform: translateX(-50%);
   }
 }
 
 .news-scroll-horizontal-tiny {
   animation: newsScrollHorizontal 20s linear infinite;
+  will-change: transform;
 }
 
 .news-scroll-horizontal-small {
   animation: newsScrollHorizontal 25s linear infinite;
+  will-change: transform;
 }
 
 .news-scroll-medium {
-  animation: newsScrollUp 8s linear infinite;
+  animation: newsScrollUp 30s linear infinite;
+  will-change: transform;
 }
 
 .news-scroll-large {
-  animation: newsScrollUp 10s linear infinite;
+  animation: newsScrollUp 35s linear infinite;
+  will-change: transform;
 }
 
 .news-scroll-xlarge {
-  animation: newsScrollUp 15s linear infinite;
+  animation: newsScrollUp 40s linear infinite;
+  will-change: transform;
 }

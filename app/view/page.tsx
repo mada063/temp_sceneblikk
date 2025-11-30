@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef, type CSSProperties } from "react";
 import Link from "next/link";
 import {
   FiAlertTriangle,
@@ -12,7 +12,7 @@ import {
   FiX,
 } from "react-icons/fi";
 import { useAuth } from "../lib/auth-context";
-import { updateDeviceHeartbeat, getLayout } from "../lib/firestore";
+import { updateDeviceHeartbeat, getLayout, startViewSession, endViewSession } from "../lib/firestore";
 import {
   GridCell,
   GridConfig,
@@ -27,7 +27,7 @@ import {
   type GridGeometry,
   type CellAppearance,
 } from "../lib/layout-types";
-import { FREEFORM_COMPONENT_ID } from "../editor/utils/grid";
+import { FREEFORM_COMPONENT_ID, resolveRootKey, getConnectionGroup } from "../editor/utils/grid";
 import { ComponentRenderer } from "./components/ComponentRenderer";
 import { PanelCell } from "./components/PanelCell";
 
@@ -59,6 +59,10 @@ export default function ViewPage() {
   const [deviceNameDraft, setDeviceNameDraft] = useState("");
   const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const deviceIdRef = useRef<string | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [gridReady, setGridReady] = useState(false);
+  const currentSessionIdRef = useRef<string | null>(null);
+  const previousLayoutIdRef = useRef<string | null>(null);
 
   // Initialize device ID and load device name
   useEffect(() => {
@@ -77,6 +81,43 @@ export default function ViewPage() {
       setDeviceNameDraft(storedName);
     }
   }, []);
+
+  // Track when grid is ready for rendering connectors
+  useEffect(() => {
+    if (!gridRef.current) {
+      setGridReady(false);
+      return;
+    }
+    
+    const checkGridReady = () => {
+      if (gridRef.current) {
+        const rect = gridRef.current.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          setGridReady(true);
+        }
+      }
+    };
+    
+    // Check immediately
+    checkGridReady();
+    
+    // Also check after a short delay to ensure layout is complete
+    const timeout = setTimeout(checkGridReady, 0);
+    
+    // Use ResizeObserver to detect when grid size changes
+    const resizeObserver = new ResizeObserver(() => {
+      checkGridReady();
+    });
+    
+    if (gridRef.current) {
+      resizeObserver.observe(gridRef.current);
+    }
+    
+    return () => {
+      clearTimeout(timeout);
+      resizeObserver.disconnect();
+    };
+  }, [playerState]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -212,12 +253,93 @@ export default function ViewPage() {
     if (typeof document === "undefined") {
       return;
     }
-    const handleFullscreenChange = () => {
-      setIsFullscreen(Boolean(document.fullscreenElement));
+    const handleFullscreenChange = async () => {
+      const newFullscreenState = Boolean(document.fullscreenElement);
+      setIsFullscreen(newFullscreenState);
+      
+      // Track engagement: start session when entering fullscreen, end when exiting
+      if (user && deviceIdRef.current) {
+        if (newFullscreenState && !currentSessionIdRef.current) {
+          // Entering fullscreen - start session
+          try {
+            const deviceName = localStorage.getItem("sceneblikk-device-name") || 
+              `Device ${deviceIdRef.current?.substr(-8)}`;
+            const sessionId = await startViewSession(
+              user.uid,
+              deviceIdRef.current,
+              deviceName,
+              layoutId,
+              layoutName,
+              true,
+            );
+            currentSessionIdRef.current = sessionId;
+          } catch (error) {
+            console.error("Failed to start view session:", error);
+          }
+        } else if (!newFullscreenState && currentSessionIdRef.current) {
+          // Exiting fullscreen - end session
+          try {
+            await endViewSession(currentSessionIdRef.current);
+            currentSessionIdRef.current = null;
+          } catch (error) {
+            console.error("Failed to end view session:", error);
+          }
+        }
+      }
     };
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, [user, layoutId, layoutName]);
+  
+  // Track layout changes
+  useEffect(() => {
+    if (user && deviceIdRef.current && layoutId && layoutId !== previousLayoutIdRef.current) {
+      // Layout changed - end previous session if exists, start new one if fullscreen
+      const handleLayoutChange = async () => {
+        if (currentSessionIdRef.current && previousLayoutIdRef.current) {
+          try {
+            await endViewSession(currentSessionIdRef.current);
+            currentSessionIdRef.current = null;
+          } catch (error) {
+            console.error("Failed to end session on layout change:", error);
+          }
+        }
+        
+        if (isFullscreen && !currentSessionIdRef.current) {
+          try {
+            const deviceName = localStorage.getItem("sceneblikk-device-name") || 
+              `Device ${deviceIdRef.current?.substr(-8)}`;
+            const sessionId = await startViewSession(
+              user.uid,
+              deviceIdRef.current,
+              deviceName,
+              layoutId,
+              layoutName,
+              true,
+            );
+            currentSessionIdRef.current = sessionId;
+          } catch (error) {
+            console.error("Failed to start session on layout change:", error);
+          }
+        }
+        
+        previousLayoutIdRef.current = layoutId;
+      };
+      
+      handleLayoutChange();
+    } else if (!previousLayoutIdRef.current && layoutId) {
+      previousLayoutIdRef.current = layoutId;
+    }
+  }, [user, layoutId, layoutName, isFullscreen]);
+  
+  // Cleanup: end session on unmount
+  useEffect(() => {
+    return () => {
+      if (currentSessionIdRef.current) {
+        endViewSession(currentSessionIdRef.current).catch(console.error);
+      }
     };
   }, []);
 
@@ -320,6 +442,123 @@ export default function ViewPage() {
         return coordsA.row - coordsB.row;
       });
   }, [playerState]);
+
+  // Calculate gap fillers between connected panels
+  // Only fills the CSS grid gap areas where connected panels share an edge
+  const connectionOverlays = useMemo(() => {
+    if (!playerState?.config.connections || playerState.config.connections.length === 0) {
+      return [];
+    }
+    
+    const gapRects: Array<{
+      x: number; // Grid-relative X position (column)
+      y: number; // Grid-relative Y position (row)
+      width: number; // Width in grid units (0 for vertical gaps)
+      height: number; // Height in grid units (0 for horizontal gaps)
+      backgroundColor: string;
+    }> = [];
+
+    for (const group of playerState.config.connections) {
+      if (group.length < 2) continue;
+      
+      // Get main connector color (first panel in group)
+      const mainKey = group[0];
+      const mainCell = playerState.cells[mainKey];
+      const mainColor = mainCell?.appearance?.backgroundColor || "#0a3d62";
+      
+      // Get all panel positions
+      const panels = group.map(rootKey => {
+        const cell = playerState.cells[rootKey];
+        if (!cell) return null;
+        const { row, column } = parseKey(rootKey);
+        return {
+          rootKey,
+          row,
+          column,
+          colSpan: cell.colSpan ?? 1,
+          rowSpan: cell.rowSpan ?? 1,
+          rightCol: column + (cell.colSpan ?? 1),
+          bottomRow: row + (cell.rowSpan ?? 1),
+        };
+      }).filter(Boolean) as Array<{
+        rootKey: string;
+        row: number;
+        column: number;
+        colSpan: number;
+        rowSpan: number;
+        rightCol: number;
+        bottomRow: number;
+      }>;
+      
+      // Find vertical gaps (between columns) where panels share an edge
+      for (let i = 0; i < panels.length; i++) {
+        for (let j = i + 1; j < panels.length; j++) {
+          const panelA = panels[i];
+          const panelB = panels[j];
+          
+          // Check if they share a vertical edge (one panel's right edge touches another's left edge)
+          if (panelA.rightCol === panelB.column) {
+            // Panel A is to the left of Panel B, gap is between them
+            const sharedTop = Math.max(panelA.row, panelB.row);
+            const sharedBottom = Math.min(panelA.bottomRow, panelB.bottomRow);
+            if (sharedBottom > sharedTop) {
+              gapRects.push({
+                x: panelA.rightCol, // Gap is at the column line
+                y: sharedTop,
+                width: 0, // Vertical gap
+                height: sharedBottom - sharedTop,
+                backgroundColor: mainColor,
+              });
+            }
+          } else if (panelB.rightCol === panelA.column) {
+            // Panel B is to the left of Panel A
+            const sharedTop = Math.max(panelA.row, panelB.row);
+            const sharedBottom = Math.min(panelA.bottomRow, panelB.bottomRow);
+            if (sharedBottom > sharedTop) {
+              gapRects.push({
+                x: panelB.rightCol,
+                y: sharedTop,
+                width: 0,
+                height: sharedBottom - sharedTop,
+                backgroundColor: mainColor,
+              });
+            }
+          }
+          
+          // Check if they share a horizontal edge (one panel's bottom edge touches another's top edge)
+          if (panelA.bottomRow === panelB.row) {
+            // Panel A is above Panel B, gap is between them
+            const sharedLeft = Math.max(panelA.column, panelB.column);
+            const sharedRight = Math.min(panelA.rightCol, panelB.rightCol);
+            if (sharedRight > sharedLeft) {
+              gapRects.push({
+                x: sharedLeft,
+                y: panelA.bottomRow, // Gap is at the row line
+                width: sharedRight - sharedLeft,
+                height: 0, // Horizontal gap
+                backgroundColor: mainColor,
+              });
+            }
+          } else if (panelB.bottomRow === panelA.row) {
+            // Panel B is above Panel A
+            const sharedLeft = Math.max(panelA.column, panelB.column);
+            const sharedRight = Math.min(panelA.rightCol, panelB.rightCol);
+            if (sharedRight > sharedLeft) {
+              gapRects.push({
+                x: sharedLeft,
+                y: panelB.bottomRow,
+                width: sharedRight - sharedLeft,
+                height: 0,
+                backgroundColor: mainColor,
+              });
+            }
+          }
+        }
+      }
+    }
+    
+    return gapRects;
+  }, [playerState?.config.connections, playerState?.cells]);
 
   const containerClasses = [
     "min-h-screen",
@@ -481,7 +720,8 @@ export default function ViewPage() {
           }}
         >
           <div
-            className="grid h-full w-full"
+            ref={gridRef}
+            className="relative grid h-full w-full"
             style={{
               gridTemplateColumns: `repeat(${config.columns}, minmax(0, 1fr))`,
               gridTemplateRows: `repeat(${config.rows}, minmax(0, 1fr))`,
@@ -502,16 +742,30 @@ export default function ViewPage() {
                 );
               }
 
+              const rootKey = resolveRootKey(key, playerState.cells);
+              const connectionGroup = cell.componentId === FREEFORM_COMPONENT_ID
+                ? getConnectionGroup(rootKey, playerState.config.connections)
+                : null;
+
               // Get appearance settings or use defaults
               const appearance: CellAppearance = cell.appearance
                 ? cloneAppearance(cell.appearance) ?? makeDefaultAppearance()
                 : makeDefaultAppearance();
 
-              // Apply appearance styles
-              const backgroundColor =
+              // If connected, use the main connector's background color
+              let backgroundColor =
                 appearance.backgroundColor && appearance.backgroundColor !== ""
                   ? appearance.backgroundColor
                   : "#0a3d62";
+              
+              if (connectionGroup && connectionGroup.length > 1) {
+                // Get the main connector's background color (first panel in group)
+                const mainKey = connectionGroup[0];
+                const mainCell = playerState.cells[mainKey];
+                if (mainCell?.appearance?.backgroundColor) {
+                  backgroundColor = mainCell.appearance.backgroundColor;
+                }
+              }
               const borderColor =
                 appearance.borderColor && appearance.borderColor !== ""
                   ? appearance.borderColor
@@ -530,6 +784,11 @@ export default function ViewPage() {
               const isPanel = cell.componentId === FREEFORM_COMPONENT_ID;
               const panelEntries = isPanel ? cell.panelEntries ?? [] : [];
 
+              // Disable box-shadow in view to avoid showing through connectors
+              const connectionStyle: React.CSSProperties = {
+                boxShadow: "none",
+              };
+
               return (
                 <div
                   key={key}
@@ -542,7 +801,9 @@ export default function ViewPage() {
                     borderWidth,
                     borderStyle,
                     borderRadius: `${borderRadius}px`,
-                    boxShadow: "inset 0 0 35px rgba(12,154,235,0.16)",
+                    position: "relative",
+                    zIndex: 1,
+                    ...connectionStyle,
                   }}
                 >
                   {isPanel && panelEntries.length > 0 ? (
@@ -563,6 +824,64 @@ export default function ViewPage() {
                     />
                   )}
                 </div>
+              );
+            })}
+            {/* Connection gap fillers - fill gaps between connected panels */}
+            {gridReady && connectionOverlays.map((gapRect, idx) => {
+              if (!gridRef.current) return null;
+              
+              // Calculate positions relative to grid
+              const gridRect = gridRef.current.getBoundingClientRect();
+              // Account for gaps in cell size calculation
+              // CSS Grid with 1fr columns: (totalWidth - (columns-1) * gap) / columns
+              const cellWidth = (gridRect.width - (config.columns - 1) * config.gap) / config.columns;
+              const cellHeight = (gridRect.height - (config.rows - 1) * config.gap) / config.rows;
+              
+              // Convert grid coordinates to pixel positions
+              // Connectors extend half a cell size into the panels
+              // If width is 0, it's a vertical gap (between columns)
+              // If height is 0, it's a horizontal gap (between rows)
+              let x: number;
+              let y: number;
+              let width: number;
+              let height: number;
+              
+              const halfCellWidth = cellWidth / 2;
+              const halfCellHeight = cellHeight / 2;
+              
+              if (gapRect.width === 0) {
+                // Vertical gap: between columns
+                // Gap is at column line gapRect.x (between column gapRect.x-1 and gapRect.x)
+                // Extend half a cell width into each panel
+                x = gapRect.x * (cellWidth + config.gap) - config.gap - halfCellWidth;
+                width = config.gap + (halfCellWidth * 2);
+                // Y spans from row gapRect.y for gapRect.height rows
+                y = gapRect.y * (cellHeight + config.gap);
+                height = gapRect.height * (cellHeight + config.gap) - config.gap;
+              } else {
+                // Horizontal gap: between rows
+                // Gap is at row line gapRect.y (between row gapRect.y-1 and gapRect.y)
+                // Extend half a cell height into each panel
+                y = gapRect.y * (cellHeight + config.gap) - config.gap - halfCellHeight;
+                height = config.gap + (halfCellHeight * 2);
+                // X spans from column gapRect.x for gapRect.width columns
+                x = gapRect.x * (cellWidth + config.gap);
+                width = gapRect.width * (cellWidth + config.gap) - config.gap;
+              }
+              
+              return (
+                <div
+                  key={`connection-gap-${idx}`}
+                  className="pointer-events-none absolute"
+                  style={{
+                    left: `${x}px`,
+                    top: `${y}px`,
+                    width: `${width}px`,
+                    height: `${height}px`,
+                    backgroundColor: gapRect.backgroundColor,
+                    zIndex: 0,
+                  }}
+                />
               );
             })}
           </div>

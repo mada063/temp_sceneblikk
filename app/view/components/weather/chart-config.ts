@@ -84,16 +84,39 @@ export function calculateTemperatureRange(
     tempOffset = isHorizontal ? 5 : 10; // +/- 5 for horizontal, +/- 10 for vertical
   }
 
-  // Ensure at least tempOffset degrees above and below average
-  let minTemp = Math.round(avgTemp - tempOffset);
-  let maxTemp = Math.round(avgTemp + tempOffset);
-
-  // Expand range if actual data exceeds the window
-  if (actualMin < minTemp) {
-    minTemp = Math.floor(actualMin);
+  // Calculate differences from average first
+  const minDiffFromAvg = Math.abs(actualMin - avgTemp);
+  const maxDiffFromAvg = Math.abs(actualMax - avgTemp);
+  
+  // If highest or lowest temperature is more than or equal to ±5 from average, add +2 degrees padding
+  // Otherwise use the standard tempOffset
+  let minTemp: number;
+  let maxTemp: number;
+  
+  // Check if we need padding: when actual temperature is >= average + 5 or <= average - 5
+  // Use rounded average to avoid floating point precision issues
+  const roundedAvg = Math.round(avgTemp);
+  const needsMinPadding = actualMin <= roundedAvg - 5;
+  const needsMaxPadding = actualMax >= roundedAvg + 5;
+  
+  if (needsMinPadding) {
+    minTemp = Math.floor(actualMin) - 2;
+  } else {
+    minTemp = Math.round(avgTemp - tempOffset);
+    // Still expand if actual data is below the offset range
+    if (actualMin < minTemp) {
+      minTemp = Math.floor(actualMin);
+    }
   }
-  if (actualMax > maxTemp) {
-    maxTemp = Math.ceil(actualMax);
+  
+  if (needsMaxPadding) {
+    maxTemp = Math.ceil(actualMax) + 2;
+  } else {
+    maxTemp = Math.round(avgTemp + tempOffset);
+    // Still expand if actual data is above the offset range
+    if (actualMax > maxTemp) {
+      maxTemp = Math.ceil(actualMax);
+    }
   }
 
   // Ensure minimum range (tempOffset * 2)

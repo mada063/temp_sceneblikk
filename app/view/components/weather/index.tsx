@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { WeatherTiny } from "./WeatherTiny";
 import { WeatherSmall } from "./WeatherSmall";
 import { WeatherMedium } from "./WeatherMedium";
+import { WeatherMediumChart } from "./WeatherMediumChart";
 import { WeatherLarge } from "./WeatherLarge";
 import { WeatherXLarge } from "./WeatherXLarge";
 import { getAirQualityLevel, type WeatherData } from "./utils";
@@ -64,6 +65,15 @@ export function Weather({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }:
     if (fraction < 0.75) return "large";
     return "xlarge";
   }, [colSpan, rowSpan, totalGridSize]);
+
+  // Check if panel is wide and short (full width, 1/4 height) for medium+ chart view
+  const isWideShortPanel = useMemo(() => {
+    const cols = colSpan ?? 1;
+    const rows = rowSpan ?? 1;
+    // Panel is wide and short if width is at least 4x the height (or close to it)
+    // This represents "full width but 1/4 height" aspect ratio
+    return cols >= 4 * rows && (panelSize === "medium" || panelSize === "large" || panelSize === "xlarge");
+  }, [colSpan, rowSpan, panelSize]);
 
   useEffect(() => {
     if (!lat || !lon || isNaN(lat) || isNaN(lon)) {
@@ -144,7 +154,7 @@ export function Weather({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }:
           const now = new Date();
           
           // Calculate hours to show using centralized configuration
-          const hoursToShow = calculateHoursToShow({
+          let hoursToShow = calculateHoursToShow({
             panelSize,
             colSpan: colSpan ?? 1,
             rowSpan: rowSpan ?? 1,
@@ -152,6 +162,11 @@ export function Weather({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }:
             showTwoCharts,
             isFullScreen,
           });
+          
+          // If this is a wide short panel (will use WeatherMediumChart), ensure 24 hours
+          if (isWideShortPanel && hoursToShow < 24) {
+            hoursToShow = 24;
+          }
           
           // Take the first N entries that are in the future
           // This ensures we get the requested number of data points
@@ -383,6 +398,11 @@ export function Weather({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }:
     colSpan,
     rowSpan,
   };
+
+  // Use WeatherMediumChart for wide, short medium+ panels
+  if (isWideShortPanel) {
+    return <WeatherMediumChart {...commonProps} />;
+  }
 
   switch (panelSize) {
     case "tiny":

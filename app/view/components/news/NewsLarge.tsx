@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { FiActivity } from "react-icons/fi";
-import type { NewsProps, NewsFeed, PanelSize } from "./types";
+import type { NewsProps, NewsFeed, NewsItem, PanelSize } from "./types";
 
 type NewsLargeProps = NewsProps & {
   newsData: NewsFeed | null;
@@ -17,13 +17,32 @@ export function NewsLarge({ appearance, newsData, loading, error, scrollSpeed = 
   const primaryColor = appearance.textColor || "#ffffff";
   const tickerRef = useRef<HTMLDivElement>(null);
 
-  // Calculate font sizes based on panel dimensions
+  // Current date/time state
+  const [now, setNow] = useState<Date>(() => new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 60000); // Update every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  // Calculate font sizes based on panel dimensions - Large container
   const panelArea = (colSpan ?? 1) * (rowSpan ?? 1);
-  const titleFontSize = panelArea <= 12 ? "0.875rem" : "1rem"; // 14px or 16px
-  const descFontSize = "0.625rem"; // 10px
-  const sourceFontSize = "0.625rem"; // 10px
+  const titleFontSize = panelArea <= 12 ? "0.9375rem" : "1.0625rem"; // 15px or 17px - large size
+  const descFontSize = "0.75rem"; // 12px
+  const sourceFontSize = "0.6875rem"; // 11px
+  const dateTimeFontSize = "0.625rem"; // 10px
 
   const itemsToShow = newsData?.items.slice(0, maxItems) || [];
+  
+  // Format date/time for display
+  const dateTimeString = now.toLocaleDateString("no-NO", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   if (loading) {
     return (
@@ -64,64 +83,88 @@ export function NewsLarge({ appearance, newsData, loading, error, scrollSpeed = 
     );
   }
 
+  // Create multiple duplicates for seamless scrolling (4 copies total) with gaps between copies
+  const createDuplicatedItemsWithGaps = () => {
+    if (itemsToShow.length <= 1) return itemsToShow;
+    
+    const copies = [];
+    for (let i = 0; i < 4; i++) {
+      copies.push(...itemsToShow.map((item, idx) => ({ ...item, copyIndex: i, originalIndex: idx })));
+      // Add gap spacer between copies (except after last copy)
+      if (i < 3) {
+        copies.push({ isSpacer: true, copyIndex: i });
+      }
+    }
+    return copies;
+  };
+
+  const duplicatedItems = createDuplicatedItemsWithGaps();
+  const itemGap = "2rem"; // gap-8 = 2rem
+
   return (
-    <div className="flex h-full w-full flex-col gap-3 px-6 py-3">
-      {appearance.newsShowSource && (
+    <div className="flex h-full w-full flex-col gap-3 px-6 py-3 relative">
+      <div className="flex items-start justify-between gap-2">
+        {newsData && (
+          <div
+            className="font-medium uppercase tracking-wider opacity-70 px-1"
+            style={{ color: primaryColor, fontSize: sourceFontSize }}
+          >
+            {newsData.title}
+          </div>
+        )}
         <div
-          className="font-medium uppercase tracking-wider"
-          style={{ color: `${primaryColor}AA`, fontSize: sourceFontSize }}
+          className="opacity-60 whitespace-nowrap"
+          style={{ color: primaryColor, fontSize: dateTimeFontSize }}
         >
-          {newsData.title}
+          {dateTimeString}
         </div>
-      )}
-      <div className="flex-1 min-h-0 overflow-hidden">
+      </div>
+      <div className="flex-1 min-h-0 overflow-hidden relative">
         <div
           ref={tickerRef}
-          className={`flex flex-col gap-8 h-full ${itemsToShow.length > 1 ? "news-scroll-large" : ""}`}
+          className={`flex flex-col ${itemsToShow.length > 1 ? "news-scroll-large" : ""}`}
+          style={{ gap: itemGap }}
         >
-          {itemsToShow.map((item, idx) => (
-            <div
-              key={`${item.link}-${idx}`}
-              className="flex-shrink-0"
-            >
-              <div
-                className="font-semibold line-clamp-2"
-                style={{ color: primaryColor, fontSize: titleFontSize }}
-              >
-                {item.title}
-              </div>
-              {item.description && (
+          {duplicatedItems.map((item, idx) => {
+            if ('isSpacer' in item && item.isSpacer) {
+              // Gap spacer between copy sets
+              return (
                 <div
-                  className="mt-1 line-clamp-1"
-                  style={{ color: `${primaryColor}CC`, fontSize: descFontSize }}
-                >
-                  {item.description}
-                </div>
-              )}
-            </div>
-          ))}
-          {/* Duplicate items for seamless loop */}
-          {itemsToShow.length > 1 && itemsToShow.map((item, idx) => (
-            <div
-              key={`${item.link}-${idx}-dup`}
-              className="flex-shrink-0"
-            >
+                  key={`spacer-${item.copyIndex}`}
+                  className="flex-shrink-0"
+                  style={{ height: itemGap }}
+                />
+              );
+            }
+            const newsItem = item as NewsItem & { copyIndex: number; originalIndex: number };
+            const isLastInCopy = newsItem.originalIndex === itemsToShow.length - 1;
+            return (
               <div
-                className="font-semibold line-clamp-2"
-                style={{ color: primaryColor, fontSize: titleFontSize }}
+                key={`${newsItem.link}-${newsItem.copyIndex}-${newsItem.originalIndex}`}
+                className="flex-shrink-0 flex flex-col gap-1.5 border-b border-opacity-30"
+                style={{ 
+                  borderColor: `${primaryColor}50`,
+                  borderWidth: isLastInCopy ? 0 : undefined,
+                  paddingBottom: "1.5rem"
+                }}
               >
-                {item.title}
-              </div>
-              {item.description && (
                 <div
-                  className="mt-1 line-clamp-1"
-                  style={{ color: `${primaryColor}CC`, fontSize: descFontSize }}
+                  className="font-semibold line-clamp-2"
+                  style={{ color: primaryColor, fontSize: titleFontSize }}
                 >
-                  {item.description}
+                  {newsItem.title}
                 </div>
-              )}
-            </div>
-          ))}
+                {newsItem.description && (
+                  <div
+                    className="line-clamp-1 opacity-85"
+                    style={{ color: primaryColor, fontSize: descFontSize }}
+                  >
+                    {newsItem.description}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
