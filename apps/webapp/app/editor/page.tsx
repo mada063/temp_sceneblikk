@@ -12,7 +12,7 @@ import {
 } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FiMonitor, FiRefreshCw, FiRotateCcw } from "react-icons/fi";
+import { FiArrowLeft, FiMonitor, FiRefreshCw, FiRotateCcw } from "react-icons/fi";
 import { PLACEHOLDER_MAP } from "../lib/placeholders";
 import {
   DEFAULT_GRID_CONFIG,
@@ -1480,9 +1480,18 @@ export default function EditorPage() {
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-6 pb-20 pt-16 sm:px-10 lg:px-16">
         <header className="flex flex-wrap items-center justify-between gap-6">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-custom-color-600 dark:text-custom-color-200">
-              Editor
-            </p>
+            <div className="flex items-center gap-4">
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2 rounded-full border border-custom-color-400 px-4 py-2 text-sm font-semibold text-custom-color-600 transition hover:bg-custom-color-200/50 dark:border-custom-color-300/40 dark:text-custom-color-50 dark:hover:bg-custom-color-700/40"
+              >
+                <FiArrowLeft className="h-4 w-4" />
+                Back
+              </Link>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-custom-color-600 dark:text-custom-color-200">
+                Editor
+              </p>
+            </div>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
               Layout designer
             </h1>

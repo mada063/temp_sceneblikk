@@ -6,7 +6,7 @@ export const metadata = {
 
 export default function Personvern() {
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12 text-gray-800">
+    <div className="max-w-3xl mx-auto px-4 py-12 text-custom-color-900 dark:text-custom-color-50">
       <h1 className="text-3xl font-semibold mb-6">Personvern</h1>
       <p className="mb-4">
         Vi i Sceneblikk tar ditt personvern på alvor. Denne siden beskriver hvilke personopplysninger vi samler inn, hvorfor vi samler dem inn, og hvordan de behandles.
@@ -29,7 +29,11 @@ export default function Personvern() {
       </p>
       <h2 className="text-xl font-semibold mt-8 mb-3">Kontakt</h2>
       <p>
-        For spørsmål om personvern, kontakt oss via siden <a className="text-custom-600 underline" href="/kontakt">Kontakt oss</a>.
+        For spørsmål om personvern, kontakt oss via siden{" "}
+        <a className="text-custom-color-600 underline dark:text-custom-color-300" href="/kontakt">
+          Kontakt oss
+        </a>
+        .
       </p>
     </div>
   );

@@ -14,7 +14,7 @@ const Starte = () => {
     <div className="flex items-center justify-center h-screen px-4">
       <div className="flex flex-col lg:flex-row w-full max-w-6xl items-center gap-12">
         {/* Text Section */}
-        <div className="w-full lg:w-1/2 text-center lg:text-left">
+        <div className="w-full lg:w-1/2 text-center lg:text-left text-custom-color-900 dark:text-white">
           <h1 className='mb-8'>
           <AnimatedText 
             text="Hvordan komme i gang?"

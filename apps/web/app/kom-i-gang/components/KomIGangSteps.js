@@ -11,27 +11,27 @@ const KomIGangSteps = () => {
     {
       title: "Registrer deg",
       description: "Opprett en konto på Sceneblikk for å komme i gang med digital skilting.",
-      icon: <FaUserPlus className="w-12 h-12 text-custom-600" />,
+      icon: <FaUserPlus className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />,
     },
     {
       title: "Lag byggeblokker",
       description: "Lag dine egne byggeblokker med innhold som bilder, tekst og værmeldinger.",
-      icon: <FaCubes className="w-12 h-12 text-custom-600" />,
+      icon: <FaCubes className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />,
     },
     {
       title: "Design oppsett",
       description: "Design ditt oppsett ved å plassere byggeblokker i rutenett eller fullskjerm.",
-      icon: <FaPalette className="w-12 h-12 text-custom-600" />,
+      icon: <FaPalette className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />,
     },
     {
       title: "Registrer skjerm",
       description: "Registrer dine Android enheter i systemet.",
-      icon: <FaTv className="w-12 h-12 text-custom-600" />,
+      icon: <FaTv className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />,
     },
     {
       title: "Tildel oppsett",
       description: "Tildel ditt oppsett til skjermen og se endringene i sanntid.",
-      icon: <FaLink className="w-12 h-12 text-custom-600" />,
+      icon: <FaLink className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />,
     },
   ];
 
@@ -56,50 +56,50 @@ const KomIGangSteps = () => {
       {/* Content */}
       <div className="relative z-10 w-full max-w-7xl pt-44">
         <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-8 w-full px-8">
-        {steps.map((step, index) => (
+          {steps.map((step, index) => (
             <motion.div
-                key={index}
-                className="bg-white p-8 rounded-lg flex flex-col text-center h-full"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ delay: index * 0.1, duration: 0.5 }}
+              key={step.title}
+              className="group relative overflow-hidden rounded-2xl border border-white/40 bg-white/80 p-6 text-custom-color-900 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl dark:border-white/10 dark:bg-custom-color-800/70 dark:text-white"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ delay: index * 0.1, duration: 0.4 }}
             >
-                <motion.h2 
-                  className="text-2xl font-semibold mb-4 font-serif"
-                  initial={{ opacity: 0, y: 20 }}
+              <div className="absolute inset-0 -z-10 bg-gradient-to-br from-custom-color-100/40 via-transparent to-custom-color-300/35 opacity-0 transition group-hover:opacity-100 dark:from-custom-color-700/25 dark:to-custom-color-500/35" />
+              <div className="flex flex-col h-full text-left">
+                <motion.h2
+                  className="text-2xl font-semibold mb-3 font-sans text-custom-color-900 dark:text-white"
+                  initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.5 }}
-                  transition={{ delay: index * 0.1 + 0.1, duration: 0.4 }}
+                  transition={{ delay: index * 0.1 + 0.05, duration: 0.3 }}
                 >
                   {step.title}
                 </motion.h2>
-                <motion.p 
-                  className="text-md text-gray-700 text-left"
-                  initial={{ opacity: 0, y: 20 }}
+                <motion.p
+                  className="text-sm text-custom-color-700/80 dark:text-custom-color-100/75"
+                  initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.5 }}
-                  transition={{ delay: index * 0.1 + 0.2, duration: 0.4 }}
+                  transition={{ delay: index * 0.1 + 0.1, duration: 0.3 }}
                 >
                   {step.description}
                 </motion.p>
 
-                {/* Spacer to push icon to bottom consistently */}
                 <div className="flex-grow" />
 
-                {/* Icon container */}
-                <motion.div 
-                  className="bg-custom-200 p-4 rounded-lg mt-8 self-center"
-                  initial={{ opacity: 0, scale: 0.8 }}
+                <motion.div
+                  className="mt-6 inline-flex items-center justify-center self-start rounded-xl bg-custom-color-500/15 p-4 text-custom-color-600 dark:bg-custom-color-400/20 dark:text-custom-color-200"
+                  initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true, amount: 0.5 }}
-                  transition={{ delay: index * 0.1 + 0.3, duration: 0.4 }}
+                  transition={{ delay: index * 0.1 + 0.15, duration: 0.3 }}
                 >
                   {step.icon}
                 </motion.div>
+              </div>
             </motion.div>
-            ))}
-
+          ))}
         </div>
       </div>
     </div>

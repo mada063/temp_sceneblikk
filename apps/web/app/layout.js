@@ -68,7 +68,7 @@ export default function RootLayout({ children }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#0179C8" />
       </head>
-      <body className={`antialiased`}>
+      <body className="antialiased text-custom-color-900 transition-colors duration-300 dark:text-custom-color-50">
         <AnimatedBackground />
         <Header />
         {children}

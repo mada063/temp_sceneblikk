@@ -2,8 +2,9 @@
 import React from 'react';
 import Link from 'next/link';
 
-const Button2 = ({ children, onClick, className = '', href, ...props }) => {
-  const commonClasses = `flex items-center justify-center box-border h-12 w-32 border border-custom-500 bg-transparent text-black rounded-lg hover:bg-custom-500 hover:text-white hover:cursor-pointer transition-all ${className}`;
+const Button2 = ({ children, onClick, className = '', href, disabled = false, fullWidth = false, ...props }) => {
+  const widthClass = fullWidth ? 'w-full' : '';
+  const commonClasses = `inline-flex items-center justify-center px-5 py-3 text-sm font-semibold rounded-full border border-custom-color-400 bg-transparent text-custom-color-600 transition hover:bg-custom-color-200/40 disabled:opacity-50 dark:border-custom-color-300/40 dark:text-custom-color-100 dark:hover:bg-custom-color-700/50 ${widthClass} ${className}`;
 
   if (href) {
     return (
@@ -17,6 +18,7 @@ const Button2 = ({ children, onClick, className = '', href, ...props }) => {
     <button
       onClick={onClick}
       className={commonClasses}
+      disabled={disabled}
       {...props}
     >
       {children}

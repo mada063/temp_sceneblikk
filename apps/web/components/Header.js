@@ -5,16 +5,16 @@ import Image from 'next/image';
 
 export default function Header() {
     return (
-        <header className="fixed top-0 left-0 w-full bg-transparent z-50">
-            <div className="max-w-6xl mx-auto flex items-center justify-between h-16">
+        <header className="fixed top-0 left-0 w-full glass-surface z-50 border-b border-white/40 dark:border-white/10">
+            <div className="max-w-6xl mx-auto flex items-center justify-between h-16 px-4">
                 {/* Logo */}
-                <div className="font-bold text-xl pt-4">
-                    <Link href="/" className="block w-25 h-25">
+                <div className="font-bold text-xl flex items-center">
+                    <Link href="/" className="block h-12 w-12">
                         <Image
                             src="/images/peacock_icon_rounded_head.png"
                             alt="Logo"
-                            width={100}
-                            height={100}
+                            width={48}
+                            height={48}
                             className="w-full h-full object-contain"
                             priority
                         />

@@ -1,69 +1,70 @@
 'use client';
-import React, { useState } from 'react';
-import { DndContext, useDraggable, useDroppable } from '@dnd-kit/core';
+import React from 'react';
 import { motion } from 'framer-motion';
-import SimpleLayoutEditor from './SimpleLayoutEditor';
+import { FiCloud, FiRadio, FiClock, FiImage, FiVideo, FiMapPin, FiType, FiBell } from 'react-icons/fi';
 import AnimatedText from '@/components/AnimatedText';
 import AnimatedParagraph from '@/components/AnimatedParagraph';
 
-const Block = ({ id, label }) => {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id });
-
-  const style = {
-    transform: transform
-      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-      : undefined,
-    border: '1px solid #ccc',
-    padding: '1rem',
-    margin: '0.5rem',
-    borderRadius: '8px',
-    background: 'white',
-    cursor: 'grab',
-  };
-
-  return (
-    <div ref={setNodeRef} {...listeners} {...attributes} style={style}>
-      {label}
-    </div>
-  );
-};
-
-const DropZone = ({ id, children }) => {
-  const { isOver, setNodeRef } = useDroppable({ id });
-
-  return (
-    <div
-      ref={setNodeRef}
-      className={`bg-white rounded-lg border-2 border-dashed p-4 min-h-[100px] flex items-center justify-center text-gray-500 transition-colors ${
-        isOver ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
-      }`}
-    >
-      {children}
-    </div>
-  );
-};
+const components = [
+  {
+    title: 'Vær',
+    icon: FiCloud,
+    description:
+      'Vis sanntids værdata med temperatur, ikoner og grafer for kommende timer og dager.',
+  },
+  {
+    title: 'Nyheter',
+    icon: FiRadio,
+    description:
+      'Rullerende nyhetsticker eller listevisning med siste oppdateringer fra valgte kilder.',
+  },
+  {
+    title: 'Klokker',
+    icon: FiClock,
+    description:
+      'Analog og digital klokke med støtte for ulike tidssoner og stilvarianter.',
+  },
+  {
+    title: 'Bilder',
+    icon: FiImage,
+    description:
+      'Vis statiske bilder, logoer og illustrasjoner med tilpasset skalering og plassering.',
+  },
+  {
+    title: 'Video',
+    icon: FiVideo,
+    description:
+      'Spill av videoer i loop eller etter tidsplan. Perfekt for kampanjer og infofilmer.',
+  },
+  {
+    title: 'Transport',
+    icon: FiMapPin,
+    description:
+      'Sanntidsinformasjon om avgangs- og ankomsttider fra utvalgte holdeplasser og stasjoner.',
+  },
+  {
+    title: 'Tekst og kunngjøringer',
+    icon: FiType,
+    description:
+      'Frie tekstfelt for meldinger, beskjedtavler og praktisk informasjon.',
+  },
+  {
+    title: 'Branding',
+    icon: FiBell,
+    description:
+      'Logoer, farger og faste elementer som gir et helhetlig visuelt uttrykk.',
+  },
+];
 
 const Byggeblokker = () => {
-  const initialZones = ['zone-1', 'zone-2', 'zone-3', 'zone-4'];
-  const [droppedItems, setDroppedItems] = useState({});
-
-  const handleDragEnd = ({ active, over }) => {
-    if (over) {
-      setDroppedItems((prev) => ({
-        ...prev,
-        [over.id]: [...(prev[over.id] || []), active.id],
-      }));
-    }
-  };
-
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4">
       <div className="w-full max-w-7xl flex flex-col items-center gap-12">
         {/* Header text */}
-        <div className="max-w-6xl flex ">
-          <div className="w-full max-w-2/3 text-left">
-            <h1 className='mb-8'>
-              <AnimatedText 
+        <div className="max-w-6xl flex">
+          <div className="w-full text-left text-custom-color-900 dark:text-white">
+            <h1 className="mb-8">
+              <AnimatedText
                 text="Våre byggeblokker"
                 size="text-3xl md:text-4xl lg:text-6xl"
                 primaryFont="font-serif"
@@ -72,24 +73,41 @@ const Byggeblokker = () => {
                 className="mb-6"
               />
             </h1>
-            <AnimatedParagraph 
+            <AnimatedParagraph
               order={1}
               className="text-base md:text-lg"
             >
-              Her er noen av funksjonene og integrasjonene i vårt lille system. Her finner du alt fra bilder til værmeldinger. Ved å bruke disse byggeblokkene har infoskjerm aldri vært lettere. Dra inn komponentene og se hvordan de legges til oppsettet.
-            </AnimatedParagraph>
-            <AnimatedParagraph 
-              order={2}
-              className="text-base md:text-lg mt-4"
-            >
-              Dersom det er noe du savner kan du gi oss en lyd, så skal vi legge det til!
+              Hver skjerm bygges opp av komponenter. Kombiner vær, nyheter, klokker, media og
+              transportdata i samme oppsett, og tilpass hver byggekloss til din visuelle profil.
             </AnimatedParagraph>
           </div>
         </div>
 
-        {/* Layout and blocks side-by-side */}
-        <div className="flex w-full gap-8">
-          <SimpleLayoutEditor />
+        {/* Component boxes */}
+        <div className="grid w-full gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {components.map((comp, index) => (
+            <motion.div
+              key={comp.title}
+              className="group relative overflow-hidden rounded-2xl border border-white/40 bg-white/80 p-6 text-custom-color-900 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl dark:border-white/10 dark:bg-custom-color-800/70 dark:text-white"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ delay: 0.05 * index, duration: 0.35 }}
+            >
+              <div className="absolute inset-0 -z-10 bg-gradient-to-br from-custom-color-100/40 via-transparent to-custom-color-300/35 opacity-0 transition group-hover:opacity-100 dark:from-custom-color-700/25 dark:to-custom-color-500/35" />
+              <div className="flex flex-col gap-3 text-left h-full">
+                <div className="inline-flex items-center justify-center rounded-xl bg-custom-color-500/15 p-3 text-custom-color-600 dark:bg-custom-color-400/20 dark:text-custom-color-200">
+                  <comp.icon className="h-6 w-6" />
+                </div>
+                <h3 className="text-lg font-semibold text-custom-color-900 dark:text-white">
+                  {comp.title}
+                </h3>
+                <p className="text-sm text-custom-color-700/80 dark:text-custom-color-100/75">
+                  {comp.description}
+                </p>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </div>

@@ -7,22 +7,23 @@ const AnimatedText = ({
   secondaryText = "",
   order = 0,
   size = "text-3xl",
-  color = "text-foreground",
+  color = "text-custom-color-900 dark:text-white",
   secondaryColor = "text-gray-500",
   primaryFont = "font-sans",
   secondaryFont = "font-serif",
   fontWeight = "",
+  className = "",
 }) => {
   return (
     <div
-      className={`${size} ${color} ${fontWeight} ${primaryFont} pb-[8px] relative`}
+      className={`${size} ${color} ${fontWeight} ${primaryFont} pb-[8px] relative ${className}`}
     >
       <motion.span
         initial={{ y: 50, opacity: 0 }}
         whileInView={{ y: 0, opacity: 1 }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ delay: order * 0.1, duration: 0.6, ease: "easeOut" }}
-        className="inline-block"
+        className={`inline-block ${color}`}
       >
         {text}
       </motion.span>

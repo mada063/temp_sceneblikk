@@ -1,4 +1,3 @@
-import Divider2 from "@/components/Divider2";
 import Divider from "@/components/Divider";
 import Bulletpoints from "./Bulletpoints";
 import Byggeblokker from "./Byggeblokker";
@@ -13,7 +12,6 @@ const HomeContent = () => {
       <ForskjelligeOppsett/>
       <Divider />
       <Byggeblokker />
-      <Divider2 />
       <Bulletpoints />  
       <Starte />
     </div>

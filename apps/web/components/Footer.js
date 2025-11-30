@@ -4,8 +4,8 @@ import Link from 'next/link'
 
 const Footer = () => {
   return (
-    <div className="bg-custom-600">
-      <div className="flex flex-row justify-between items-start max-w-7xl mx-auto py-8 px-4">
+    <div className="footer-bg border-t border-white/10 dark:border-white/10">
+      <div className="flex flex-row justify-between items-start max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Logo and description */}
         <div className="flex flex-col space-y-4">
           <Image
@@ -15,39 +15,39 @@ const Footer = () => {
             height={400}
             className="relative z-10 max-h-[20vh] w-auto"
           />
-          <p className="text-white max-w-xs">
+          <p className="text-custom-color-800 max-w-xs text-sm dark:text-white">
             En enkel løsning for moderne digital signage, helt gratis!
           </p>
         </div>
 
         {/* Menu section */}
         <div className="flex flex-col space-y-4">
-          <h4 className="text-white font-semibold text-lg">Meny</h4>
+          <h4 className="text-custom-color-800 font-semibold text-lg dark:text-white">Meny</h4>
           {/* Line */}
-          <div className="w-32 h-px bg-white"></div>
-          <Link href="/stotte" className="text-white hover:underline">
+          <div className="w-32 h-px bg-custom-color-800 dark:bg-white"></div>
+          <Link href="/stotte" className="text-custom-color-800 hover:text-white hover:underline transition dark:text-white">
             Støtte
           </Link>
-          <Link href="/kom-i-gang" className="text-white hover:underline">
+          <Link href="/kom-i-gang" className="text-custom-color-800 hover:text-white hover:underline transition dark:text-white">
             Kom i gang
           </Link>
-          <Link href="/login" className="text-white hover:underline">
+          <Link href="/login" className="text-custom-color-800 hover:text-white hover:underline transition dark:text-white">
             Logg inn
           </Link>
         </div>
 
         {/* Info section */}
         <div className="flex flex-col space-y-4">
-          <h4 className="text-white font-semibold text-lg">Info</h4>
+          <h4 className="text-custom-color-800 font-semibold text-lg dark:text-white">Info</h4>
           {/* Line */}
-          <div className="w-32 h-px bg-white"></div>
-          <Link href="/kontakt" className="text-white hover:underline">
+          <div className="w-32 h-px bg-custom-color-800 dark:bg-white"></div>
+          <Link href="/kontakt" className="text-custom-color-800 hover:text-white hover:underline transition dark:text-white">
             Kontakt oss
           </Link>
-          <Link href="/personvern" className="text-white hover:underline">
+          <Link href="/personvern" className="text-custom-color-800 hover:text-white hover:underline transition dark:text-white">
             Personvern
           </Link>
-          <Link href="/bruk-av-informasjonskapsler" className="text-white hover:underline">
+          <Link href="/bruk-av-informasjonskapsler" className="text-custom-color-800 hover:text-white hover:underline transition dark:text-white">
             Bruk av informasjonskapsler
           </Link>
         </div>

@@ -1,6 +1,221 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+:root {
+  --custom-color-50: #f0f8ff;
+  --custom-color-100: #e0f0fe;
+  --custom-color-200: #bae2fd;
+  --custom-color-300: #37b4f9;
+  --custom-color-400: #0c9aeb;
+  --custom-color-500: #0179c8;
+  --custom-color-600: #0261a2;
+  --custom-color-700: #065286;
+  --custom-color-800: #0a3d62;
+  --custom-color-900: #082c49;
+  --background: var(--custom-color-50);
+  --foreground: var(--custom-color-900);
+  --surface: rgba(255, 255, 255, 0.82);
+  --surface-strong: #ffffff;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter-sans);
+  --color-custom-color-50: var(--custom-color-50);
+  --color-custom-color-100: var(--custom-color-100);
+  --color-custom-color-200: var(--custom-color-200);
+  --color-custom-color-300: var(--custom-color-300);
+  --color-custom-color-400: var(--custom-color-400);
+  --color-custom-color-500: var(--custom-color-500);
+  --color-custom-color-600: var(--custom-color-600);
+  --color-custom-color-700: var(--custom-color-700);  
+  --color-custom-color-800: var(--custom-color-800);
+  --color-custom-color-900: var(--custom-color-900);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: var(--custom-color-900);
+    --foreground: var(--custom-color-50);
+    --surface: rgba(8, 44, 73, 0.84);
+    --surface-strong: rgba(10, 61, 98, 0.92);
+  }
+}
+
+html {
+  background: var(--background);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif; 
+}
+
+.glass-surface {
+  background: var(--surface);
+  backdrop-filter: blur(18px);
+}
+
+.glass-surface-strong {
+  background: var(--surface-strong);
+  backdrop-filter: blur(20px);
+}
+
+/* Custom scrollbar styles that adapt to dark/light mode */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--custom-color-300) transparent;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--custom-color-300);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--custom-color-400);
+}
+
+/* Dark mode scrollbar */
+@media (prefers-color-scheme: dark) {
+  .custom-scrollbar {
+    scrollbar-color: var(--custom-color-400) transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--custom-color-900);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--custom-color-400);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: var(--custom-color-300);
+  }
+}
+
+/* Global scrollbar styles - apply to all scrollable elements */
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--custom-color-300) transparent;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--custom-color-300);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--custom-color-400);
+}
+
+/* Dark mode scrollbars */
+@media (prefers-color-scheme: dark) {
+  * {
+    scrollbar-color: var(--custom-color-400) transparent;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: var(--custom-color-900);
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--custom-color-400);
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--custom-color-300);
+  }
+
+  /* Ensure page (html/body) scrollbar gutter is dark as well */
+  html::-webkit-scrollbar-track,
+  body::-webkit-scrollbar-track {
+    background: var(--custom-color-900);
+  }
+}
+
+/* Footer background helper – distinct colors for light/dark */
+.footer-bg {
+  background-color: var(--surface);
+}
+
+@media (prefers-color-scheme: dark) {
+  .footer-bg {
+    background-color: var(--custom-color-900);
+  }
+}
+
+/* Corner gradient wash background (subtle blue on light, darker on dark) */
+.bg-corner-wash {
+  background-color: var(--custom-color-100);
+  background-image:
+    radial-gradient(600px 400px at 85% 0%, rgba(12, 154, 235, 0.25), rgba(255,255,255,0) 60%),
+    radial-gradient(500px 350px at 0% 100%, rgba(12, 154, 235, 0.25), rgba(255,255,255,0) 60%);
+  background-repeat: no-repeat;
+}
+
+@media (prefers-color-scheme: dark) {
+  .bg-corner-wash {
+    background-color: var(--custom-color-900);
+    background-image:
+      radial-gradient(600px 400px at 85% 0%, rgba(3, 67, 105, 0.55), rgba(8, 44, 73, 0) 65%),
+      radial-gradient(500px 350px at 0% 100%, rgba(3, 67, 105, 0.55), rgba(8, 44, 73, 0) 65%);
+  }
+}
+
+.text-custom-color-50 { color: var(--custom-color-50); }
+.text-custom-color-100 { color: var(--custom-color-100); }
+.text-custom-color-200 { color: var(--custom-color-200); }
+.text-custom-color-300 { color: var(--custom-color-300); }
+.text-custom-color-400 { color: var(--custom-color-400); }
+.text-custom-color-500 { color: var(--custom-color-500); }
+.text-custom-color-600 { color: var(--custom-color-600); }
+.text-custom-color-700 { color: var(--custom-color-700); }
+.text-custom-color-800 { color: var(--custom-color-800); }
+.text-custom-color-900 { color: var(--custom-color-900); }
+
+/* Dark mode text color utilities */
+@media (prefers-color-scheme: dark) {
+  .dark\:text-white { color: #ffffff !important; }
+  .dark\:text-custom-color-50 { color: var(--custom-color-50) !important; }
+  .dark\:text-custom-color-100 { color: var(--custom-color-100) !important; }
+  .dark\:text-custom-color-200 { color: var(--custom-color-200) !important; }
+  .dark\:text-custom-color-300 { color: var(--custom-color-300) !important; }
+  .dark\:text-custom-color-400 { color: var(--custom-color-400) !important; }
+}
+
+.border-custom-color-300 { border-color: var(--custom-color-300); }
+.border-custom-color-400 { border-color: var(--custom-color-400); }
+.border-custom-color-500 { border-color: var(--custom-color-500); }
+
 /* Animations */
 @keyframes float {
   0%, 100% {
@@ -14,109 +229,5 @@
   }
   75% {
     transform: translateY(20px) translateX(10px);
-  }
-}
-
-/* Dark mode variables */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-/* Light mode defaults */
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-/* Theme variables */
-@layer theme {
-  :root {
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
-
-    --custom-color-50: #F0F8FF;
-    --custom-color-100: #E0F0FE;
-    --custom-color-200: #BAE2FD;
-    --custom-color-250: #90CFFE;
-    --custom-color-300: #37B4F9;
-    --custom-color-400: #0C9AEB;
-    --custom-color-500: #0179C8;
-    --custom-color-600: #0261A2;
-    --custom-color-700: #065286;
-    --custom-color-800: #0A3D62;
-    --custom-color-900: #082C49;
-
-    --gradient-custom: linear-gradient(60deg, #0179C8, #37B4F9);
-    --gradient-custom-2: linear-gradient(60deg, #BAE2FD, #E0F0FE);
-
-    --font-family-inter: 'Inter', sans-serif;
-  }
-}
-
-/* Base styles */
-@layer base {
-  body {
-    color: var(--color-foreground);
-    font-family: var(--font-family-inter);
-    min-height: 100vh;
-    position: relative;
-  }
-}
-
-@layer utilities {
-  .hover\:bg-custom-500:hover {
-    background-color: var(--custom-color-500);
-  }
-}
-
-
-/* Utility classes */
-@layer utilities {
-  .bg-custom-50 { background-color: var(--custom-color-50); }
-  .bg-custom-75 { background-color: var(--custom-color-75); }
-  .bg-custom-100 { background-color: var(--custom-color-100); }
-  .bg-custom-200 { background-color: var(--custom-color-200); }
-  .bg-custom-250 { background-color: var(--custom-color-250); }
-  .bg-custom-300 { background-color: var(--custom-color-300); }
-  .bg-custom-400 { background-color: var(--custom-color-400); }
-  .bg-custom-500 { background-color: var(--custom-color-500); }
-  .bg-custom-600 { background-color: var(--custom-color-600); }
-  .bg-custom-700 { background-color: var(--custom-color-700); }
-  .bg-custom-800 { background-color: var(--custom-color-800); }
-  .bg-custom-900 { background-color: var(--custom-color-900); }
-
-  .text-custom-50 { color: var(--custom-color-50); }
-  .text-custom-75 { color: var(--custom-color-75); }
-  .text-custom-100 { color: var(--custom-color-100); }
-  .text-custom-200 { color: var(--custom-color-200); }
-  .text-custom-250 { color: var(--custom-color-250); }
-  .text-custom-300 { color: var(--custom-color-300); }
-  .text-custom-400 { color: var(--custom-color-400); }
-  .text-custom-500 { color: var(--custom-color-500); }
-  .text-custom-600 { color: var(--custom-color-600); }
-  .text-custom-700 { color: var(--custom-color-700); }
-  .text-custom-800 { color: var(--custom-color-800); }
-  .text-custom-900 { color: var(--custom-color-900); }
-
-  .border-custom-500 { border-color: var(--custom-color-500); }
-
-  .bg-gradient-custom { background-image: var(--gradient-custom); }
-  .bg-gradient-custom-2 { background-image: var(--gradient-custom-2); }
-
-  .text-foreground { color: var(--color-foreground); }
-  .bg-background { background-color: var(--color-background); }
-
-  .font-inter { font-family: var(--font-family-inter); }
-
-  /* Corner gradient wash background (subtle blue on white) */
-  .bg-corner-wash {
-    background-color: var(--custom-color-100);
-    background-image:
-      radial-gradient(600px 400px at 85% 0%, var(--custom-color-250), rgba(255,255,255,0) 60%),
-      radial-gradient(500px 350px at 0% 100%, var(--custom-color-250), rgba(255,255,255,0) 60%);
-    background-repeat: no-repeat;
   }
 }

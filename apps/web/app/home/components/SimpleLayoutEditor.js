@@ -30,24 +30,21 @@ export default function SimpleLayoutEditor() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="flex flex-col gap-6 p-6 w-full">
-
-        <div className="flex flex-row gap-6">
+      <div className="flex flex-col lg:flex-row gap-6 w-full">
         {/* Layout area */}
-        <div className="bg-white w-full aspect-video p-4 rounded-lg">
-
+        <div className="glass-surface w-full lg:flex-1 p-6 rounded-2xl border border-white/40 dark:border-white/10 shadow-lg">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-xl font-bold text-black">Mitt oppsett</h3>
-              <p className="text-sm text-gray-600">Et enkelt 3-delt oppsett</p>
+              <h3 className="text-xl font-semibold text-custom-color-900 dark:text-white">Grid Editor</h3>
+              <p className="text-sm text-custom-color-700/80 dark:text-custom-color-100/75">Dra komponenter inn i cellene for å bygge oppsettet</p>
             </div>
           </div>
 
-          <div className="w-full aspect-video p-4 rounded-lg overflow-hidden border border-gray-300 shadow-inner bg-gray-100">
+          <div className="w-full aspect-video p-4 rounded-lg overflow-hidden border border-white/20 dark:border-white/10 shadow-inner bg-custom-color-50/50 dark:bg-custom-color-800/30">
             <div className="flex gap-3 w-full h-full">
               <DroppableZone
                 id="zone1"
-                label="Sone 1"
+                label="Celle 1"
                 zoneContent={zoneContent}
                 setZoneContent={setZoneContent}
                 className="flex-1"
@@ -55,13 +52,13 @@ export default function SimpleLayoutEditor() {
               <div className="flex flex-col gap-3 flex-1">
                 <DroppableZone
                   id="zone2"
-                  label="Sone 2"
+                  label="Celle 2"
                   zoneContent={zoneContent}
                   setZoneContent={setZoneContent}
                 />
                 <DroppableZone
                   id="zone3"
-                  label="Sone 3"
+                  label="Celle 3"
                   zoneContent={zoneContent}
                   setZoneContent={setZoneContent}
                 />
@@ -70,20 +67,19 @@ export default function SimpleLayoutEditor() {
           </div>
         </div>
         {/* Blocks to drag */}
-        <div className="bg-white p-4 rounded-lg w-full max-w-md">
-        <div className="flex items-center justify-between mb-4">
+        <div className="glass-surface p-6 rounded-2xl border border-white/40 dark:border-white/10 shadow-lg w-full lg:w-80">
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-xl font-bold text-black">Byggeblokker</h3>
-              <p className="text-sm text-gray-600">Her er noen byggeblokker som kan brukes</p>
+              <h3 className="text-xl font-semibold text-custom-color-900 dark:text-white">Komponenter</h3>
+              <p className="text-sm text-custom-color-700/80 dark:text-custom-color-100/75">Dra til cellene</p>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             {exampleBlocks.map((block) => (
               <DraggableBlock key={block.id} bygg={block} />
             ))}
           </div>
         </div>
-      </div>
       </div>
     </DndProvider>
   );

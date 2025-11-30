@@ -17,9 +17,10 @@ const AnimatedParagraph = ({
   className = "",
   ...props
 }) => {
+  const defaultClasses = "text-custom-color-800 dark:text-custom-color-100";
   return (
     <motion.p
-      className={className}
+      className={`${defaultClasses} ${className}`}
       variants={paragraphVariants}
       initial="hidden"
       whileInView="visible"

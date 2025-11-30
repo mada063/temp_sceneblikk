@@ -10,22 +10,22 @@ import AnimatedImage from "@/components/AnimatedImage";
 const Bulletpoints = () => {
   const features = [
     {
-      title: "Grupper",
+      title: "Freeform Grid-system",
       description:
-        "SceneBlikk har et gruppesystem som gjør det enkelt å legge til nye personer i skjermadministrasjonen.",
-      icon: <FaUsers className="w-24 h-24 text-custom-600" />,
+        "Plasser komponenter fritt på rutenettet, juster størrelsen på celler og bygg oppsett som passer perfekt til skjermen.",
+      icon: <FaUsers className="w-24 h-24 text-custom-color-600 dark:text-custom-color-400" />,
     },
     {
       title: "Live oppdatering",
       description:
-        "Skjermene oppdateres øyeblikkelig når oppsettet endres i applikasjonen.",
-      icon: <MdLiveTv className="w-24 h-24 text-custom-600" />,
+        "Endringer i editoren oppdateres øyeblikkelig på alle aktive skjermer – alltid synkronisert.",
+      icon: <MdLiveTv className="w-24 h-24 text-custom-color-600 dark:text-custom-color-400" />,
     },
     {
-      title: "Enkelt oppsett",
+      title: "Mange komponenter",
       description:
-        "Det er enkelt å komme i gang, du trenger bare en skjerm og en telefon!",
-      icon: <FaHandSparkles className="w-24 h-24 text-custom-600" />,
+        "Velg mellom komponenter som vær, nyheter, klokker, bilder, video, transport og mer – alle med egne innstillinger.",
+      icon: <FaHandSparkles className="w-24 h-24 text-custom-color-600 dark:text-custom-color-400" />,
     },
   ];
 
@@ -51,50 +51,50 @@ const Bulletpoints = () => {
       {/* Content */}
       <div className="relative z-10 w-full max-w-7xl pt-44">
         <div className="grid md:grid-cols-3 gap-8 w-full px-8">
-        {features.map((feature, index) => (
+          {features.map((feature, index) => (
             <motion.div
-                key={index}
-                className="bg-white p-8 rounded-lg flex flex-col text-center h-full"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ delay: index * 0.1, duration: 0.5 }}
+              key={feature.title}
+              className="group relative overflow-hidden rounded-2xl border border-white/40 bg-white/80 p-6 text-custom-color-900 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl dark:border-white/10 dark:bg-custom-color-800/70 dark:text-white"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ delay: index * 0.1, duration: 0.4 }}
             >
-                <motion.h2 
-                  className="text-3xl font-semibold mb-4 font-serif"
-                  initial={{ opacity: 0, y: 20 }}
+              <div className="absolute inset-0 -z-10 bg-gradient-to-br from-custom-color-100/40 via-transparent to-custom-color-300/35 opacity-0 transition group-hover:opacity-100 dark:from-custom-color-700/25 dark:to-custom-color-500/35" />
+              <div className="flex flex-col h-full text-left">
+                <motion.h2
+                  className="text-2xl font-semibold mb-3 font-sans text-custom-color-900 dark:text-white"
+                  initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.5 }}
-                  transition={{ delay: index * 0.1 + 0.1, duration: 0.4 }}
+                  transition={{ delay: index * 0.1 + 0.05, duration: 0.3 }}
                 >
                   {feature.title}
                 </motion.h2>
-                <motion.p 
-                  className="text-md text-gray-700 text-left"
-                  initial={{ opacity: 0, y: 20 }}
+                <motion.p
+                  className="text-sm text-custom-color-700/80 dark:text-white/75"
+                  initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.5 }}
-                  transition={{ delay: index * 0.1 + 0.2, duration: 0.4 }}
+                  transition={{ delay: index * 0.1 + 0.1, duration: 0.3 }}
                 >
                   {feature.description}
                 </motion.p>
 
-                {/* Spacer to push icon to bottom consistently */}
                 <div className="flex-grow" />
 
-                {/* Icon container */}
-                <motion.div 
-                  className="bg-custom-200 p-4 rounded-lg mt-8 self-center"
-                  initial={{ opacity: 0, scale: 0.8 }}
+                <motion.div
+                  className="mt-6 inline-flex items-center justify-center rounded-xl bg-custom-color-500/15 p-4 text-custom-color-600 dark:bg-custom-color-400/20 dark:text-custom-color-200"
+                  initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true, amount: 0.5 }}
-                  transition={{ delay: index * 0.1 + 0.3, duration: 0.4 }}
+                  transition={{ delay: index * 0.1 + 0.15, duration: 0.3 }}
                 >
                   {feature.icon}
                 </motion.div>
+              </div>
             </motion.div>
-            ))}
-
+          ))}
         </div>
       </div>
     </div>

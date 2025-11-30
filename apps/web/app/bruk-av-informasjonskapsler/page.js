@@ -6,7 +6,7 @@ export const metadata = {
 
 export default function Cookies() {
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12 text-gray-800">
+    <div className="max-w-3xl mx-auto px-4 py-12 text-custom-color-900 dark:text-custom-color-50">
       <h1 className="text-3xl font-semibold mb-6">Bruk av informasjonskapsler</h1>
       <p className="mb-4">
         Vi bruker informasjonskapsler (cookies) for å forbedre brukeropplevelsen, analysere bruk av nettsiden og tilpasse innhold. Her forklarer vi hvilke typer informasjonskapsler som brukes og hvordan du kan administrere dem.
@@ -27,7 +27,11 @@ export default function Cookies() {
       </p>
       <h2 className="text-xl font-semibold mt-8 mb-3">Kontakt</h2>
       <p>
-        Har du spørsmål, ta kontakt via siden <a className="text-custom-600 underline" href="/kontakt">Kontakt oss</a>.
+        Har du spørsmål, ta kontakt via siden{" "}
+        <a className="text-custom-color-600 underline dark:text-custom-color-300" href="/kontakt">
+          Kontakt oss
+        </a>
+        .
       </p>
     </div>
   );

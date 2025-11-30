@@ -49,7 +49,7 @@ const VanligeSporsmal = () => {
 const FAQItem = ({ faq, isOpen, onClick, index }) => {
   return (
     <motion.div 
-      className="border-b border-gray-500 pb-4"
+      className="border-b border-custom-color-400/60 pb-4 dark:border-custom-color-500/70"
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.3 }}
@@ -78,7 +78,7 @@ const FAQItem = ({ faq, isOpen, onClick, index }) => {
       <div className={`transition-all overflow-hidden duration-300 ease-in-out ${isOpen ? 'max-h-40 mt-2' : 'max-h-0'}`}>
         <div className={`${isOpen ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}>
           <motion.p 
-            className="text-gray-600 text-xl"
+            className="text-xl text-custom-color-700/80 dark:text-custom-color-100/80"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
