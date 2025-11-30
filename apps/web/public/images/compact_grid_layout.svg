@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="240"
+   height="200"
+   viewBox="0 0 240 200"
+   version="1.1"
+   id="svg6"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs6" />
+  <!-- Outer rounded rectangle -->
+  <rect
+     x="0"
+     y="0"
+     width="240"
+     height="200"
+     rx="6"
+     ry="6"
+     fill="#0179c8"
+     id="rect1" />
+  <!-- Inner white rectangle replaced with light blue -->
+  <rect
+     x="10"
+     y="10"
+     width="220"
+     height="180"
+     rx="4"
+     ry="4"
+     fill="#bae2fd"
+     id="rect2" />
+  <!-- Inner squares now dark blue -->
+  <rect
+     x="20"
+     y="20"
+     width="95"
+     height="47.839508"
+     rx="4"
+     ry="2.5514402"
+     fill="#0179c8"
+     id="rect3"
+     style="stroke-width:0.798661" />
+  <rect
+     x="20"
+     y="133.64198"
+     width="95"
+     height="46.358025"
+     rx="4"
+     ry="2.4724281"
+     fill="#0179c8"
+     id="rect5"
+     style="stroke-width:0.786198" />
+  <rect
+     x="20.481482"
+     y="75.074074"
+     width="95"
+     height="50.308643"
+     rx="4"
+     ry="2.6831276"
+     fill="#0179c8"
+     id="rect5-7"
+     style="stroke-width:0.819013" />
+  <rect
+     x="124.50617"
+     y="20.197529"
+     width="95"
+     height="47.839508"
+     rx="4"
+     ry="2.5514402"
+     fill="#0179c8"
+     id="rect3-1"
+     style="stroke-width:0.798661" />
+  <rect
+     x="124.50617"
+     y="133.34569"
+     width="95"
+     height="46.358025"
+     rx="4"
+     ry="2.4724281"
+     fill="#0179c8"
+     id="rect5-0"
+     style="stroke-width:0.786198" />
+  <rect
+     x="124.98766"
+     y="75.024696"
+     width="95"
+     height="50.308643"
+     rx="4"
+     ry="2.6831276"
+     fill="#0179c8"
+     id="rect5-7-4"
+     style="stroke-width:0.819013" />
+</svg>

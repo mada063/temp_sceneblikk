@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="240"
+   height="200"
+   viewBox="0 0 240 200"
+   version="1.1"
+   id="svg5"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs5" />
+  <!-- Outer rounded rectangle -->
+  <rect
+     x="0"
+     y="0"
+     width="240"
+     height="200"
+     rx="6"
+     ry="6"
+     fill="#0179c8"
+     id="rect1" />
+  <!-- Inner background rectangle -->
+  <rect
+     x="10"
+     y="10"
+     width="220"
+     height="180"
+     rx="4"
+     ry="4"
+     fill="#bae2fd"
+     id="rect2" />
+  <!-- One large square on the left -->
+  <rect
+     x="20"
+     y="105.55119"
+     width="199.39227"
+     height="74.448807"
+     rx="7.2506275"
+     ry="1.8612202"
+     fill="#0179c8"
+     id="rect3"
+     style="stroke-width:0.918389" />
+  <rect
+     x="20.160051"
+     y="19.745943"
+     width="201.13821"
+     height="76.893127"
+     rx="7.314116"
+     ry="1.9223282"
+     fill="#0179c8"
+     id="rect3-8"
+     style="stroke-width:0.937421" />
+  <!-- Two smaller squares stacked on the right -->
+</svg>

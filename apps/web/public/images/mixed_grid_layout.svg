@@ -1,0 +1,15 @@
+
+<svg width="240" height="200" viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer rounded rectangle -->
+  <rect x="0" y="0" width="240" height="200" rx="6" ry="6" fill="#0179C8"/>
+
+  <!-- Inner background rectangle -->
+  <rect x="10" y="10" width="220" height="180" rx="4" ry="4" fill="#BAE2FD"/>
+
+  <!-- One large square on the left -->
+  <rect x="20" y="20" width="110" height="160" rx="4" ry="4" fill="#0179C8"/>
+
+  <!-- Two smaller squares stacked on the right -->
+  <rect x="140" y="20" width="80" height="75" rx="4" ry="4" fill="#0179C8"/>
+  <rect x="140" y="105" width="80" height="75" rx="4" ry="4" fill="#0179C8"/>
+</svg>
