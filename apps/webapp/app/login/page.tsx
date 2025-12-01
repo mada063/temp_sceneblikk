@@ -4,6 +4,7 @@ import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../lib/auth-context";
 import { FiMail, FiLock, FiLogIn, FiUserPlus, FiUser } from "react-icons/fi";
+import { FcGoogle } from "react-icons/fc";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -12,7 +13,7 @@ export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { signInWithEmail, signUpWithEmail, signInAsGuest } = useAuth();
+  const { signInWithEmail, signUpWithEmail, signInWithGoogle, signInAsGuest } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: FormEvent) => {
@@ -29,6 +30,19 @@ export default function LoginPage() {
       router.push("/dashboard");
     } catch (err: any) {
       setError(err.message || "Authentication failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      await signInWithGoogle();
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err.message || "Google sign-in failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -158,6 +172,27 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6 space-y-3">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/20 dark:border-white/10" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white/80 px-2 text-custom-color-500 dark:bg-custom-color-800/70 dark:text-custom-color-300">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={loading}
+              className="w-full rounded-full border border-white/20 bg-white/50 px-5 py-3 text-sm font-semibold text-custom-color-900 transition hover:bg-white/80 hover:shadow-md disabled:opacity-50 dark:border-white/10 dark:bg-custom-color-800/50 dark:text-white dark:hover:bg-custom-color-800/70"
+            >
+              <FcGoogle className="mr-2 inline h-5 w-5" />
+              Sign in with Google
+            </button>
+
             <button
               type="button"
               onClick={handleGuestSignIn}

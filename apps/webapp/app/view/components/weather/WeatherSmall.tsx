@@ -33,12 +33,12 @@ export function WeatherSmall({ appearance, weatherData, loading, error }: Weathe
       ) : weatherData ? (
         <>
           <WeatherIcon
-            className="h-12 w-12"
+            className="h-12 w-12 animate-cloud-fade-in"
             style={{ color: primaryColor }}
           />
           <div
-            className="text-2xl font-semibold"
-            style={{ color: primaryColor }}
+            className="text-2xl font-semibold animate-fade-in"
+            style={{ color: primaryColor, animationDelay: '0.3s', animationFillMode: 'both' }}
           >
             {weatherData.temperature}°
           </div>

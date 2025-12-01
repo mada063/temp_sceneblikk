@@ -10,8 +10,28 @@ const interSans = Inter({
 });
 
 export const metadata: Metadata = { 
-  title: "Sceneblikk App",
-  description: "Sceneblikk App",
+  title: {
+    default: "Sceneblikk - Digital Signage Editor",
+    template: "%s | Sceneblikk"
+  },
+  description: "Create and manage digital signage layouts with Sceneblikk. Design responsive canvases, assemble content components, and monitor screens from a single control center.",
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({

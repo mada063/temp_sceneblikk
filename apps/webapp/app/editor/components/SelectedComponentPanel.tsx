@@ -225,6 +225,16 @@ export function SelectedComponentPanel({
       ? Math.max(config.rows - parseKey(primarySelectedCell).row, 1)
       : 1;
   const appearance = selectedAppearance ?? makeDefaultAppearance();
+  
+  // Track the previous border width to restore when toggling border back on
+  const previousBorderWidthRef = useRef<number>(appearance.borderWidth > 0 ? appearance.borderWidth : 2);
+  
+  // Update the ref whenever borderWidth changes and is > 0
+  useEffect(() => {
+    if (appearance.borderWidth > 0) {
+      previousBorderWidthRef.current = appearance.borderWidth;
+    }
+  }, [appearance.borderWidth]);
 
   // Get the component ID - prioritize selectedCellData, but also check allSelectedCellsData when multiple are selected
   // When multiple cells are selected and all have the same component, get componentId from any of them
@@ -420,6 +430,30 @@ export function SelectedComponentPanel({
               </label>
               <label className="flex items-center justify-between gap-3">
                 <span className="text-xs font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                  Show border
+                </span>
+                <input
+                  type="checkbox"
+                  checked={(appearance.borderWidth ?? 2) > 0}
+                  onChange={(event) => {
+                    if (event.target.checked) {
+                      // When enabling, restore to previous value or default to 2
+                      const newWidth = previousBorderWidthRef.current > 0 ? previousBorderWidthRef.current : 2;
+                      previousBorderWidthRef.current = newWidth;
+                      onAppearanceChange({ borderWidth: newWidth });
+                    } else {
+                      // When disabling, save current value and set to 0
+                      if (appearance.borderWidth > 0) {
+                        previousBorderWidthRef.current = appearance.borderWidth;
+                      }
+                      onAppearanceChange({ borderWidth: 0 });
+                    }
+                  }}
+                  className="h-4 w-4 rounded border border-custom-color-400 bg-white text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                />
+              </label>
+              <label className="flex items-center justify-between gap-3">
+                <span className="text-xs font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                   Border color
                 </span>
                 <div className="flex items-center gap-2">
@@ -429,7 +463,8 @@ export function SelectedComponentPanel({
                     onChange={(event) =>
                       onAppearanceChange({ borderColor: event.target.value })
                     }
-                    className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm"
+                    disabled={(appearance.borderWidth ?? 2) === 0}
+                    className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
                   />
                   <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
                     {appearance.borderColor?.toUpperCase?.() ?? ""}
@@ -489,7 +524,8 @@ export function SelectedComponentPanel({
                       borderWidth: Number(event.target.value),
                     })
                   }
-                  className="w-full accent-custom-color-500 dark:accent-custom-color-300"
+                  disabled={(appearance.borderWidth ?? 2) === 0}
+                  className="w-full accent-custom-color-500 dark:accent-custom-color-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   FiLayout,
@@ -6,6 +7,10 @@ import {
   FiPlayCircle,
   FiGrid,
 } from "react-icons/fi";
+
+export const metadata: Metadata = {
+  title: "Home",
+};
 
 const quickLinks = [
   {
@@ -51,7 +56,7 @@ const workflow = [
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-custom-color-100 text-black transition-colors duration-300 dark:bg-custom-color-900 dark:text-white">
+    <main className="relative max-h-screen overflow-hidden bg-custom-color-100 text-black transition-colors duration-300 dark:bg-custom-color-900 dark:text-white">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(12,154,235,0.25),_transparent_60%)] dark:bg-[radial-gradient(circle_at_top,_rgba(3,67,105,0.55),_transparent_65%)]" />
 
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 pb-24 pt-24 sm:px-10 lg:px-16">
@@ -124,28 +129,6 @@ export default function Home() {
               </span>
             </Link>
           ))}
-        </section>
-
-        <section className="glass-surface rounded-3xl border border-white/30 p-8 shadow-lg dark:border-white/10">
-          <h2 className="text-2xl font-semibold text-custom-color-800 dark:text-custom-color-100">
-            Build signage in three focused steps
-          </h2>
-          <div className="mt-8 grid gap-6 md:grid-cols-3">
-            {workflow.map(({ title, description, icon: Icon }) => (
-              <div
-                key={title}
-                className="rounded-2xl border border-custom-color-300/30 bg-white/80 p-6 shadow-md transition hover:border-custom-color-400/50 dark:border-white/10 dark:bg-custom-color-800/60"
-              >
-                <Icon className="mb-4 h-6 w-6 text-custom-color-600 dark:text-custom-color-300" />
-                <h3 className="text-lg font-semibold text-custom-color-900 dark:text-custom-color-100">
-                  {title}
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-custom-color-700/80 dark:text-custom-color-100/75">
-                  {description}
-                </p>
-              </div>
-            ))}
-          </div>
         </section>
       </div>
     </main>

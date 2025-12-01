@@ -7,7 +7,8 @@ import AnimatedParagraph from '@/components/AnimatedParagraph'
 
 const FlereSporsmal = () => {
   return (
-    <div className='max-w-6xl mx-auto h-[25vh]'>
+    <div className="flex items-center justify-center h-screen px-4">
+      <div className='w-full max-w-6xl'>
         <AnimatedText 
           text="Har du flere spørsmål?"
           size="text-xl md:text-3xl lg:text-4xl"
@@ -29,6 +30,7 @@ const FlereSporsmal = () => {
         >
           <Button href="/kontakt">Kontakt</Button>
         </motion.div>
+      </div>
     </div>
   )
 }

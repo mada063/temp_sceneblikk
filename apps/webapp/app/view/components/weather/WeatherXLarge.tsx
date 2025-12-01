@@ -20,27 +20,33 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
   const WeatherIcon = weatherData ? getWeatherIcon(weatherData.symbol) : FiCloud;
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
+  const dimensionsInitialized = useRef(false);
 
   // Measure container dimensions for responsive chart sizing
   useEffect(() => {
     if (!chartContainerRef.current) {
       const timeoutId = setTimeout(() => {
-        if (chartContainerRef.current) {
+        if (chartContainerRef.current && !dimensionsInitialized.current) {
           setContainerDimensions({
             width: chartContainerRef.current.clientWidth,
             height: chartContainerRef.current.clientHeight,
           });
+          dimensionsInitialized.current = true;
         }
       }, 100);
       return () => clearTimeout(timeoutId);
     }
 
+    if (dimensionsInitialized.current) return;
+
     const updateDimensions = () => {
-      if (chartContainerRef.current) {
-        setContainerDimensions({
-          width: chartContainerRef.current.clientWidth,
-          height: chartContainerRef.current.clientHeight,
-        });
+      if (chartContainerRef.current && !dimensionsInitialized.current) {
+        const width = chartContainerRef.current.clientWidth;
+        const height = chartContainerRef.current.clientHeight;
+        if (width > 0 && height > 0) {
+          setContainerDimensions({ width, height });
+          dimensionsInitialized.current = true;
+        }
       }
     };
 
@@ -93,7 +99,8 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
             viewBox={`0 0 ${chartWidth} ${chartHeight}`}
             preserveAspectRatio="xMidYMid meet"
           >
-            {yAxisTemps.map((temp) => {
+            {/* Y-axis lines and labels - fade in */}
+            {yAxisTemps.map((temp, idx) => {
               const y = calculateDataPointY(temp, minTemp, maxTemp, graphHeight, padding.top);
               const isAvg = Math.abs(temp - Math.round(avgTemp)) < 0.5;
               return (
@@ -105,7 +112,11 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
                     y2={y}
                     stroke={primaryColor}
                     strokeWidth={isAvg ? "1.5" : "1"}
-                    opacity={isAvg ? "0.7" : "0.3"}
+                    className="chart-point-animate"
+                    style={{ 
+                      animationDelay: `${idx * 0.05}s`,
+                      opacity: isAvg ? 0.7 : 0.3
+                    }}
                   />
                   <text
                     x={padding.left - 10}
@@ -113,7 +124,10 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
                     textAnchor="end"
                     fontSize="10"
                     fill={primaryColor}
-                    opacity="1"
+                    className="chart-point-animate"
+                    style={{ 
+                      animationDelay: `${0.2 + idx * 0.05}s`
+                    }}
                     fontWeight={isAvg ? "600" : "400"}
                   >
                     {temp}°
@@ -122,8 +136,13 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
               );
             })}
 
+            {/* Average line - animate from left (dotted) - runs after all other animations */}
             {(() => {
               const avgY = calculateDataPointY(avgTemp, minTemp, maxTemp, graphHeight, padding.top);
+              // Calculate delay: line animation (2s) + dots animation (dataToShow.length * 0.02s) + buffer
+              const dotsAnimationDuration = dataToShow.length * 0.02;
+              const averageLineDelay = 2 + dotsAnimationDuration + 0.3;
+              const dashPattern = "4 4";
               return (
                 <line
                   x1={padding.left}
@@ -132,12 +151,18 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
                   y2={avgY}
                   stroke={primaryColor}
                   strokeWidth="1"
-                  strokeDasharray="4 4"
-                  opacity="0.5"
+                  strokeDasharray={dashPattern}
+                  style={{
+                    animationDelay: `${averageLineDelay}s`,
+                    strokeDashoffset: 1000,
+                    opacity: 0
+                  }}
+                  className="chart-average-line-animate"
                 />
               );
             })()}
 
+            {/* Temperature line - animate drawing (Shadcn-style) */}
             <polyline
               points={dataToShow
                 .map((d: ForecastItem, idx: number) => {
@@ -149,7 +174,8 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
               fill="none"
               stroke={primaryColor}
               strokeWidth="1"
-              opacity="1"
+              pathLength="1"
+              className="chart-line-animate"
             />
 
             {dataToShow.map((d: ForecastItem, idx: number) => {
@@ -177,7 +203,10 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
                     cy={y}
                     r="2.5"
                     fill={primaryColor}
-                    opacity="1"
+                    className="chart-point-animate"
+                    style={{ 
+                      animationDelay: `${2 + idx * 0.02}s`
+                    }}
                   />
                   
                   <foreignObject
@@ -185,6 +214,10 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
                     y={y - 28}
                     width="20"
                     height="20"
+                    className="chart-point-animate"
+                    style={{
+                      animationDelay: `${2 + idx * 0.02}s`
+                    }}
                   >
                     <div className="flex items-center justify-center">
                       <ForecastIcon
@@ -263,17 +296,17 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
           )}
           <div className="flex items-center gap-4">
             <WeatherIcon
-              className="h-10 w-10 flex-shrink-0"
+              className="h-10 w-10 flex-shrink-0 animate-cloud-fade-in"
               style={{ color: primaryColor }}
             />
             <div>
               <div
-                className="text-2xl font-bold"
-                style={{ color: primaryColor }}
+                className="text-2xl font-bold animate-fade-in"
+                style={{ color: primaryColor, animationDelay: '0.3s', animationFillMode: 'both' }}
               >
                 {weatherData.temperature}°
               </div>
-              <div className="flex items-center gap-4 text-[10px]" style={{ color: `${primaryColor}CC` }}>
+              <div className="flex items-center gap-4 text-[10px] animate-fade-in" style={{ color: `${primaryColor}CC`, animationDelay: '0.5s', animationFillMode: 'both' }}>
                 <span><FiWind className="inline h-3 w-3" /> {weatherData.windSpeed} m/s</span>
                 <span><FiDroplet className="inline h-3 w-3" /> {weatherData.humidity}%</span>
                 {showAirQuality && weatherData.airQuality && (

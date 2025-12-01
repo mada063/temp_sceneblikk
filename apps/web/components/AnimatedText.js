@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 
 const AnimatedText = ({
   text,
@@ -14,13 +15,37 @@ const AnimatedText = ({
   fontWeight = "",
   className = "",
 }) => {
+  const ref = useRef(null);
+  const [shouldAnimate, setShouldAnimate] = useState(false);
+
+  useEffect(() => {
+    const checkInView = () => {
+      if (ref.current) {
+        const rect = ref.current.getBoundingClientRect();
+        const isInView = rect.top < window.innerHeight && rect.bottom > 0;
+        if (isInView) {
+          setShouldAnimate(true);
+        }
+      }
+    };
+
+    // Check immediately on mount
+    checkInView();
+    // Also check after a short delay to ensure layout is complete
+    const timeout = setTimeout(checkInView, 100);
+
+    return () => clearTimeout(timeout);
+  }, []);
+
   return (
     <div
+      ref={ref}
       className={`${size} ${color} ${fontWeight} ${primaryFont} pb-[8px] relative ${className}`}
     >
       <motion.span
         initial={{ y: 50, opacity: 0 }}
-        whileInView={{ y: 0, opacity: 1 }}
+        animate={shouldAnimate ? { y: 0, opacity: 1 } : undefined}
+        whileInView={!shouldAnimate ? { y: 0, opacity: 1 } : undefined}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ delay: order * 0.1, duration: 0.6, ease: "easeOut" }}
         className={`inline-block ${color}`}
@@ -31,7 +56,8 @@ const AnimatedText = ({
       {secondaryText && (
         <motion.span
           initial={{ y: 50, opacity: 0 }}
-          whileInView={{ y: 0, opacity: 1 }}
+          animate={shouldAnimate ? { y: 0, opacity: 1 } : undefined}
+          whileInView={!shouldAnimate ? { y: 0, opacity: 1 } : undefined}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ delay: order * 0.1, duration: 0.6, ease: "easeOut" }}
           className={`inline-block ${secondaryFont} ${secondaryColor} ml-2 pb-[8px]`}

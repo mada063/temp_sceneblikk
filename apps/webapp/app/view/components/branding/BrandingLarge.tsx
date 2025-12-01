@@ -20,7 +20,7 @@ export function BrandingLarge({ appearance, logoUrl, text, panelSize = "large" }
   const layoutType = hasLogo && hasText ? "logo-text" : "single";
 
   return (
-    <div className="flex h-full w-full items-center justify-center px-6 py-4">
+    <div className="flex h-full w-full items-center justify-center px-6 py-4 animate-fade-in">
       <div className={`flex ${layoutType === "logo-text" ? "flex-row items-center gap-6" : "flex-col items-center gap-4"} max-w-full`}>
         {/* Logo Section */}
         {logoUrl && (

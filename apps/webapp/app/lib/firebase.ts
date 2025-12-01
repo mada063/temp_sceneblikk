@@ -9,13 +9,13 @@ import { getFirestore } from "firebase/firestore";
 // variables and read them via process.env.NEXT_PUBLIC_...
 // For now we use your provided config directly.
 const firebaseConfig = {
-  apiKey: "AIzaSyCKqe2ohKrdutBUyUWk7kqpvHfa1Pw-PzY",
-  authDomain: "sceneblikk-b439f.firebaseapp.com",
-  projectId: "sceneblikk-b439f",
-  storageBucket: "sceneblikk-b439f.firebasestorage.app",
-  messagingSenderId: "171035470784",
-  appId: "1:171035470784:web:d9ffb3f18b07ca2e683625",
-  measurementId: "G-7XF57GYMN0",
+  apiKey: "AIzaSyBKxkNC-ENj4eIJp_i3jeTKH1StJ3D7710",
+  authDomain: "sceneblikk-96f17.firebaseapp.com",
+  projectId: "sceneblikk-96f17",
+  storageBucket: "sceneblikk-96f17.firebasestorage.app",
+  messagingSenderId: "210994839928",
+  appId: "1:210994839928:web:7aaaccf18f5ba30054088d",
+  measurementId: "G-LPV42DD3XE",
 };
 
 // Ensure we don't re-initialize in hot reload / multiple imports

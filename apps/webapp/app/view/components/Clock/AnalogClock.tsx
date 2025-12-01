@@ -73,6 +73,7 @@ export function AnalogClock({ time, timezone, size, color, showSeconds = true }:
         stroke={color}
         strokeWidth="3"
         strokeLinecap="round"
+        style={{ transition: 'all 0.3s ease-out' }}
       />
 
       {/* Minute hand */}
@@ -84,6 +85,7 @@ export function AnalogClock({ time, timezone, size, color, showSeconds = true }:
         stroke={color}
         strokeWidth="2"
         strokeLinecap="round"
+        style={{ transition: 'all 0.3s ease-out' }}
       />
 
       {/* Second hand */}
@@ -97,6 +99,7 @@ export function AnalogClock({ time, timezone, size, color, showSeconds = true }:
           strokeWidth="1"
           strokeLinecap="round"
           opacity="0.7"
+          style={{ transition: 'all 0.1s ease-out' }}
         />
       )}
 

@@ -1,0 +1,80 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user owns the resource
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Layouts collection
+    match /layouts/{layoutId} {
+      // Allow read if the user owns the layout
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Allow create if the user sets themselves as the owner
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      // Allow update if the user owns the layout and doesn't change the userId
+      allow update: if isAuthenticated() 
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == request.auth.uid;
+      
+      // Allow delete if the user owns the layout
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // Devices collection
+    match /devices/{deviceId} {
+      // Allow read if the user owns the device
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Allow create/update if the user sets themselves as the owner
+      allow create, update: if isAuthenticated() 
+        && request.resource.data.userId == request.auth.uid;
+      
+      // Allow delete if the user owns the device (optional - you might not want this)
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // View Sessions collection - for tracking viewing sessions
+    match /viewSessions/{sessionId} {
+      // Allow read if the user owns the session
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Allow create if the user sets themselves as the owner
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      // Allow update if the user owns the session and doesn't change the userId
+      allow update: if isAuthenticated() 
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == request.auth.uid;
+      
+      // Allow delete if the user owns the session (optional)
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // Layout Views collection - for tracking layout view events
+    match /layoutViews/{viewId} {
+      // Allow read if the user owns the view event
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Allow create if the user sets themselves as the owner
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      // Allow update if the user owns the view event and doesn't change the userId
+      allow update: if isAuthenticated() 
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == request.auth.uid;
+      
+      // Allow delete if the user owns the view event (optional)
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+  }
+}
+

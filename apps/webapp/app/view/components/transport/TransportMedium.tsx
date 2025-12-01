@@ -1,5 +1,7 @@
 "use client";
 
+import { TransportBadge } from "./TransportBadge";
+import { useDepartureAnimations, TRANSPORT_ANIMATION } from "./useDepartureAnimations";
 import type { TransportProps, TransportData, PanelSize } from "./types";
 import { formatDepartureTime, minutesUntilDeparture } from "./utils";
 import { FiActivity } from "react-icons/fi";
@@ -33,35 +35,82 @@ export function TransportMedium({ appearance, transportData, loading, error, tim
     );
   }
 
-  const departures = transportData.departures.slice(0, Math.min(maxDepartures, 5));
+  const departures = transportData.departures.slice(0, maxDepartures);
+  const { playInitialFade, shouldBounce, newItemIds } = useDepartureAnimations(departures);
+  const totalRows = departures.length;
+  const isInitialSequence = playInitialFade && totalRows > 0;
+  const initialStaggerSeconds = TRANSPORT_ANIMATION.initialStagger / 1000;
+  const bounceStaggerSeconds = TRANSPORT_ANIMATION.bounceStagger / 1000;
+  const bounceCompletionDelaySeconds =
+    (TRANSPORT_ANIMATION.duration +
+      Math.max(0, totalRows - 1) * TRANSPORT_ANIMATION.bounceStagger) /
+    1000;
+  const fadeBufferSeconds = TRANSPORT_ANIMATION.newFadeExtraDelay / 1000;
+  let newRowCounter = 0;
 
   return (
-    <div className="flex h-full w-full flex-col gap-2 px-4 py-2">
+    <div
+      className={`flex h-full w-full flex-col gap-2 px-4 py-2 ${
+        playInitialFade ? "animate-fade-in" : ""
+      }`}
+    >
       {transportData.stopPlace && (
         <div className="font-medium uppercase tracking-wider opacity-70 px-1" style={{ color: primaryColor, fontSize: titleFontSize }}>
           {transportData.stopPlace.name}
         </div>
       )}
       <div className="flex-1 flex flex-col gap-2">
-        {departures.map((dep) => {
+        {departures.map((dep, index) => {
           const minutes = minutesUntilDeparture(dep.expectedDeparture || dep.scheduledDeparture);
           const hasDelay = dep.delay && dep.delay > 0;
+          const isNew = newItemIds.has(dep.id);
+          const currentNewIndex = isNew ? newRowCounter++ : undefined;
+          const rowAnimationClass = isInitialSequence
+            ? "animate-slide-up-bounce"
+            : isNew
+            ? "animate-fade-in"
+            : shouldBounce
+            ? "animate-slide-up-bounce"
+            : "";
+          let rowAnimationDelay: string | undefined;
+          if (isInitialSequence) {
+            rowAnimationDelay = `${(totalRows - index - 1) * initialStaggerSeconds}s`;
+          } else if (rowAnimationClass === "animate-slide-up-bounce") {
+            rowAnimationDelay = `${index * bounceStaggerSeconds}s`;
+          } else if (isNew && currentNewIndex !== undefined) {
+            const delaySeconds =
+              (shouldBounce ? bounceCompletionDelaySeconds : 0) +
+              fadeBufferSeconds +
+              currentNewIndex * initialStaggerSeconds;
+            rowAnimationDelay = `${delaySeconds}s`;
+          }
+          const rowBaseStyle =
+            isInitialSequence
+              ? { opacity: 0, transform: "translateY(120%)" }
+              : isNew
+              ? { opacity: 0 }
+              : undefined;
           return (
-            <div key={dep.id} className="flex items-center justify-between gap-3 border-b border-opacity-20 pb-2 last:border-b-0" style={{ borderColor: `${primaryColor}40` }}>
+            <div 
+              key={dep.id} 
+              className={`flex items-center justify-between gap-3 border-b border-opacity-20 pb-2 last:border-b-0 ${rowAnimationClass}`}
+              style={{ 
+                borderColor: `${primaryColor}40`,
+                ...rowBaseStyle,
+                animationDelay: rowAnimationDelay,
+                animationFillMode: rowAnimationClass ? "forwards" : undefined,
+              }}
+            >
               <div className="flex-1 flex items-center gap-2">
-                <span
-                  className="inline-flex items-center justify-center px-1.5 py-0.5 font-bold text-xs"
-                  style={{
-                    backgroundColor: badgeColor,
-                    border: `1px solid ${badgeBorder}`,
-                    color: badgeTextColor,
-                    minWidth: "2rem",
-                    width: "2rem",
-                    borderRadius: `${badgeRadius}px`,
-                  }}
-                >
-                  {dep.line}
-                </span>
+                <TransportBadge
+                  line={dep.line}
+                  serviceType={dep.serviceType}
+                  badgeColor={badgeColor}
+                  badgeBorder={badgeBorder}
+                  badgeTextColor={badgeTextColor}
+                  badgeRadius={badgeRadius}
+                  size="default"
+                />
                 <span className="font-semibold" style={{ color: primaryColor, fontSize: lineFontSize }}>
                   {dep.destination}
                 </span>

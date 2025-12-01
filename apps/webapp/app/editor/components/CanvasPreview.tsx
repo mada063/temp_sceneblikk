@@ -143,6 +143,7 @@ export function CanvasPreview({
       
       const mainColor = getMainConnectorColor(group);
       if (!mainColor) continue;
+      const mainCell = cells[group[0]];
       
       // Get all panel positions
       const panels = group.map(rootKey => {

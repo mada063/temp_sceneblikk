@@ -10,8 +10,8 @@ import AnimatedParagraph from '@/components/AnimatedParagraph';
 
 const KomIGangCTA = () => {
   return (
-    <div className="relative flex justify-center px-4 py-16">
-     <div className="w-full max-w-6xl">
+    <div className="flex items-center justify-center h-screen px-4">
+      <div className="w-full max-w-6xl">
         <h1 className='mb-8'>
         <AnimatedText 
           text="Klar til å starte?"
@@ -50,7 +50,7 @@ const KomIGangCTA = () => {
               </Button2>
             </motion.div>
           </div>
-    </div>
+      </div>
     </div>
   );
 };

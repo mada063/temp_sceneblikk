@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import AnimatedText from '@/components/AnimatedText'
 import AnimatedParagraph from '@/components/AnimatedParagraph'
+import AnimatedImage from '@/components/AnimatedImage'
 
 const StotteLanding = () => {
   return (
@@ -34,40 +35,32 @@ const StotteLanding = () => {
         <div className="w-full lg:w-1/2 flex justify-center relative">
           <div className="relative max-w-[50vw] lg:max-w-none">
             {/* Background image */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.5 }}
-              transition={{ delay: 0.1, duration: 0.5 }}
-              className="absolute -right-6 z-0 w-2/3 lg:w-4/5 opacity-45"
-            >
-              <Image
-                src="/images/fullscreen_grid_layout.svg"
-                alt="Background image"
-                width={300}
-                height={300}
-                priority
-                className="absolute -right-6 z-0 w-2/3 lg:w-4/5 opacity-45"
-              />
-            </motion.div>
+            <div className="absolute -right-6 z-0 w-2/3 lg:w-4/5 opacity-45">
+              <AnimatedImage order={1}>
+                <Image
+                  src="/images/fullscreen_grid_layout.svg"
+                  alt="Background image"
+                  width={300}
+                  height={300}
+                  priority
+                  className="absolute -right-6 z-0 w-2/3 lg:w-4/5 opacity-45"
+                />
+              </AnimatedImage>
+            </div>
 
             {/* Foreground image */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.5 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="relative z-10 max-h-[40vh] w-auto"
-            >
-              <Image
-                src="/images/peacock_pose_thumbs_up.png"
-                alt="Landing Image"
-                width={800}
-                height={800}
-                priority
-                className="relative z-10 max-h-[40vh] w-auto"
-              />
-            </motion.div>
+            <div>
+              <AnimatedImage order={2} className="relative z-10 max-h-[40vh] w-auto">
+                <Image
+                  src="/images/peacock_pose_thumbs_up.png"
+                  alt="Landing Image"
+                  width={800}
+                  height={800}
+                  priority
+                  className="relative z-10 max-h-[40vh] w-auto"
+                />
+              </AnimatedImage>
+            </div>
           </div>
         </div>
       </div>

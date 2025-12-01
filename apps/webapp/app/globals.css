@@ -186,3 +186,146 @@ body {
   animation: newsScrollUp 40s linear infinite;
   will-change: transform;
 }
+
+/* Component animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUpBounce {
+  0% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-5%);
+  }
+  80% {
+    transform: translateY(2%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cloudFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes clockSlideUp {
+  0% {
+    transform: translateY(12px);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.animate-slide-up-bounce {
+  animation: slideUpBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+.animate-cloud-fade-in {
+  animation: cloudFadeIn 1s ease-out forwards;
+}
+
+.animate-clock-slide-up {
+  animation: clockSlideUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
+}
+
+@keyframes chartAxisBuild {
+  0% {
+    stroke-dashoffset: 1000;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes chartAverageLineBuild {
+  0% {
+    stroke-dashoffset: 1000;
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.3;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0.5;
+  }
+}
+
+@keyframes chartLineDraw {
+  0% {
+    stroke-dashoffset: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes chartPointFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.chart-axis-animate {
+  animation: chartAxisBuild 1s ease-out forwards;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+}
+
+.chart-average-line-animate {
+  animation: chartAverageLineBuild 1s ease-out forwards;
+  stroke-dasharray: 4 4;
+  stroke-dashoffset: 1000;
+  opacity: 0;
+  stroke-linecap: round;
+  visibility: hidden;
+}
+
+.chart-average-line-animate[style*="animation-delay"] {
+  visibility: visible;
+}
+
+.chart-line-animate {
+  animation: chartLineDraw 1.5s ease-out 0.5s forwards;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.chart-point-animate {
+  animation: chartPointFadeIn 0.2s ease-out forwards;
+  opacity: 0;
+}

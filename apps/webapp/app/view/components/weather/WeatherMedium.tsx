@@ -43,26 +43,26 @@ export function WeatherMedium({ appearance, weatherData, loading, error, locatio
             </div>
           )}
           <WeatherIcon
-            className="h-12 w-12"
+            className="h-12 w-12 animate-cloud-fade-in"
             style={{ color: primaryColor }}
           />
           <div
-            className="text-3xl font-semibold"
-            style={{ color: primaryColor }}
+            className="text-3xl font-semibold animate-fade-in"
+            style={{ color: primaryColor, animationDelay: '0.3s', animationFillMode: 'both' }}
           >
             {weatherData.temperature}°
           </div>
           <div className="flex items-center justify-center gap-4 text-xs">
             <div
-              className="flex items-center gap-1.5"
-              style={{ color: `${primaryColor}CC` }}
+              className="flex items-center gap-1.5 animate-fade-in"
+              style={{ color: `${primaryColor}CC`, animationDelay: '0.5s', animationFillMode: 'both' }}
             >
               <FiWind className="h-3.5 w-3.5" />
               <span>{weatherData.windSpeed} m/s</span>
             </div>
             <div
-              className="flex items-center gap-1.5"
-              style={{ color: `${primaryColor}CC` }}
+              className="flex items-center gap-1.5 animate-fade-in"
+              style={{ color: `${primaryColor}CC`, animationDelay: '0.6s', animationFillMode: 'both' }}
             >
               <FiDroplet className="h-3.5 w-3.5" />
               <span>{weatherData.humidity}%</span>

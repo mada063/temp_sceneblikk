@@ -1,24 +1,23 @@
 'use client';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import AnimatedText from '@/components/AnimatedText';
 
 const faqs = [
   {
-    question: 'Hordan lager jeg et oppsett?',
-    answer: 'Du lager et nytt oppsett ved å gå inn i "Oppsett" menyen og trykker på "Nytt oppsett".',
+    question: 'Hordan lager jeg en scene?',
+    answer: 'Du lager en ny scene ved å gå inn i redigerings vinduet og trykker lagre. Da har du laget en ny scene og kan redigere som du vil.',
   },
   {
-    question: 'Hvordan lager jeg et nytt byggesett?',
-    answer: 'Du lager et nytt byggesett ved å gå inn i "Oppsett" menyen og trykker på "Nytt byggesett".',
+    question: 'Hvordan tildeler jeg scene til en skjerm?',
+    answer: 'Skjermen må ha nettleser. Gå inn på redigeringsvinduet og velg scene, trykk så på "se full skjerm".',
   },
   {
-    question: 'Hvordan tildeler jeg oppsett til en skjerm?',
-    answer: 'Først må du registrere en skjerm. Etter det kan du gå inn i "Dashboard" og trykke på det store "+" tegnet for å tildele oppsett til en skjerm.',
+    question: 'Hvordan sjekker jeg oppetider?',
+    answer: 'Gå inn på "Dashboard" og se oppetider for sceneene dine.',
   },
   {
-    question: 'Hvordan legger jeg til en skjerm?',
-    answer: 'Installer appen på en Android TV eller Android TV Box. Deretter kan du registrere skjermen i "Skjerm" menyen.',
+    question: 'Hvordan endrer jeg innholdet i en scene?',
+    answer: 'Gå inn på redigeringsvinduet og velg scene, du kan nå endre på scenen og skjermen som presenterer vil endre visning på skjermen.',
   },
 ];
 
@@ -59,33 +58,24 @@ const FAQItem = ({ faq, isOpen, onClick, index }) => {
         className="flex justify-between cursor-pointer"
         onClick={onClick}
       >
-        <AnimatedText 
-          text={faq.question}
-          size="text-3xl"
-          primaryFont="font-serif"
-          order={0}
-        />
-        <motion.span 
-          className="text-3xl"
-          initial={{ opacity: 0, scale: 0.8 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ delay: index * 0.1 + 0.1, duration: 0.4 }}
+        <h3 
+          className="text-3xl font-serif text-custom-color-900 dark:text-white pb-[8px] relative"
+        >
+          {faq.question}
+        </h3>
+        <span 
+          className="text-3xl text-custom-color-900 dark:text-white"
         >
           {isOpen ? '-' : '+'}
-        </motion.span>
+        </span>
       </div>
       <div className={`transition-all overflow-hidden duration-300 ease-in-out ${isOpen ? 'max-h-40 mt-2' : 'max-h-0'}`}>
         <div className={`${isOpen ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}>
-          <motion.p 
-            className="text-xl text-custom-color-700/80 dark:text-custom-color-100/80"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
-            transition={{ delay: index * 0.1 + 0.2, duration: 0.4 }}
+          <p 
+            className="text-xl text-custom-color-700 dark:text-custom-color-100"
           >
             {faq.answer}
-          </motion.p>
+          </p>
         </div>
       </div>
     </motion.div>

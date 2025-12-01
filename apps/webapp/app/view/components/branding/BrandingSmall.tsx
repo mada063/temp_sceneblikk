@@ -12,7 +12,7 @@ export function BrandingSmall({ appearance, logoUrl, text, panelSize = "small" }
   const primaryColor = appearance.textColor || "#ffffff";
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-3">
+    <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-3 animate-fade-in">
       {logoUrl && (
         <img
           src={logoUrl}

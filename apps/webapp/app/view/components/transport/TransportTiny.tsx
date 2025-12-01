@@ -1,5 +1,7 @@
 "use client";
 
+import { TransportBadge } from "./TransportBadge";
+import { useDepartureAnimations, TRANSPORT_ANIMATION } from "./useDepartureAnimations";
 import type { TransportProps, TransportData, PanelSize } from "./types";
 import { formatDepartureTime, minutesUntilDeparture } from "./utils";
 import { FiActivity } from "react-icons/fi";
@@ -53,33 +55,79 @@ export function TransportTiny({ appearance, transportData, loading, error, timeF
     );
   }
 
-  const nextDeparture = transportData.departures[0];
-  const minutes = minutesUntilDeparture(nextDeparture.expectedDeparture || nextDeparture.scheduledDeparture);
+  const visibleDepartures = transportData.departures.slice(0, 1);
+  const totalRows = visibleDepartures.length;
+  const nextDeparture = visibleDepartures[0];
+  const minutes = minutesUntilDeparture(
+    nextDeparture.expectedDeparture || nextDeparture.scheduledDeparture
+  );
   const hasDelay = nextDeparture.delay && nextDeparture.delay > 0;
 
+  const { playInitialFade, shouldBounce, newItemIds } = useDepartureAnimations(visibleDepartures);
+  const isInitialSequence = playInitialFade && totalRows > 0;
+  const isNew = newItemIds.has(nextDeparture.id);
+  const initialStaggerSeconds = TRANSPORT_ANIMATION.initialStagger / 1000;
+  const bounceCompletionDelaySeconds =
+    (TRANSPORT_ANIMATION.duration +
+      Math.max(0, totalRows - 1) * TRANSPORT_ANIMATION.bounceStagger) /
+    1000;
+  const fadeBufferSeconds = TRANSPORT_ANIMATION.newFadeExtraDelay / 1000;
+  const rowAnimationClass = isInitialSequence
+    ? "animate-slide-up-bounce"
+    : isNew
+    ? "animate-fade-in"
+    : shouldBounce
+    ? "animate-slide-up-bounce"
+    : "";
+  let rowAnimationDelay: string | undefined;
+  if (isInitialSequence) {
+    rowAnimationDelay = `${(totalRows - 1) * initialStaggerSeconds}s`;
+  } else if (rowAnimationClass === "animate-slide-up-bounce") {
+    rowAnimationDelay = "0s";
+  } else if (isNew) {
+    const delaySeconds =
+      (shouldBounce ? bounceCompletionDelaySeconds : 0) + fadeBufferSeconds;
+    rowAnimationDelay = `${delaySeconds}s`;
+  }
+  const rowBaseStyle =
+    isInitialSequence
+      ? { opacity: 0, transform: "translateY(120%)" }
+      : isNew
+      ? { opacity: 0 }
+      : undefined;
+
   return (
-    <div className="flex h-full w-full items-center justify-center gap-2 px-2">
-      <span
-        className="inline-flex items-center justify-center px-1 py-0.5 font-bold text-[0.4375rem]"
+    <div
+      className={`flex h-full w-full items-center justify-center gap-2 px-2 ${
+        playInitialFade ? "animate-fade-in" : ""
+      }`}
+    >
+      <div
+        className={`flex items-center gap-2 ${rowAnimationClass}`}
         style={{
-          backgroundColor: badgeColor,
-          border: `1px solid ${badgeBorder}`,
-          color: badgeTextColor,
-          minWidth: "1.5rem",
-          width: "1.5rem",
-          borderRadius: `${badgeRadius}px`,
+          ...rowBaseStyle,
+          animationFillMode: rowAnimationClass ? "forwards" : undefined,
+          animationDelay: rowAnimationDelay,
         }}
       >
-        {nextDeparture.line}
-      </span>
-      <div className="opacity-80" style={{ color: primaryColor, fontSize: "0.4375rem" }}>
-        {minutes !== null ? `${minutes}m` : formatDepartureTime(nextDeparture.expectedDeparture || nextDeparture.scheduledDeparture, timeFormat)}
-      </div>
-      {hasDelay && (
-        <div className="opacity-90 font-medium" style={{ color: delayColor, fontSize: "0.375rem" }}>
-          +{nextDeparture.delay}
+        <TransportBadge
+          line={nextDeparture.line}
+          serviceType={nextDeparture.serviceType}
+          badgeColor={badgeColor}
+          badgeBorder={badgeBorder}
+          badgeTextColor={badgeTextColor}
+          badgeRadius={badgeRadius}
+          size="compact"
+        />
+        <div className="opacity-80" style={{ color: primaryColor, fontSize: "0.4375rem" }}>
+          {minutes !== null ? `${minutes}m` : formatDepartureTime(nextDeparture.expectedDeparture || nextDeparture.scheduledDeparture, timeFormat)}
         </div>
-      )}
+        {hasDelay && (
+          <div className="opacity-90 font-medium" style={{ color: delayColor, fontSize: "0.375rem" }}>
+            +{nextDeparture.delay}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

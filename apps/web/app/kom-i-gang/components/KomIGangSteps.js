@@ -14,31 +14,29 @@ const KomIGangSteps = () => {
       icon: <FaUserPlus className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />,
     },
     {
-      title: "Lag byggeblokker",
-      description: "Lag dine egne byggeblokker med innhold som bilder, tekst og værmeldinger.",
+      title: "Lag scene",
+      description: "Lag dine egne scener med innhold som bilder, tekst og værmeldinger.",
       icon: <FaCubes className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />,
     },
     {
-      title: "Design oppsett",
-      description: "Design ditt oppsett ved å plassere byggeblokker i rutenett eller fullskjerm.",
+      title: "Presenter scene",
+      description: "Presenter scene på skjermene dine.",
       icon: <FaPalette className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />,
     },
     {
-      title: "Registrer skjerm",
-      description: "Registrer dine Android enheter i systemet.",
+      title: "Sjekk oppetider",
+      description: "Sjekk oppetider for sceneene dine.",
       icon: <FaTv className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />,
     },
     {
-      title: "Tildel oppsett",
-      description: "Tildel ditt oppsett til skjermen og se endringene i sanntid.",
+      title: "Endre innhold",
+      description: "Endre innholdet i sceneene dine og se endringene i sanntid.",
       icon: <FaLink className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />,
     },
   ];
-
+  
   return (
     <div className="relative flex items-center justify-center h-screen px-4 py-16">
-      {/* Background Image */}
-      {/* Centered background image behind middle card */}
         <AnimatedImage 
           order={0}
           className="absolute z-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
@@ -89,7 +87,7 @@ const KomIGangSteps = () => {
                 <div className="flex-grow" />
 
                 <motion.div
-                  className="mt-6 inline-flex items-center justify-center self-start rounded-xl bg-custom-color-500/15 p-4 text-custom-color-600 dark:bg-custom-color-400/20 dark:text-custom-color-200"
+                  className="mt-6 inline-flex items-center justify-center rounded-xl bg-custom-color-500/15 p-4 text-custom-color-600 dark:bg-custom-color-400/20 dark:text-custom-color-200"
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true, amount: 0.5 }}

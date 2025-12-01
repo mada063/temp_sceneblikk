@@ -19,27 +19,33 @@ export function WeatherMediumChart({ appearance, weatherData, loading, error, lo
   const primaryColor = appearance.textColor || "#ffffff";
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
+  const dimensionsInitialized = useRef(false);
 
   // Measure container dimensions for responsive chart sizing
   useEffect(() => {
     if (!chartContainerRef.current) {
       const timeoutId = setTimeout(() => {
-        if (chartContainerRef.current) {
+        if (chartContainerRef.current && !dimensionsInitialized.current) {
           setContainerDimensions({
             width: chartContainerRef.current.clientWidth,
             height: chartContainerRef.current.clientHeight,
           });
+          dimensionsInitialized.current = true;
         }
       }, 100);
       return () => clearTimeout(timeoutId);
     }
 
+    if (dimensionsInitialized.current) return;
+
     const updateDimensions = () => {
-      if (chartContainerRef.current) {
-        setContainerDimensions({
-          width: chartContainerRef.current.clientWidth,
-          height: chartContainerRef.current.clientHeight,
-        });
+      if (chartContainerRef.current && !dimensionsInitialized.current) {
+        const width = chartContainerRef.current.clientWidth;
+        const height = chartContainerRef.current.clientHeight;
+        if (width > 0 && height > 0) {
+          setContainerDimensions({ width, height });
+          dimensionsInitialized.current = true;
+        }
       }
     };
 
@@ -125,7 +131,8 @@ export function WeatherMediumChart({ appearance, weatherData, loading, error, lo
             preserveAspectRatio="xMidYMid meet"
             style={{ width: '100%', height: '100%', display: 'block' }}
           >
-            {yAxisTemps.map((temp) => {
+            {/* Y-axis lines and labels - fade in */}
+            {yAxisTemps.map((temp, idx) => {
               const y = calculateDataPointY(temp, minTemp, maxTemp, graphHeight, padding.top);
               const isAvg = Math.abs(temp - Math.round(avgTemp)) < 0.5;
               return (
@@ -137,7 +144,11 @@ export function WeatherMediumChart({ appearance, weatherData, loading, error, lo
                     y2={y}
                     stroke={primaryColor}
                     strokeWidth={isAvg ? "1.5" : "1"}
-                    opacity="0"
+                    className="chart-point-animate"
+                    style={{ 
+                      animationDelay: `${idx * 0.05}s`,
+                      opacity: isAvg ? 0.7 : 0.3
+                    }}
                   />
                   <text
                     x={padding.left - 10}
@@ -145,7 +156,10 @@ export function WeatherMediumChart({ appearance, weatherData, loading, error, lo
                     textAnchor="end"
                     fontSize="10"
                     fill={primaryColor}
-                    opacity="0"
+                    className="chart-point-animate"
+                    style={{ 
+                      animationDelay: `${0.2 + idx * 0.05}s`
+                    }}
                     fontWeight={isAvg ? "600" : "400"}
                   >
                     {temp}°
@@ -154,8 +168,12 @@ export function WeatherMediumChart({ appearance, weatherData, loading, error, lo
               );
             })}
 
+            {/* Average line - animate from left (dotted) - runs after all other animations */}
             {(() => {
               const avgY = calculateDataPointY(avgTemp, minTemp, maxTemp, graphHeight, padding.top);
+              // Calculate delay: line animation (2s) + dots animation (dataToShow.length * 0.02s) + buffer
+              const dotsAnimationDuration = dataToShow.length * 0.02;
+              const averageLineDelay = 2 + dotsAnimationDuration + 0.3;
               return (
                 <line
                   x1={padding.left}
@@ -165,11 +183,17 @@ export function WeatherMediumChart({ appearance, weatherData, loading, error, lo
                   stroke={primaryColor}
                   strokeWidth="1"
                   strokeDasharray="4 4"
-                  opacity="0.5"
+                  className="chart-average-line-animate"
+                  style={{
+                    animationDelay: `${averageLineDelay}s`,
+                    strokeDashoffset: 1000,
+                    opacity: 0
+                  }}
                 />
               );
             })()}
 
+            {/* Temperature line - animate drawing (Shadcn-style) */}
             <polyline
               points={dataToShow
                 .map((d: ForecastItem, idx: number) => {
@@ -181,7 +205,8 @@ export function WeatherMediumChart({ appearance, weatherData, loading, error, lo
               fill="none"
               stroke={primaryColor}
               strokeWidth="1"
-              opacity="1"
+              pathLength="1"
+              className="chart-line-animate"
             />
 
             {dataToShow.map((d: ForecastItem, idx: number) => {
@@ -215,7 +240,10 @@ export function WeatherMediumChart({ appearance, weatherData, loading, error, lo
                     cy={y}
                     r="2.5"
                     fill={primaryColor}
-                    opacity="1"
+                    className="chart-point-animate"
+                    style={{ 
+                      animationDelay: `${2 + idx * 0.02}s`
+                    }}
                   />
                   
                   <foreignObject
@@ -223,6 +251,10 @@ export function WeatherMediumChart({ appearance, weatherData, loading, error, lo
                     y={clampedIconY}
                     width="20"
                     height="20"
+                    className="chart-point-animate"
+                    style={{
+                      animationDelay: `${2 + idx * 0.02}s`
+                    }}
                   >
                     <div className="flex items-center justify-center">
                       <ForecastIcon

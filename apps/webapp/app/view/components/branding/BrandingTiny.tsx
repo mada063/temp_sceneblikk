@@ -12,7 +12,7 @@ export function BrandingTiny({ appearance, logoUrl, text, panelSize = "tiny" }: 
   const primaryColor = appearance.textColor || "#ffffff";
 
   return (
-    <div className="flex h-full w-full items-center justify-center px-2">
+    <div className="flex h-full w-full items-center justify-center px-2 animate-fade-in">
       {logoUrl && (
         <img
           src={logoUrl}

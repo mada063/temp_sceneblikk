@@ -20,7 +20,7 @@ export function BrandingMedium({ appearance, logoUrl, text, panelSize = "medium"
   const layoutType = hasLogo && hasText ? "logo-text" : "single";
 
   return (
-    <div className="flex h-full w-full items-center justify-center px-4 py-3">
+    <div className="flex h-full w-full items-center justify-center px-4 py-3 animate-fade-in">
       <div className={`flex ${layoutType === "logo-text" ? "flex-row items-center gap-4" : "flex-col items-center gap-3"} max-w-full`}>
         {/* Logo Section */}
         {logoUrl && (

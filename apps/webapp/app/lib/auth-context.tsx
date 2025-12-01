@@ -15,6 +15,10 @@ import {
   signOut,
   signInAnonymously,
   updateProfile,
+  signInWithPopup,
+  GoogleAuthProvider,
+  setPersistence,
+  browserLocalPersistence,
 } from "firebase/auth";
 import { auth } from "./firebase";
 
@@ -23,6 +27,7 @@ type AuthContextValue = {
   loading: boolean;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string, displayName?: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signInAsGuest: () => Promise<void>;
   signOutUser: () => Promise<void>;
   updateUserDisplayName: (displayName: string) => Promise<void>;
@@ -30,11 +35,19 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+// Initialize Google Auth Provider
+const googleProvider = new GoogleAuthProvider();
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Set persistence to local (browser) so users stay logged in
+    setPersistence(auth, browserLocalPersistence).catch((error) => {
+      console.error("Failed to set auth persistence:", error);
+    });
+
     const unsubscribe = onAuthStateChanged(auth, (nextUser) => {
       setUser(nextUser);
       setLoading(false);
@@ -52,6 +65,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (displayName && userCredential.user) {
       await updateProfile(userCredential.user, { displayName });
     }
+  };
+
+  const signInWithGoogle = async () => {
+    await signInWithPopup(auth, googleProvider);
   };
 
   const signInAsGuest = async () => {
@@ -72,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, signInWithEmail, signUpWithEmail, signInAsGuest, signOutUser, updateUserDisplayName }}
+      value={{ user, loading, signInWithEmail, signUpWithEmail, signInWithGoogle, signInAsGuest, signOutUser, updateUserDisplayName }}
     >
       {children}
     </AuthContext.Provider>

@@ -91,7 +91,7 @@ export function Weather({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }:
           `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`,
           {
             headers: {
-              "User-Agent": "sceneblikk-app/1.0 (contact@example.com)",
+              "User-Agent": "sceneblikk-app/1.0 (mathias@dallastek.no)",
             },
           }
         );

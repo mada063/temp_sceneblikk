@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { TransportTiny } from "./TransportTiny";
 import { TransportSmall } from "./TransportSmall";
 import { TransportMedium } from "./TransportMedium";
@@ -20,6 +20,8 @@ export function Transport({ appearance, colSpan = 1, rowSpan = 1, totalGridSize 
   const [transportData, setTransportData] = useState<TransportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const isInitialLoadRef = useRef(true);
 
   // Calculate panel size for responsive display
   const panelSize = useMemo((): PanelSize => {
@@ -45,18 +47,38 @@ export function Transport({ appearance, colSpan = 1, rowSpan = 1, totalGridSize 
   }, [colSpan, rowSpan, totalGridSize]);
 
   useEffect(() => {
+    let isMounted = true;
+    isInitialLoadRef.current = true;
+    setTransportData(null);
+    setLoading(true);
+    setError(null);
+
     const loadTransportData = async () => {
       try {
-        setLoading(true);
+        if (isInitialLoadRef.current) {
+          setLoading(true);
+        } else {
+          setRefreshing(true);
+        }
         setError(null);
 
         const data = await fetchTransportData(transportStopPlace, transportMaxDepartures);
-        setTransportData(data);
+        if (isMounted) {
+          setTransportData(data);
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load transport data");
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : "Failed to load transport data");
+        }
         console.error("Error loading transport data:", err);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          if (isInitialLoadRef.current) {
+            setLoading(false);
+            isInitialLoadRef.current = false;
+          }
+          setRefreshing(false);
+        }
       }
     };
 
@@ -64,7 +86,10 @@ export function Transport({ appearance, colSpan = 1, rowSpan = 1, totalGridSize 
 
     // Refresh every 30 seconds
     const interval = setInterval(loadTransportData, 30 * 1000);
-    return () => clearInterval(interval);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, [transportStopPlace, transportMaxDepartures]);
 
   const commonProps = {

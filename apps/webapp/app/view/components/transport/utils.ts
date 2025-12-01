@@ -277,8 +277,23 @@ export async function fetchDepartures(
         delay = Math.round((expected - scheduled) / 1000 / 60); // Convert to minutes
       }
 
+      // Create a stable ID for each departure so React list keys remain consistent
+      // even when the array is refreshed or items move position.
+      const lineId =
+        call.serviceJourney?.journeyPattern?.line?.publicCode ||
+        call.serviceJourney?.journeyPattern?.line?.id ||
+        "line";
+      const quayId = call.quay?.id || call.quay?.publicCode || "quay";
+      const departureIdentifier =
+        call.aimedDepartureTime ||
+        call.expectedDepartureTime ||
+        call.actualDepartureTime ||
+        call.date ||
+        idx;
+      const stableId = `${normalizedId}-${lineId}-${quayId}-${departureIdentifier}`;
+
       return {
-        id: `${normalizedId}-${idx}`,
+        id: stableId,
         line: call.serviceJourney?.journeyPattern?.line?.publicCode || "N/A",
         destination: call.destinationDisplay?.frontText || "Ukjent destinasjon",
         scheduledDeparture: scheduledTime,
