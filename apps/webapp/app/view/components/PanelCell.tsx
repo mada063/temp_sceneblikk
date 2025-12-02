@@ -3,6 +3,7 @@
 import { ComponentRenderer } from "./ComponentRenderer";
 import { usePanelCycle } from "../hooks/usePanelCycle";
 import type { PanelEntry, CellAppearance } from "../../lib/layout-types";
+import { cloneAppearance } from "../../lib/layout-types";
 
 type PanelCellProps = {
   panelEntries: PanelEntry[];
@@ -44,10 +45,20 @@ export function PanelCell({ panelEntries, appearance, colSpan, rowSpan, totalGri
     );
   }
 
+  // Use entry's appearance if it exists, otherwise fall back to panel's appearance
+  // If entry has appearance, merge it with panel appearance as base (entry settings override panel settings)
+  // We clone the entry's appearance to ensure we have a complete object, falling back to panel appearance if cloning fails
+  const entryAppearance: CellAppearance = entryToRender.appearance
+    ? (() => {
+        const cloned = cloneAppearance(entryToRender.appearance);
+        return cloned ? { ...appearance, ...cloned } : appearance;
+      })()
+    : appearance;
+
   return (
     <ComponentRenderer
       componentId={entryToRender.componentId}
-      appearance={appearance}
+      appearance={entryAppearance}
       panelEntries={panelEntries.length > 1 ? panelEntries : undefined}
       colSpan={colSpan}
       rowSpan={rowSpan}

@@ -23,55 +23,104 @@ function normalizeStopPlaceId(query: string): string {
 }
 
 /**
- * Search for stop places by name (for autocomplete/search)
+ * Search for stop places by name (for autocomplete/search) using Entur's geocoder API
  */
-export async function searchStopPlaces(query: string, maxResults: number = 10): Promise<StopPlace[]> {
+export async function searchStopPlaces(
+  query: string,
+  maxResults: number = 10
+): Promise<StopPlace[]> {
   if (!query || query.trim().length < 2) {
     return [];
   }
 
-  const queryText = `
-    query($query: String!, $maxResults: Int!) {
-      stopPlaces(query: $query, multiModal: parent, maxResults: $maxResults) {
-        id
-        name
-        latitude
-        longitude
-      }
-    }
-  `;
+  const url = new URL("https://api.entur.io/geocoder/v1/autocomplete");
+  url.searchParams.set("text", query.trim());
+  url.searchParams.set("lang", "no");
+  url.searchParams.set("size", String(Math.min(maxResults * 2, 40))); // Request more to filter for stops
 
   try {
-    const response = await fetch(ENTUR_API_URL, {
-      method: "POST",
+    const response = await fetch(url.toString(), {
       headers: {
-        "Content-Type": "application/json",
         "ET-Client-Name": ENTUR_CLIENT_NAME,
       },
-      body: JSON.stringify({
-        query: queryText,
-        variables: { query: query.trim(), maxResults },
-      }),
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      // Try to get error details from response body
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        if (errorData?.message) {
+          errorMessage += ` - ${errorData.message}`;
+        } else if (errorData?.error) {
+          errorMessage += ` - ${errorData.error}`;
+        }
+      } catch {
+        // If we can't parse the error response, use the status text
+      }
+      console.error("Geocoder API error:", errorMessage, "URL:", url.toString());
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
-    
-    if (data.errors) {
-      throw new Error(data.errors[0]?.message || "GraphQL error");
-    }
+    const features = Array.isArray(data?.features) ? data.features : [];
 
-    const stopPlaces = data.data?.stopPlaces || [];
-    
-    return stopPlaces.map((sp: any) => ({
-      id: sp.id,
-      name: sp.name,
-      latitude: sp.latitude,
-      longitude: sp.longitude,
-    }));
+    return features
+      .map((feature: any) => {
+        const props = feature?.properties || {};
+        const geometry = feature?.geometry || {};
+        const coordinates = Array.isArray(geometry?.coordinates)
+          ? geometry.coordinates
+          : [];
+
+        // Check if this is a stop place (has NSR:StopPlace ID or is in stop layer)
+        const id = props.id || feature?.id || "";
+        const category = props.category || "";
+        const layer = props.layer || "";
+        
+        // Exclude street addresses and other non-stop categories
+        const isStreetCategory = category === "street" || 
+                                 category === "address" ||
+                                 category === "locality" ||
+                                 layer === "street" ||
+                                 layer === "address";
+        
+        // Check if this is a stop place
+        const isStopPlace = !isStreetCategory && (
+          id.startsWith("NSR:StopPlace:") || 
+          category === "onstreetBus" ||
+          category === "onstreetTram" ||
+          category === "railStation" ||
+          category === "metroStation" ||
+          category === "busStation" ||
+          category === "ferryStop" ||
+          category === "tramStation" ||
+          layer === "venue" ||
+          layer === "stop"
+        );
+
+        return {
+          id,
+          name: props.name || props.label || "Ukjent stopp",
+          label: props.label || props.name || "Ukjent stopp", // Full label for display
+          latitude: typeof coordinates[1] === "number" ? coordinates[1] : undefined,
+          longitude: typeof coordinates[0] === "number" ? coordinates[0] : undefined,
+          isStopPlace,
+        };
+      })
+      .filter((feature: StopPlace & { isStopPlace?: boolean; label?: string }) => {
+        // Filter to only stop places, exclude streets
+        return Boolean(feature.id && feature.name && feature.isStopPlace === true);
+      })
+      .slice(0, maxResults) // Limit to requested number
+      .map((feature: StopPlace & { isStopPlace?: boolean; label?: string }) => {
+        const { isStopPlace: _, label: fullLabel, ...rest } = feature;
+        // Use the full label as the name for display
+        return {
+          ...rest,
+          name: fullLabel || rest.name,
+        } as StopPlace;
+      }); // Remove temporary properties and use full label
   } catch (error) {
     console.error("Error searching stop places:", error);
     return [];

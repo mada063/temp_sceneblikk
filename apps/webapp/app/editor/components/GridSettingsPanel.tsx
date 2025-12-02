@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type ChangeEvent, type DragEvent } from "react";
 
-import { FiChevronDown, FiSearch, FiSliders } from "react-icons/fi";
+import { FiChevronDown, FiSearch, FiSliders, FiMaximize2 } from "react-icons/fi";
 import { ColorPicker } from "./ColorPicker";
 
 import {
@@ -32,6 +32,8 @@ type GridSettingsPanelProps = {
   isLibraryCollapsed: boolean;
   onToggleSettings: () => void;
   onToggleLibrary: () => void;
+  onDetachLibrary?: () => void;
+  isLibraryDetached?: boolean;
 };
 
 export function GridSettingsPanel({
@@ -52,6 +54,8 @@ export function GridSettingsPanel({
   isLibraryCollapsed,
   onToggleSettings,
   onToggleLibrary,
+  onDetachLibrary,
+  isLibraryDetached = false,
 }: GridSettingsPanelProps) {
   return (
     <aside className="glass-surface flex h-full flex-col overflow-hidden rounded-3xl border border-custom-color-200/70 bg-white/95 p-0 shadow-lg transition-colors dark:border-white/10 dark:bg-custom-color-900/80">
@@ -90,19 +94,32 @@ export function GridSettingsPanel({
 
       <div className="flex-1 overflow-hidden">
         <div className="border-b border-custom-color-100/70 px-6 py-4 dark:border-white/10">
-          <button
-            type="button"
-            onClick={onToggleLibrary}
-            className="flex w-full items-center justify-between text-xs font-semibold uppercase tracking-[0.22em] text-custom-color-600 transition hover:text-custom-color-500 dark:text-custom-color-200 dark:hover:text-custom-color-100"
-          >
-            <span>Component library</span>
-            <FiChevronDown
-              className={`h-4 w-4 transition-transform ${isLibraryCollapsed ? "" : "rotate-180"}`}
-              aria-hidden
-            />
-          </button>
+          <div className="flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={onToggleLibrary}
+              className="flex flex-1 items-center justify-between text-xs font-semibold uppercase tracking-[0.22em] text-custom-color-600 transition hover:text-custom-color-500 dark:text-custom-color-200 dark:hover:text-custom-color-100"
+            >
+              <span>Component library</span>
+              <FiChevronDown
+                className={`h-4 w-4 transition-transform ${isLibraryCollapsed ? "" : "rotate-180"}`}
+                aria-hidden
+              />
+            </button>
+            {onDetachLibrary && !isLibraryDetached && (
+              <button
+                type="button"
+                onClick={onDetachLibrary}
+                className="rounded-lg p-1.5 text-custom-color-600 transition hover:bg-custom-color-200/50 hover:text-custom-color-800 dark:text-custom-color-200 dark:hover:bg-custom-color-700/50 dark:hover:text-custom-color-100"
+                aria-label="Detach component library"
+                title="Detach component library"
+              >
+                <FiMaximize2 className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         </div>
-        {!isLibraryCollapsed ? (
+        {!isLibraryCollapsed && !isLibraryDetached ? (
           <ComponentLibrary onDragStartPalette={onDragStartPalette} />
         ) : null}
       </div>

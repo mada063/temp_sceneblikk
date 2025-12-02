@@ -18,6 +18,7 @@ export type PanelEntry = {
   id: string;
   componentId: string;
   duration: number;
+  appearance?: CellAppearance; // Optional per-entry appearance settings
 };
 
 export type CellAppearance = {
@@ -66,9 +67,20 @@ export type CellAppearance = {
   brandingLogoUrl?: string; // URL to logo image
   brandingText?: string; // Branding text/name
   /**
+   * Calendar-specific options (used when componentId === "calendar").
+   */
+  calendarShowUpcoming?: boolean;
+  calendarAccentColor?: string;
+  calendarMutedColor?: string;
+  calendarCellBackground?: string;
+  calendarTodayHighlight?: string;
+  calendarEventPalette?: string;
+  /**
    * Transport-specific options (used when componentId === "transport").
    */
   transportStopPlace?: string; // Stop place name or ID (e.g., "Oslo S", "NSR:StopPlace:582")
+  transportStopPlace2?: string; // Second stop place for dual display (medium/large panels only)
+  transportShowDualStops?: boolean; // Enable dual stop display (medium/large panels only)
   transportTimeFormat?: "12h" | "24h"; // Time format (default: "24h")
   transportMaxDepartures?: number; // Maximum number of departures to display (default: 10)
   transportBadgeColor?: string; // Badge background color for line number (default: textColor)
@@ -110,6 +122,12 @@ export const makeDefaultAppearance = (): CellAppearance => ({
   announcementText: "",
   brandingLogoUrl: "",
   brandingText: "",
+  calendarShowUpcoming: true,
+  calendarAccentColor: "",
+  calendarMutedColor: "",
+  calendarCellBackground: "",
+  calendarTodayHighlight: "",
+  calendarEventPalette: "",
   transportStopPlace: "62356",
   transportTimeFormat: "24h",
   transportMaxDepartures: 10,

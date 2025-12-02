@@ -10,8 +10,7 @@ import { WeatherXLarge } from "./WeatherXLarge";
 import { getAirQualityLevel, type WeatherData } from "./utils";
 import type { WeatherProps } from "./types";
 import { calculateHoursToShow, type PanelSize } from "./chart-config";
-// @ts-ignore - JSON import
-import weatherLocations from "../../../lib/weather-locations.json";
+import { findWeatherLocation } from "./location-utils";
 
 export function Weather({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: WeatherProps) {
   const {
@@ -345,13 +344,13 @@ export function Weather({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }:
 
   // Get location name from weatherLocation
   const locationName = useMemo(() => {
-    const location = weatherLocations.find((loc: { value: string; label: string }) => loc.value === weatherLocation);
+    const location = findWeatherLocation(weatherLocation);
     return location?.label || weatherLocation;
   }, [weatherLocation]);
   
   // Get location name for second location
   const locationName2 = useMemo(() => {
-    const location = weatherLocations.find((loc: { value: string; label: string }) => loc.value === weatherLocation2);
+    const location = findWeatherLocation(weatherLocation2);
     return location?.label || weatherLocation2;
   }, [weatherLocation2]);
 

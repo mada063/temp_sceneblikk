@@ -117,9 +117,11 @@ export function SingleClock({
         : "text-3xl sm:text-4xl";
 
   if (style === "analog") {
-    const clockSize = size === "small" ? 120 : size === "large" ? 200 : 160;
+    // Smaller sizes for analog clocks to prevent overflow in small cells
+    const clockSize = size === "small" ? 80 : size === "large" ? 200 : 160;
     return (
-      <div className="flex flex-col items-center justify-center gap-2">
+      <div className="flex flex-col items-center justify-center gap-1 sm:gap-2 max-w-full max-h-full">
+        <div className="flex-shrink-0" style={{ maxWidth: '100%', maxHeight: '100%' }}>
         <AnalogClock
           time={time}
           timezone={timezone}
@@ -127,6 +129,7 @@ export function SingleClock({
           color={color}
           showSeconds={showSeconds}
         />
+        </div>
         {dateText && (
           <div
             className="text-xs font-medium uppercase tracking-[0.24em]"
@@ -140,7 +143,7 @@ export function SingleClock({
   }
 
   return (
-    <div className="flex flex-col items-center justify-center gap-2">
+    <div className="flex flex-col items-center justify-center gap-1 sm:gap-2 max-w-full max-h-full">
       <div
         className={`font-semibold tracking-[0.22em] ${textSizeClass}`}
         style={{ 
@@ -149,7 +152,9 @@ export function SingleClock({
           minWidth: size === "small" ? "6ch" : size === "large" ? "10ch" : "8ch",
           textAlign: 'center',
           display: 'inline-flex',
-          gap: '0.1em'
+          gap: '0.1em',
+          maxWidth: '100%',
+          overflow: 'hidden'
         }}
       >
         {/* Hours digits */}

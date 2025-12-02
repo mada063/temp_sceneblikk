@@ -92,7 +92,10 @@ export const createPanelEntry = (componentId: string): PanelEntry => ({
 });
 
 export const clonePanelEntries = (entries?: PanelEntry[]) =>
-  entries ? entries.map((entry) => ({ ...entry })) : [];
+  entries ? entries.map((entry) => ({ 
+    ...entry,
+    appearance: entry.appearance ? cloneAppearance(entry.appearance) : undefined,
+  })) : [];
 
 export const clearComponentRegion = (
   key: string,

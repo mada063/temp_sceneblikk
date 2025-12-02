@@ -11,6 +11,8 @@ import { Branding } from "./branding";
 import { Transport } from "./transport";
 import { Media } from "./media";
 import { Charts } from "./charts";
+import { Calendar } from "./calendar";
+import { Tasks } from "./tasks";
 
 type ComponentRendererProps = {
   componentId: string;
@@ -62,6 +64,16 @@ export function ComponentRenderer({
   // Dedicated implementation for the transport component
   if (componentId === "transport") {
     return <Transport appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
+  }
+
+  // Dedicated implementation for the calendar component
+  if (componentId === "calendar") {
+    return <Calendar appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
+  }
+
+  // Dedicated implementation for the tasks component
+  if (componentId === "tasks") {
+    return <Tasks appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
   }
 
   // Dedicated implementation for the media component

@@ -1,18 +1,23 @@
 "use client";
 
+import { useMemo } from "react";
 import { TransportBadge } from "./TransportBadge";
+import { MinutesDisplay } from "./MinutesDisplay";
 import { useDepartureAnimations, TRANSPORT_ANIMATION } from "./useDepartureAnimations";
+import { useMinuteFlipAnimation } from "./useMinuteFlipAnimation";
 import type { TransportProps, TransportData, PanelSize } from "./types";
 import { formatDepartureTime, minutesUntilDeparture } from "./utils";
 import { FiActivity } from "react-icons/fi";
 
 type TransportTinyProps = TransportProps & {
   transportData: TransportData | null;
+  secondaryTransportData?: TransportData | null;
   loading: boolean;
   error: string | null;
   timeFormat?: "12h" | "24h";
   maxDepartures?: number;
   panelSize?: PanelSize;
+  dualStopEnabled?: boolean;
 };
 
 export function TransportTiny({ appearance, transportData, loading, error, timeFormat = "24h", panelSize = "tiny", colSpan = 1, rowSpan = 1 }: TransportTinyProps) {
@@ -23,7 +28,6 @@ export function TransportTiny({ appearance, transportData, loading, error, timeF
   const badgeRadius = appearance.transportBadgeRadius ?? appearance.borderRadius ?? 8;
   const delayColor = appearance.transportDelayColor || "#ef4444";
   const panelArea = (colSpan ?? 1) * (rowSpan ?? 1);
-  const fontSize = panelArea <= 1 ? "0.5rem" : "0.5625rem";
 
   if (loading) {
     return (
@@ -55,23 +59,43 @@ export function TransportTiny({ appearance, transportData, loading, error, timeF
     );
   }
 
-  const visibleDepartures = transportData.departures.slice(0, 1);
-  const totalRows = visibleDepartures.length;
-  const nextDeparture = visibleDepartures[0];
-  const minutes = minutesUntilDeparture(
-    nextDeparture.expectedDeparture || nextDeparture.scheduledDeparture
+  const visibleDepartures = useMemo(
+    () => transportData.departures.slice(0, 1),
+    [transportData.departures]
   );
-  const hasDelay = nextDeparture.delay && nextDeparture.delay > 0;
+  const rowData = useMemo(() => {
+    return visibleDepartures.map((dep) => {
+      const minutes = minutesUntilDeparture(
+        dep.expectedDeparture || dep.scheduledDeparture
+      );
+      return {
+        id: dep.id,
+        dep,
+        minutes,
+        fallback: formatDepartureTime(
+          dep.expectedDeparture || dep.scheduledDeparture,
+          timeFormat
+        ),
+        hasDelay: dep.delay && dep.delay > 0,
+      };
+    });
+  }, [visibleDepartures, timeFormat]);
+  const totalRows = rowData.length;
+  const nextRow = rowData[0];
 
   const { playInitialFade, shouldBounce, newItemIds } = useDepartureAnimations(visibleDepartures);
+  const minuteAnimationIds = useMinuteFlipAnimation(rowData);
   const isInitialSequence = playInitialFade && totalRows > 0;
-  const isNew = newItemIds.has(nextDeparture.id);
+  const isNew = nextRow ? newItemIds.has(nextRow.id) : false;
   const initialStaggerSeconds = TRANSPORT_ANIMATION.initialStagger / 1000;
   const bounceCompletionDelaySeconds =
     (TRANSPORT_ANIMATION.duration +
       Math.max(0, totalRows - 1) * TRANSPORT_ANIMATION.bounceStagger) /
     1000;
   const fadeBufferSeconds = TRANSPORT_ANIMATION.newFadeExtraDelay / 1000;
+  if (!nextRow) {
+    return null;
+  }
   const rowAnimationClass = isInitialSequence
     ? "animate-slide-up-bounce"
     : isNew
@@ -98,7 +122,7 @@ export function TransportTiny({ appearance, transportData, loading, error, timeF
 
   return (
     <div
-      className={`flex h-full w-full items-center justify-center gap-2 px-2 ${
+      className={`flex h-full w-full items-center justify-center gap-2 p-4 sm:p-6 ${
         playInitialFade ? "animate-fade-in" : ""
       }`}
     >
@@ -111,20 +135,25 @@ export function TransportTiny({ appearance, transportData, loading, error, timeF
         }}
       >
         <TransportBadge
-          line={nextDeparture.line}
-          serviceType={nextDeparture.serviceType}
+          line={nextRow.dep.line}
+          serviceType={nextRow.dep.serviceType}
           badgeColor={badgeColor}
           badgeBorder={badgeBorder}
           badgeTextColor={badgeTextColor}
           badgeRadius={badgeRadius}
           size="compact"
         />
-        <div className="opacity-80" style={{ color: primaryColor, fontSize: "0.4375rem" }}>
-          {minutes !== null ? `${minutes}m` : formatDepartureTime(nextDeparture.expectedDeparture || nextDeparture.scheduledDeparture, timeFormat)}
-        </div>
-        {hasDelay && (
+        <MinutesDisplay
+          minutes={nextRow.minutes}
+          fallback={nextRow.fallback}
+          suffix="m"
+          className="opacity-80"
+          style={{ color: primaryColor, fontSize: "0.4375rem" }}
+          animateDigits={minuteAnimationIds.has(nextRow.id)}
+        />
+        {nextRow.hasDelay && (
           <div className="opacity-90 font-medium" style={{ color: delayColor, fontSize: "0.375rem" }}>
-            +{nextDeparture.delay}
+            +{nextRow.dep.delay}
           </div>
         )}
       </div>

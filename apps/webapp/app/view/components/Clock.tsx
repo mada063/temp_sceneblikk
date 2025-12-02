@@ -35,38 +35,71 @@ export function Clock({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: C
   useEffect(() => {
     if (hasInitialized.current) return;
     
-    const currentTime = new Date();
+    const animationStartTime = Date.now();
+    const totalDuration = 4000; // 4 seconds total
     
-    // Start from 00:00:00
-    const startTime = new Date(currentTime);
+    // Calculate target end time: current time + animation duration
+    // This ensures the clock lands on the correct time when animation completes
+    const targetEndTime = new Date(animationStartTime + totalDuration);
+    
+    // Start from 00:00:00 (today)
+    const startTime = new Date(targetEndTime);
     startTime.setHours(0);
     startTime.setMinutes(0);
     startTime.setSeconds(0);
     startTime.setMilliseconds(0);
     
+    // Calculate time 60 minutes before target end time
+    const sixtyMinutesBefore = new Date(targetEndTime);
+    sixtyMinutesBefore.setMinutes(sixtyMinutesBefore.getMinutes() - 60);
+    sixtyMinutesBefore.setSeconds(0);
+    sixtyMinutesBefore.setMilliseconds(0);
+    
+    // Make sure we don't go before midnight
+    const phase1End = sixtyMinutesBefore.getTime() > startTime.getTime() 
+      ? sixtyMinutesBefore 
+      : startTime;
+    
     setNow(startTime);
     
-    // Animate scrolling up to current time
-    const duration = 2000; // 2 seconds
+    // Two-phase animation: fast to 60 min before, then slow to current
+    const phase1Duration = totalDuration * 0.25; // 25% of time for fast phase
+    const phase2Duration = totalDuration * 0.75; // 75% of time for slow phase
+    
     const start = startTime.getTime();
-    const end = currentTime.getTime();
-    const startTimeMs = Date.now();
+    const midPoint = phase1End.getTime();
+    const end = targetEndTime.getTime();
     
     const scrollInterval = setInterval(() => {
-      const elapsed = Date.now() - startTimeMs;
-      const progress = Math.min(elapsed / duration, 1);
+      const elapsed = Date.now() - animationStartTime;
       
-      // Ease out cubic for smooth deceleration
-      const eased = 1 - Math.pow(1 - progress, 3);
+      let current: Date;
       
-      const current = new Date(start + (end - start) * eased);
+      if (elapsed < phase1Duration) {
+        // Phase 1: Fast animation from 00:00:00 to 60 minutes before
+        const phase1Progress = Math.min(elapsed / phase1Duration, 1);
+        // Use ease-out for smooth transition into phase 2
+        const eased = 1 - Math.pow(1 - phase1Progress, 2);
+        const phase1Time = start + (midPoint - start) * eased;
+        current = new Date(phase1Time);
+      } else {
+        // Phase 2: Slow animation from 60 minutes before to current time
+        const phase2Elapsed = elapsed - phase1Duration;
+        const phase2Progress = Math.min(phase2Elapsed / phase2Duration, 1);
+        // Use a very smooth ease-out for the slow trickle
+        const eased = 1 - Math.pow(1 - phase2Progress, 5); // High power for very smooth deceleration
+        const phase2Time = midPoint + (end - midPoint) * eased;
+        current = new Date(phase2Time);
+      }
+      
       setNow(current);
       
-      if (progress >= 1) {
+      if (elapsed >= totalDuration) {
         clearInterval(scrollInterval);
         setIsInitializing(false);
         hasInitialized.current = true;
-        setNow(currentTime);
+        // Set to actual current time at completion
+        setNow(new Date());
       }
     }, 16); // ~60fps
     
@@ -94,6 +127,36 @@ export function Clock({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: C
     const panelArea = colSpan * rowSpan;
     const fraction = panelArea / totalGridSize;
     return fraction >= 0.25; // 1/4 or more
+  }, [colSpan, rowSpan, totalGridSize]);
+
+  // Calculate appropriate clock size based on cell dimensions
+  const clockSize = useMemo((): "small" | "medium" | "large" => {
+    const cols = colSpan ?? 1;
+    const rows = rowSpan ?? 1;
+    const panelArea = cols * rows;
+    
+    if (!totalGridSize || totalGridSize === 0) {
+      // Absolute sizing when total grid size is unknown
+      if (panelArea <= 1) return "small";
+      if (panelArea <= 2) return "small";
+      if (panelArea <= 6) return "medium";
+      return "large";
+    }
+    
+    const fraction = panelArea / totalGridSize;
+    
+    // Small: very small panels (< 12.5% of grid) or single cell
+    if (fraction < 0.125 || panelArea === 1) {
+      return "small";
+    }
+    
+    // Medium: small to medium panels (12.5-50% of grid)
+    if (fraction < 0.5) {
+      return "medium";
+    }
+    
+    // Large: larger panels (50%+ of grid)
+    return "large";
   }, [colSpan, rowSpan, totalGridSize]);
 
   // Get all active timezones
@@ -160,7 +223,7 @@ export function Clock({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: C
 
   // Render single clock
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 text-center">
+    <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-2 sm:px-4 text-center overflow-hidden">
       <SingleClock
         time={now}
         timezone={clockTimezone}
@@ -169,7 +232,7 @@ export function Clock({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: C
         showDate={showClockDate}
         format={clockFormat}
         color={primaryColor}
-        size="large"
+        size={clockSize}
         animateChanges={!isInitializing}
       />
     </div>

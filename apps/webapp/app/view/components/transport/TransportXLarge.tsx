@@ -1,7 +1,10 @@
 "use client";
 
+import { useMemo } from "react";
 import { TransportBadge } from "./TransportBadge";
+import { MinutesDisplay } from "./MinutesDisplay";
 import { useDepartureAnimations, TRANSPORT_ANIMATION } from "./useDepartureAnimations";
+import { useMinuteFlipAnimation } from "./useMinuteFlipAnimation";
 import type { TransportProps, TransportData, PanelSize } from "./types";
 import { formatDepartureTime, minutesUntilDeparture } from "./utils";
 import { FiActivity } from "react-icons/fi";
@@ -36,8 +39,21 @@ export function TransportXLarge({ appearance, transportData, loading, error, tim
   }
 
   const departures = transportData.departures.slice(0, maxDepartures);
+  const rowData = useMemo(() => {
+    return departures.map((dep) => {
+      const minutes = minutesUntilDeparture(dep.expectedDeparture || dep.scheduledDeparture);
+      return {
+        id: dep.id,
+        dep,
+        minutes,
+        fallback: formatDepartureTime(dep.expectedDeparture || dep.scheduledDeparture, timeFormat),
+        hasDelay: dep.delay && dep.delay > 0,
+      };
+    });
+  }, [departures, timeFormat]);
   const { playInitialFade, shouldBounce, newItemIds } = useDepartureAnimations(departures);
-  const totalRows = departures.length;
+  const minuteAnimationIds = useMinuteFlipAnimation(rowData);
+  const totalRows = rowData.length;
   const isInitialSequence = playInitialFade && totalRows > 0;
   const initialStaggerSeconds = TRANSPORT_ANIMATION.initialStagger / 1000;
   const bounceStaggerSeconds = TRANSPORT_ANIMATION.bounceStagger / 1000;
@@ -50,7 +66,7 @@ export function TransportXLarge({ appearance, transportData, loading, error, tim
 
   return (
     <div
-      className={`flex h-full w-full flex-col gap-4 px-6 py-4 ${
+      className={`flex h-full w-full flex-col gap-4 p-4 sm:p-6 ${
         playInitialFade ? "animate-fade-in" : ""
       }`}
     >
@@ -60,10 +76,8 @@ export function TransportXLarge({ appearance, transportData, loading, error, tim
         </div>
       )}
       <div className="flex-1 flex flex-col gap-4">
-        {departures.map((dep, index) => {
-          const minutes = minutesUntilDeparture(dep.expectedDeparture || dep.scheduledDeparture);
-          const hasDelay = dep.delay && dep.delay > 0;
-          const isNew = newItemIds.has(dep.id);
+        {rowData.map((row, index) => {
+          const isNew = newItemIds.has(row.id);
           const currentNewIndex = isNew ? newRowCounter++ : undefined;
           const rowAnimationClass = isInitialSequence
             ? "animate-slide-up-bounce"
@@ -92,7 +106,7 @@ export function TransportXLarge({ appearance, transportData, loading, error, tim
               : undefined;
           return (
             <div 
-              key={dep.id} 
+              key={row.id} 
               className={`flex items-center justify-between gap-4 border-b border-opacity-30 pb-4 last:border-b-0 ${rowAnimationClass}`}
               style={{ 
                 borderColor: `${primaryColor}50`,
@@ -103,8 +117,8 @@ export function TransportXLarge({ appearance, transportData, loading, error, tim
             >
               <div className="flex-1 flex items-center gap-3">
                 <TransportBadge
-                  line={dep.line}
-                  serviceType={dep.serviceType}
+                  line={row.dep.line}
+                  serviceType={row.dep.serviceType}
                   badgeColor={badgeColor}
                   badgeBorder={badgeBorder}
                   badgeTextColor={badgeTextColor}
@@ -112,20 +126,25 @@ export function TransportXLarge({ appearance, transportData, loading, error, tim
                   size="large"
                 />
                 <span className="font-semibold" style={{ color: primaryColor, fontSize: lineFontSize }}>
-                  {dep.destination}
+                  {row.dep.destination}
                 </span>
                 <div className="flex gap-3 mt-1">
-                  {dep.platform && <div className="opacity-70" style={{ color: primaryColor, fontSize: "0.75rem" }}>Plattform {dep.platform}</div>}
-                  {dep.serviceType && <div className="opacity-70" style={{ color: primaryColor, fontSize: "0.75rem" }}>{dep.serviceType}</div>}
+                  {row.dep.platform && <div className="opacity-70" style={{ color: primaryColor, fontSize: "0.75rem" }}>Plattform {row.dep.platform}</div>}
+                  {row.dep.serviceType && <div className="opacity-70" style={{ color: primaryColor, fontSize: "0.75rem" }}>{row.dep.serviceType}</div>}
                 </div>
               </div>
               <div className="text-right">
-                <div className="font-semibold" style={{ color: primaryColor, fontSize: lineFontSize }}>
-                  {minutes !== null ? `${minutes} min` : formatDepartureTime(dep.expectedDeparture || dep.scheduledDeparture, timeFormat)}
-                </div>
-                {hasDelay && (
+                <MinutesDisplay
+                  minutes={row.minutes}
+                  fallback={row.fallback}
+                  suffix="min"
+                  className="font-semibold"
+                  style={{ color: primaryColor, fontSize: lineFontSize }}
+                  animateDigits={minuteAnimationIds.has(row.id)}
+                />
+                {row.hasDelay && (
                   <div className="opacity-90 font-medium mt-1" style={{ color: delayColor, fontSize: "0.75rem" }}>
-                    +{dep.delay} min
+                    +{row.dep.delay} min
                   </div>
                 )}
               </div>

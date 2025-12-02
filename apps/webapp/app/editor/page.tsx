@@ -50,6 +50,7 @@ import {
 } from "./utils/grid";
 import { CanvasPreview } from "./components/CanvasPreview";
 import { GridSettingsPanel } from "./components/GridSettingsPanel";
+import { DraggableComponentLibrary } from "./components/DraggableComponentLibrary";
 import { PanelPlaybackPanel } from "./components/PanelPlaybackPanel";
 import { SelectedComponentPanel } from "./components/SelectedComponentPanel";
 import { LayoutSelector } from "./components/LayoutSelector";
@@ -116,6 +117,8 @@ export default function EditorPage() {
   const [sidebarWidth, setSidebarWidth] = useState(340);
   const [settingsCollapsed, setSettingsCollapsed] = useState(false);
   const [libraryCollapsed, setLibraryCollapsed] = useState(false);
+  const [isLibraryDetached, setIsLibraryDetached] = useState(false);
+  const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
 
   const primarySelectedCell = selectedCells[0] ?? null;
   const selectionCount = selectedCells.length;
@@ -182,6 +185,15 @@ export default function EditorPage() {
         return [rootKey];
       });
       setResizeState(null);
+      
+      // If selecting a panel (freeform region) with 2+ entries, set the first entry as active for editing
+      const cell = cells[rootKey];
+      if (cell?.componentId === FREEFORM_COMPONENT_ID && cell.panelEntries && cell.panelEntries.length >= 2) {
+        // Set the first entry as active when selecting a panel
+        setSelectedEntryId(cell.panelEntries[0].id);
+      } else {
+        setSelectedEntryId(null);
+      }
     },
     [cells],
   );
@@ -1102,6 +1114,34 @@ export default function EditorPage() {
           return next;
         }
 
+        // If dropping from library (no moving component), create a 1x1 panel with the component
+        if (!moving && componentId) {
+          clearComponentRegion(targetRoot, next);
+          
+          // Check if area is available for 1x1 panel
+          if (!isAreaAvailable(next, targetRoot, 1, 1, currentConfig)) {
+            return prev;
+          }
+
+          // Create a 1x1 panel (FREEFORM_COMPONENT_ID) at the target
+          const placementAppearance = getAppearancePreset(FREEFORM_COMPONENT_ID);
+          assignComponentToRegion(
+            targetRoot,
+            next,
+            currentConfig,
+            FREEFORM_COMPONENT_ID,
+            1,
+            1,
+            placementAppearance,
+          );
+          
+          // Add the component to the panel
+          const panelCell = next[targetRoot];
+          panelCell.panelEntries = [createPanelEntry(componentId)];
+          
+          return next;
+        }
+
         if (!moving) {
           return prev;
         }
@@ -1391,6 +1431,19 @@ export default function EditorPage() {
     (acc, entry) => acc + entry.duration,
     0,
   );
+  
+  // Reset selected entry when selection changes
+  useEffect(() => {
+    if (!isFreeformSelected) {
+      setSelectedEntryId(null);
+    } else if (selectedEntryId) {
+      // Validate that the selected entry still exists
+      const entryExists = selectedPanelEntries.some(entry => entry.id === selectedEntryId);
+      if (!entryExists) {
+        setSelectedEntryId(null);
+      }
+    }
+  }, [isFreeformSelected, selectedPanelEntries, selectedEntryId]);
   let selectedComponentLabel: string | undefined;
   if (selectedComponentId != null) {
     const placeholderLabel = PLACEHOLDER_MAP[selectedComponentId]?.label;
@@ -1411,6 +1464,47 @@ export default function EditorPage() {
       if (selectedCells.length === 0) {
         return;
       }
+      
+      // If editing a specific entry in a panel, update that entry's appearance
+      if (isFreeformSelected && selectedEntryId && primarySelectedCell) {
+        setCells((prev) => {
+          const next = structuredClone(prev);
+          const rootKey = resolveRootKey(primarySelectedCell, next);
+          const cell = next[rootKey];
+          if (cell?.componentId !== FREEFORM_COMPONENT_ID || !cell.panelEntries) {
+            return prev;
+          }
+          
+          const entryIndex = cell.panelEntries.findIndex(entry => entry.id === selectedEntryId);
+          if (entryIndex === -1) {
+            return prev;
+          }
+          
+          const entry = cell.panelEntries[entryIndex];
+          // Use entry's appearance if it exists, otherwise use panel's appearance, otherwise use default
+          const baseAppearance = entry.appearance 
+            ? cloneAppearance(entry.appearance) ?? getAppearancePreset(entry.componentId)
+            : (cell.appearance 
+              ? cloneAppearance(cell.appearance) ?? getAppearancePreset(entry.componentId)
+              : getAppearancePreset(entry.componentId));
+          
+          const updatedAppearance: CellAppearance = {
+            ...baseAppearance,
+            ...changes,
+          };
+          
+          // Update the entry's appearance
+          cell.panelEntries[entryIndex] = {
+            ...entry,
+            appearance: updatedAppearance,
+          };
+          
+          return next;
+        });
+        return;
+      }
+      
+      // Otherwise, update the cell/panel appearance as before
       const targetKeys = Array.from(new Set(selectedCells));
       const primaryComponentId = selectedCellData?.componentId;
       
@@ -1439,7 +1533,7 @@ export default function EditorPage() {
         return didUpdate ? next : prev;
       });
     },
-    [getAppearancePreset, selectedCells, selectedCellData],
+    [getAppearancePreset, selectedCells, selectedCellData, isFreeformSelected, selectedEntryId, primarySelectedCell],
   );
 
   const handleLoadLayout = useCallback((layout: SavedLayout) => {
@@ -1470,10 +1564,29 @@ export default function EditorPage() {
     setCurrentLayoutId(layout.id);
   }, [getAppearancePreset]);
 
-  const selectedAppearance =
-    selectedComponentId != null
-      ? selectedCellData?.appearance ?? getAppearancePreset(selectedComponentId)
-      : null;
+  // Determine which appearance to use: entry-specific if editing an entry, otherwise cell/panel appearance
+  const selectedAppearance = useMemo(() => {
+    if (selectedComponentId == null) {
+      return null;
+    }
+    
+    // If editing a specific entry, use that entry's appearance
+    if (isFreeformSelected && selectedEntryId && selectedCellData?.panelEntries) {
+      const entry = selectedCellData.panelEntries.find(e => e.id === selectedEntryId);
+      if (entry?.appearance) {
+        return entry.appearance;
+      }
+      // Fall back to panel appearance if entry doesn't have its own
+      if (selectedCellData.appearance) {
+        return selectedCellData.appearance;
+      }
+      // Fall back to default for the entry's component type
+      return getAppearancePreset(entry?.componentId ?? selectedComponentId);
+    }
+    
+    // Otherwise use cell/panel appearance
+    return selectedCellData?.appearance ?? getAppearancePreset(selectedComponentId);
+  }, [selectedComponentId, selectedCellData, isFreeformSelected, selectedEntryId, getAppearancePreset]);
 
   return (
     <div className="min-h-screen bg-custom-color-100 text-black transition-colors duration-300 dark:bg-custom-color-900 dark:text-white">
@@ -1560,6 +1673,11 @@ export default function EditorPage() {
                 isLibraryCollapsed={libraryCollapsed}
                 onToggleSettings={() => setSettingsCollapsed((prev) => !prev)}
                 onToggleLibrary={() => setLibraryCollapsed((prev) => !prev)}
+                onDetachLibrary={() => {
+                  setIsLibraryDetached(true);
+                  setLibraryCollapsed(false);
+                }}
+                isLibraryDetached={isLibraryDetached}
               />
             </div>
           </div>
@@ -1600,6 +1718,8 @@ export default function EditorPage() {
                 totalDuration={totalPanelDuration}
                 onDurationChange={handlePanelEntryDurationChange}
                 onRemoveEntry={handleRemovePanelEntry}
+                selectedEntryId={selectedEntryId}
+                onSelectEntry={setSelectedEntryId}
               />
             ) : null}
             <SelectedComponentPanel
@@ -1615,6 +1735,8 @@ export default function EditorPage() {
               onAppearanceChange={handleAppearanceChange}
               allHaveSameComponent={allHaveSameComponent}
               allSelectedCellsData={allSelectedCellsData}
+              selectedEntryId={selectedEntryId}
+              selectedPanelEntries={selectedPanelEntries}
             />
             <div className="glass-surface rounded-3xl border border-white/30 p-6 shadow-lg dark:border-white/10">
               <h2 className="text-lg font-semibold text-custom-color-800 dark:text-custom-color-100">
@@ -1633,6 +1755,12 @@ export default function EditorPage() {
             </div>
           </section>
         </div>
+        {isLibraryDetached && (
+          <DraggableComponentLibrary
+            onDragStartPalette={handleDragStartPalette}
+            onClose={() => setIsLibraryDetached(false)}
+          />
+        )}
       </div>
     </div>
   );

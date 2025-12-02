@@ -13,11 +13,14 @@ import { FiActivity } from "react-icons/fi";
 export function Transport({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: TransportProps) {
   const {
     transportStopPlace = "62356",
+    transportStopPlace2,
+    transportShowDualStops = false,
     transportTimeFormat = "24h",
     transportMaxDepartures = 10,
   } = appearance;
 
   const [transportData, setTransportData] = useState<TransportData | null>(null);
+  const [secondaryTransportData, setSecondaryTransportData] = useState<TransportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -50,6 +53,7 @@ export function Transport({ appearance, colSpan = 1, rowSpan = 1, totalGridSize 
     let isMounted = true;
     isInitialLoadRef.current = true;
     setTransportData(null);
+    setSecondaryTransportData(null);
     setLoading(true);
     setError(null);
 
@@ -62,9 +66,21 @@ export function Transport({ appearance, colSpan = 1, rowSpan = 1, totalGridSize 
         }
         setError(null);
 
-        const data = await fetchTransportData(transportStopPlace, transportMaxDepartures);
+        const [primaryData, secondaryData] = await Promise.all([
+          fetchTransportData(transportStopPlace, transportMaxDepartures),
+          transportShowDualStops && transportStopPlace2
+            ? fetchTransportData(transportStopPlace2, transportMaxDepartures).catch((secondaryErr) => {
+                console.error("Error loading secondary transport data:", secondaryErr);
+                return null;
+              })
+            : Promise.resolve(null),
+        ]);
+
         if (isMounted) {
-          setTransportData(data);
+          setTransportData(primaryData);
+          setSecondaryTransportData(
+            transportShowDualStops && transportStopPlace2 ? secondaryData : null
+          );
         }
       } catch (err) {
         if (isMounted) {
@@ -90,11 +106,15 @@ export function Transport({ appearance, colSpan = 1, rowSpan = 1, totalGridSize 
       isMounted = false;
       clearInterval(interval);
     };
-  }, [transportStopPlace, transportMaxDepartures]);
+  }, [transportStopPlace, transportStopPlace2, transportShowDualStops, transportMaxDepartures]);
+
+  const dualStopsEnabled = Boolean(transportShowDualStops && transportStopPlace2);
 
   const commonProps = {
     appearance,
     transportData,
+    secondaryTransportData: dualStopsEnabled ? secondaryTransportData : null,
+    dualStopEnabled: dualStopsEnabled,
     loading,
     error,
     timeFormat: transportTimeFormat,

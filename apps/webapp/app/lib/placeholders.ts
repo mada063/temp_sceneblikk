@@ -2,6 +2,8 @@ import { IconType } from "react-icons";
 import {
   FiActivity,
   FiBarChart2,
+  FiCalendar,
+  FiCheckSquare,
   FiCloud,
   FiClock,
   FiImage,
@@ -44,6 +46,12 @@ export const PLACEHOLDER_LIBRARY: PlaceholderDefinition[] = [
     icon: FiClock,
   },
   {
+    id: "calendar",
+    label: "Calendar",
+    description: "Monthly overview with key events",
+    icon: FiCalendar,
+  },
+  {
     id: "map",
     label: "Wayfinding",
     description: "Interactive or static maps",
@@ -62,9 +70,15 @@ export const PLACEHOLDER_LIBRARY: PlaceholderDefinition[] = [
     icon: FiActivity,
   },
   {
+    id: "tasks",
+    label: "Tasks",
+    description: "Task lists and to-do items",
+    icon: FiCheckSquare,
+  },
+  {
     id: "transport",
     label: "Transport",
-    description: "Public transport departures and schedules",
+    description: "Public transport departures",
     icon: FiNavigation,
   },
   {

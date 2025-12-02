@@ -4,10 +4,14 @@ import { useState, useEffect, useRef, type ChangeEvent } from "react";
 
 import { FiTrash2, FiSearch } from "react-icons/fi";
 import timezones from "../../lib/timezones.json";
+// @ts-ignore - JSON import
 import weatherLocations from "../../lib/weather-locations.json";
 import transportLocations from "../../lib/transport-locations.json";
-import { searchStopPlaces } from "../../view/components/transport/utils";
+import { PLACEHOLDER_MAP } from "../../lib/placeholders";
+import { searchStopPlaces, findStopPlace } from "../../view/components/transport/utils";
 import type { StopPlace } from "../../view/components/transport/types";
+import { searchWeatherLocations, findWeatherLocation } from "../../view/components/weather/location-utils";
+import type { WeatherLocation } from "../../view/components/weather/types";
 import { AnnouncementEditor } from "./AnnouncementEditor";
 import { ChartsEditor } from "./ChartsEditor";
 
@@ -34,6 +38,8 @@ type SelectedComponentPanelProps = {
   onAppearanceChange: (changes: Partial<CellAppearance>) => void;
   allHaveSameComponent?: boolean;
   allSelectedCellsData?: Array<{ key: string; cell: GridCell }>;
+  selectedEntryId?: string | null;
+  selectedPanelEntries?: Array<{ id: string; componentId: string }>;
 };
 
 /**
@@ -42,14 +48,17 @@ type SelectedComponentPanelProps = {
 function StopPlaceSelector({
   value,
   onChange,
+  stopPlaceName,
 }: {
   value: string;
   onChange: (stopPlaceId: string) => void;
+  stopPlaceName?: string;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<StopPlace[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [currentName, setCurrentName] = useState<string | null>(stopPlaceName || null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -108,14 +117,50 @@ function StopPlaceSelector({
     // The utils will convert it to NSR:StopPlace:32214 format when needed
     const idToStore = extractNumericId(stopPlace.id);
     
+    setCurrentName(stopPlace.name);
     onChange(idToStore);
     setSearchQuery("");
     setSearchResults([]);
     setShowDropdown(false);
+    setIsFocused(false);
   };
 
-  // Display value: show search query if active, otherwise show stored value
-  const displayValue = searchQuery !== "" ? searchQuery : (value || "");
+  // Update current name when stopPlaceName prop changes
+  useEffect(() => {
+    if (stopPlaceName) {
+      setCurrentName(stopPlaceName);
+    }
+  }, [stopPlaceName]);
+
+  // Fetch stop place name when value changes (if we don't have a name)
+  useEffect(() => {
+    if (value && !currentName && !searchQuery) {
+      // Try to fetch the name from the ID
+      findStopPlace(value)
+        .then((stopPlace) => {
+          if (stopPlace?.name) {
+            setCurrentName(stopPlace.name);
+          }
+        })
+        .catch(() => {
+          // Silently fail - we'll just show the ID
+        });
+    }
+  }, [value, currentName, searchQuery]);
+
+  // Track if input is focused to control display behavior
+  const [isFocused, setIsFocused] = useState(false);
+
+  // Display value: show search query when typing, otherwise show name/ID
+  const displayValue = searchQuery !== "" 
+    ? searchQuery 
+    : (currentName || value || "");
+
+  // Placeholder: show default placeholder
+  const placeholder = "Search stop place or enter ID (e.g., 32214)";
+
+  // Check if we should show the value with placeholder opacity (focused but not typing)
+  const showPlaceholderStyle = isFocused && !searchQuery && (currentName || value);
 
   return (
     <div ref={containerRef} className="relative">
@@ -131,20 +176,27 @@ function StopPlaceSelector({
             onChange(newValue.trim());
           }}
           onFocus={() => {
-            // Clear search query on focus to show current value and allow searching
-            if (!searchQuery) {
-              setSearchQuery("");
-            }
-            if (searchResults.length > 0 || searchQuery.length >= 2) {
-              setShowDropdown(true);
-            }
+            setIsFocused(true);
+            // Clear search query on focus to allow fresh typing
+            setSearchQuery("");
+            setShowDropdown(false);
           }}
           onBlur={() => {
-            // Don't hide dropdown immediately to allow clicking on results
-            setTimeout(() => setShowDropdown(false), 200);
+            setIsFocused(false);
+            setTimeout(() => {
+              setShowDropdown(false);
+              // Reset search query when blurring if no selection was made
+              if (searchQuery && searchQuery !== currentName && searchQuery !== value) {
+                setSearchQuery("");
+              }
+            }, 200);
           }}
-          placeholder="Search stop place or enter ID (e.g., 32214)"
-          className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 pr-10 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
+          placeholder={placeholder}
+          className={`w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 pr-10 text-sm font-medium shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 ${
+            showPlaceholderStyle 
+              ? "text-custom-color-400 dark:text-custom-color-500" 
+              : "text-custom-color-800 dark:text-custom-color-50"
+          }`}
         />
         <FiSearch className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-custom-color-400 dark:text-custom-color-500" />
       </div>
@@ -168,32 +220,192 @@ function StopPlaceSelector({
                 className="w-full px-4 py-2 text-left text-sm text-custom-color-800 hover:bg-custom-color-100 dark:text-custom-color-50 dark:hover:bg-custom-color-700"
               >
                 <div className="font-medium">{stopPlace.name}</div>
-                <div className="text-xs text-custom-color-500 dark:text-custom-color-400">
-                  ID: {extractNumericId(stopPlace.id)}
-                </div>
+                {stopPlace.id && (
+                  <div className="text-xs text-custom-color-500 dark:text-custom-color-400">
+                    ID: {extractNumericId(stopPlace.id)}
+                  </div>
+                )}
               </button>
             ))
           )}
         </div>
       )}
       
-      {value && !searchQuery && (
-        <p className="mt-1 text-xs text-custom-color-500 dark:text-custom-color-400">
-          Stop place ID: {value}
-          <span className="ml-2 text-[10px] opacity-70">
-            (from{" "}
-            <a
-              href="https://stoppested.entur.org/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-custom-color-600 dark:hover:text-custom-color-300"
-            >
-              stoppested.entur.org
-            </a>
-            )
-          </span>
-        </p>
+    </div>
+  );
+}
+
+/**
+ * Helper component for searchable weather location selector
+ */
+function WeatherLocationSelector({
+  value,
+  onChange,
+  locationName,
+}: {
+  value: string;
+  onChange: (locationValue: string) => void;
+  locationName?: string;
+}) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<WeatherLocation[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [currentName, setCurrentName] = useState<string | null>(locationName || null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Handle search with debouncing
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (searchQuery.trim().length < 2) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    searchTimeoutRef.current = setTimeout(() => {
+      try {
+        const results = searchWeatherLocations(searchQuery.trim(), 8);
+        setSearchResults(results);
+      } catch (error) {
+        console.error("Error searching weather locations:", error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300); // 300ms debounce
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchQuery]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSelectLocation = (location: WeatherLocation) => {
+    setCurrentName(location.label);
+    onChange(location.value);
+    setSearchQuery("");
+    setSearchResults([]);
+    setShowDropdown(false);
+    setIsFocused(false);
+  };
+
+  // Update current name when locationName prop changes
+  useEffect(() => {
+    if (locationName) {
+      setCurrentName(locationName);
+    }
+  }, [locationName]);
+
+  // Fetch location name when value changes (if we don't have a name)
+  useEffect(() => {
+    if (value && !currentName && !searchQuery) {
+      const location = findWeatherLocation(value);
+      if (location?.label) {
+        setCurrentName(location.label);
+      }
+    }
+  }, [value, currentName, searchQuery]);
+
+  // Track if input is focused to control display behavior
+  const [isFocused, setIsFocused] = useState(false);
+
+  // Display value: show search query when typing, otherwise show name/coordinates
+  const displayValue = searchQuery !== "" 
+    ? searchQuery 
+    : (currentName || value || "");
+
+  // Placeholder: show default placeholder when not focused, or when focused and no current value
+  const placeholder = "Search location (e.g., Bergen, Stavanger, Vestland)";
+
+  // Check if we should show the value with placeholder opacity (focused but not typing)
+  const showPlaceholderStyle = isFocused && !searchQuery && (currentName || value);
+
+  return (
+    <div ref={containerRef} className="relative">
+      <div className="relative">
+        <input
+          type="text"
+          value={displayValue}
+          onChange={(event) => {
+            const newValue = event.target.value;
+            setSearchQuery(newValue);
+            setShowDropdown(true);
+          }}
+          onFocus={() => {
+            setIsFocused(true);
+            // Clear search query on focus to allow fresh typing
+            setSearchQuery("");
+            setShowDropdown(false);
+          }}
+          onBlur={() => {
+            setIsFocused(false);
+            setTimeout(() => {
+              setShowDropdown(false);
+              // Reset search query when blurring if no selection was made
+              if (searchQuery && searchQuery !== currentName) {
+                setSearchQuery("");
+              }
+            }, 200);
+          }}
+          placeholder={placeholder}
+          className={`w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 pr-10 text-sm font-medium shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 ${
+            showPlaceholderStyle 
+              ? "text-custom-color-400 dark:text-custom-color-500" 
+              : "text-custom-color-800 dark:text-custom-color-50"
+          }`}
+        />
+        <FiSearch className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-custom-color-400 dark:text-custom-color-500" />
+      </div>
+      
+      {showDropdown && (searchResults.length > 0 || isSearching) && (
+        <div className="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-custom-color-300/50 bg-white shadow-lg dark:border-white/10 dark:bg-custom-color-800">
+          {isSearching ? (
+            <div className="px-4 py-3 text-sm text-custom-color-600 dark:text-custom-color-400">
+              Searching...
+            </div>
+          ) : searchResults.length === 0 ? (
+            <div className="px-4 py-3 text-sm text-custom-color-600 dark:text-custom-color-400">
+              No results found. Try searching by city, municipality, or county name.
+            </div>
+          ) : (
+            searchResults.map((location) => (
+              <button
+                key={location.id}
+                type="button"
+                onClick={() => handleSelectLocation(location)}
+                className="w-full px-4 py-2 text-left text-sm text-custom-color-800 hover:bg-custom-color-100 dark:text-custom-color-50 dark:hover:bg-custom-color-700"
+              >
+                <div className="font-medium">{location.label}</div>
+                {location.county && (
+                  <div className="text-xs text-custom-color-500 dark:text-custom-color-400">
+                    {location.county}{location.municipality && location.municipality !== location.name ? `, ${location.municipality}` : ""}
+                  </div>
+                )}
+              </button>
+            ))
+          )}
+        </div>
       )}
+      
     </div>
   );
 }
@@ -211,6 +423,8 @@ export function SelectedComponentPanel({
   onAppearanceChange,
   allHaveSameComponent = true,
   allSelectedCellsData = [],
+  selectedEntryId,
+  selectedPanelEntries,
 }: SelectedComponentPanelProps) {
   const hasSelection = selectionCount > 0;
   const isSingleSelection = selectionCount === 1;
@@ -235,6 +449,20 @@ export function SelectedComponentPanel({
       previousBorderWidthRef.current = appearance.borderWidth;
     }
   }, [appearance.borderWidth]);
+
+  // Track the previous background color to restore when toggling transparent off
+  const previousBackgroundColorRef = useRef<string>(
+    appearance.backgroundColor && appearance.backgroundColor !== "transparent" 
+      ? appearance.backgroundColor 
+      : "#2563eb"
+  );
+  
+  // Update the ref whenever backgroundColor changes and is not transparent
+  useEffect(() => {
+    if (appearance.backgroundColor && appearance.backgroundColor !== "transparent") {
+      previousBackgroundColorRef.current = appearance.backgroundColor;
+    }
+  }, [appearance.backgroundColor]);
 
   // Get the component ID - prioritize selectedCellData, but also check allSelectedCellsData when multiple are selected
   // When multiple cells are selected and all have the same component, get componentId from any of them
@@ -308,6 +536,15 @@ export function SelectedComponentPanel({
     );
   const isBrand = isDirectBrand || hasBrandInPanel;
 
+  const isDirectCalendar =
+    canShowComponentOptions && effectiveComponentId === "calendar";
+  const hasCalendarInPanel =
+    (isFreeformSelected || (componentId === "freeform-region" && allHaveSameComponent)) &&
+    !!selectedCellData?.panelEntries?.some(
+      (entry) => entry.componentId === "calendar",
+    );
+  const isCalendar = isDirectCalendar || hasCalendarInPanel;
+
   const isDirectTransport =
     canShowComponentOptions && effectiveComponentId === "transport";
   const hasTransportInPanel =
@@ -351,6 +588,23 @@ export function SelectedComponentPanel({
     return fraction >= 0.25; // 1/4 or more
   })();
 
+  // Check if transport panel is medium or large (for dual stop feature)
+  // Allow dual stops for medium panels (>= 0.25 of grid or >= 3 cells)
+  const isTransportMediumOrLarge = isTransport && isSingleSelection && selectedCellData && (() => {
+    const cols = selectedCellData.colSpan ?? 1;
+    const rows = selectedCellData.rowSpan ?? 1;
+    const panelArea = cols * rows;
+    const totalGridSize = config.columns * config.rows;
+    
+    if (!totalGridSize || totalGridSize === 0) {
+      return panelArea >= 3; // At least 3 grid cells
+    }
+    
+    const fraction = panelArea / totalGridSize;
+    // Medium or large: >= 0.25 (1/4) of grid
+    return fraction >= 0.25;
+  })();
+
   return (
     <div className="glass-surface rounded-3xl border border-white/40 p-6 shadow-lg dark:border-white/10">
       <h2 className="text-lg font-semibold text-custom-color-800 dark:text-custom-color-100">
@@ -372,10 +626,26 @@ export function SelectedComponentPanel({
             </p>
           ) : null}
           {isFreeformSelected ? (
-            <p className="text-xs text-custom-color-600/80 dark:text-custom-color-100/60">
-              Drag empty cells to redraw the panel footprint, drop library items onto it to
-              build the playlist, or adjust its size below.
-            </p>
+            <>
+              <p className="text-xs text-custom-color-600/80 dark:text-custom-color-100/60">
+                Drag empty cells to redraw the panel footprint, drop library items onto it to
+                build the playlist, or adjust its size below.
+              </p>
+              {selectedEntryId && selectedPanelEntries && (() => {
+                const entry = selectedPanelEntries.find(e => e.id === selectedEntryId);
+                const entryIndex = selectedPanelEntries.findIndex(e => e.id === selectedEntryId);
+                if (entry) {
+                  const definition = PLACEHOLDER_MAP[entry.componentId];
+                  const label = definition?.label ?? entry.componentId;
+                  return (
+                    <p className="rounded-full bg-custom-color-500/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:bg-custom-color-200/10 dark:text-custom-color-100/80">
+                      Editing entry #{entryIndex + 1}: {label} (individual settings)
+                    </p>
+                  );
+                }
+                return null;
+              })()}
+            </>
           ) : null}
           <div className="grid grid-cols-2 gap-4">
             <label className="space-y-1">
@@ -417,16 +687,39 @@ export function SelectedComponentPanel({
                 <div className="flex items-center gap-2">
                   <input
                     type="color"
-                    value={appearance.backgroundColor}
+                    value={appearance.backgroundColor === "transparent" ? "#000000" : appearance.backgroundColor}
                     onChange={(event) =>
                       onAppearanceChange({ backgroundColor: event.target.value })
                     }
-                    className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm"
+                    disabled={appearance.backgroundColor === "transparent"}
+                    className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
                   />
                   <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
-                    {appearance.backgroundColor?.toUpperCase?.() ?? ""}
+                    {appearance.backgroundColor === "transparent" ? "TRANSPARENT" : (appearance.backgroundColor?.toUpperCase?.() ?? "")}
                   </span>
                 </div>
+              </label>
+              <label className="flex items-center justify-between gap-3">
+                <span className="text-xs font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                  Transparent background
+                </span>
+                <input
+                  type="checkbox"
+                  checked={appearance.backgroundColor === "transparent"}
+                  onChange={(event) => {
+                    if (event.target.checked) {
+                      // Save current color before switching to transparent
+                      if (appearance.backgroundColor && appearance.backgroundColor !== "transparent") {
+                        previousBackgroundColorRef.current = appearance.backgroundColor;
+                      }
+                      onAppearanceChange({ backgroundColor: "transparent" });
+                    } else {
+                      // Restore to previous color when unchecking
+                      onAppearanceChange({ backgroundColor: previousBackgroundColorRef.current });
+                    }
+                  }}
+                  className="h-4 w-4 rounded border border-custom-color-400 bg-white text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                />
               </label>
               <label className="flex items-center justify-between gap-3">
                 <span className="text-xs font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
@@ -751,21 +1044,20 @@ export function SelectedComponentPanel({
                     <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       Location
                     </span>
-                    <select
+                    <WeatherLocationSelector
                       value={appearance.weatherLocation ?? "59.9139,10.7522"}
-                      onChange={(event) =>
+                      onChange={(locationValue) =>
                         onAppearanceChange({
-                          weatherLocation: event.target.value,
+                          weatherLocation: locationValue,
                         })
                       }
-                      className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
-                    >
-                      {weatherLocations.map((loc) => (
-                        <option key={loc.value} value={loc.value}>
-                          {loc.label}
-                        </option>
-                      ))}
-                    </select>
+                      locationName={(() => {
+                        const loc = (weatherLocations as Array<{ value: string; label: string }>).find(
+                          (l) => l.value === (appearance.weatherLocation ?? "59.9139,10.7522")
+                        );
+                        return loc?.label;
+                      })()}
+                    />
                   </label>
                   <label className="flex items-center justify-between gap-3">
                     <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
@@ -823,21 +1115,20 @@ export function SelectedComponentPanel({
                           <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                             Second Location
                           </span>
-                          <select
+                          <WeatherLocationSelector
                             value={appearance.weatherLocation2 ?? "60.3913,5.3221"}
-                            onChange={(event) =>
+                            onChange={(locationValue) =>
                               onAppearanceChange({
-                                weatherLocation2: event.target.value,
+                                weatherLocation2: locationValue,
                               })
                             }
-                            className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
-                          >
-                            {weatherLocations.map((loc) => (
-                              <option key={loc.value} value={loc.value}>
-                                {loc.label}
-                              </option>
-                            ))}
-                          </select>
+                            locationName={(() => {
+                              const loc = (weatherLocations as Array<{ value: string; label: string }>).find(
+                                (l) => l.value === (appearance.weatherLocation2 ?? "60.3913,5.3221")
+                              );
+                              return loc?.label;
+                            })()}
+                          />
                         </label>
                       )}
                     </>
@@ -1030,6 +1321,127 @@ export function SelectedComponentPanel({
                   </label>
                 </div>
               ) : null}
+              {isCalendar ? (
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    Calendar options
+                  </p>
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Show upcoming list
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={appearance.calendarShowUpcoming ?? true}
+                      onChange={(event) =>
+                        onAppearanceChange({
+                          calendarShowUpcoming: event.target.checked,
+                        })
+                      }
+                      className="h-4 w-4 rounded border border-custom-color-400 bg-white text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                    />
+                  </label>
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Accent color
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={appearance.calendarAccentColor || appearance.borderColor || appearance.textColor || "#ffffff"}
+                        onChange={(event) =>
+                          onAppearanceChange({
+                            calendarAccentColor: event.target.value,
+                          })
+                        }
+                        className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm"
+                      />
+                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+                        {(appearance.calendarAccentColor || appearance.borderColor || appearance.textColor || "#ffffff").toUpperCase()}
+                      </span>
+                    </div>
+                  </label>
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Muted text color
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={appearance.calendarMutedColor || appearance.textColor || "#cccccc"}
+                        onChange={(event) =>
+                          onAppearanceChange({
+                            calendarMutedColor: event.target.value,
+                          })
+                        }
+                        className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm"
+                      />
+                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+                        {(appearance.calendarMutedColor || appearance.textColor || "#cccccc").toUpperCase()}
+                      </span>
+                    </div>
+                  </label>
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Cell background
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={appearance.calendarCellBackground || appearance.backgroundColor || "#0f172a"}
+                        onChange={(event) =>
+                          onAppearanceChange({
+                            calendarCellBackground: event.target.value,
+                          })
+                        }
+                        className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm"
+                      />
+                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+                        {(appearance.calendarCellBackground || appearance.backgroundColor || "#0f172a").toUpperCase()}
+                      </span>
+                    </div>
+                  </label>
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Today highlight
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={appearance.calendarTodayHighlight || appearance.borderColor || "#ffffff"}
+                        onChange={(event) =>
+                          onAppearanceChange({
+                            calendarTodayHighlight: event.target.value,
+                          })
+                        }
+                        className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm"
+                      />
+                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+                        {(appearance.calendarTodayHighlight || appearance.borderColor || "#ffffff").toUpperCase()}
+                      </span>
+                    </div>
+                  </label>
+                  <label className="space-y-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Event colors (comma separated)
+                    </span>
+                    <textarea
+                      value={appearance.calendarEventPalette ?? ""}
+                      onChange={(event) =>
+                        onAppearanceChange({
+                          calendarEventPalette: event.target.value,
+                        })
+                      }
+                      rows={2}
+                      placeholder="#d8b4fe, #bfdbfe, #fecdd3"
+                      className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
+                    />
+                    <p className="text-[10px] text-custom-color-500 dark:text-custom-color-400">
+                      Leave empty to use the default pastel palette.
+                    </p>
+                  </label>
+                </div>
+              ) : null}
               {isTransport ? (
                 <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
@@ -1037,10 +1449,10 @@ export function SelectedComponentPanel({
                   </p>
                   <label className="space-y-1">
                     <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
-                      Stop place ID
+                      Stop place
                     </span>
                     <StopPlaceSelector
-                      value={appearance.transportStopPlace ?? "Oslo S"}
+                      value={appearance.transportStopPlace ?? "62356"}
                       onChange={(stopPlaceId) =>
                         onAppearanceChange({
                           transportStopPlace: stopPlaceId,
@@ -1100,6 +1512,44 @@ export function SelectedComponentPanel({
                       className="w-full accent-custom-color-500 dark:accent-custom-color-300"
                     />
                   </div>
+                  {isTransportMediumOrLarge && (
+                    <>
+                      <label className="flex items-center justify-between gap-3">
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                          Show dual stops
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={appearance.transportShowDualStops ?? false}
+                          onChange={(event) =>
+                            onAppearanceChange({
+                              transportShowDualStops: event.target.checked,
+                              // Set default second stop place if enabling
+                              transportStopPlace2: event.target.checked && !appearance.transportStopPlace2 
+                                ? "32214" // Default to a common stop (e.g., Oslo S)
+                                : appearance.transportStopPlace2,
+                            })
+                          }
+                          className="h-4 w-4 rounded border border-custom-color-400 bg-white text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                        />
+                      </label>
+                      {appearance.transportShowDualStops && (
+                        <label className="space-y-1">
+                          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                            Second stop place
+                          </span>
+                          <StopPlaceSelector
+                            value={appearance.transportStopPlace2 ?? ""}
+                            onChange={(stopPlaceId) =>
+                              onAppearanceChange({
+                                transportStopPlace2: stopPlaceId,
+                              })
+                            }
+                          />
+                        </label>
+                      )}
+                    </>
+                  )}
                   <label className="flex items-center justify-between gap-3">
                     <span className="text-xs font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       Badge color

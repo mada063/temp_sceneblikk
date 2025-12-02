@@ -8,3 +8,16 @@ export type WeatherProps = {
   locationName?: string;
 };
 
+export type WeatherLocation = {
+  id: string;
+  name: string;
+  label: string;
+  value: string;
+  latitude: number;
+  longitude: number;
+  county?: string;
+  municipality?: string;
+  country: string;
+  searchTerms?: string[];
+};
+
