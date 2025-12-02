@@ -129,3 +129,4 @@ export function getAllWeatherLocations(): WeatherLocation[] {
   return allLocations;
 }
 
+
