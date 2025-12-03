@@ -70,11 +70,18 @@ export type CellAppearance = {
    * Calendar-specific options (used when componentId === "calendar").
    */
   calendarShowUpcoming?: boolean;
+  calendarProvider?: "demo" | "google";
+  calendarId?: string;
   calendarAccentColor?: string;
   calendarMutedColor?: string;
   calendarCellBackground?: string;
   calendarTodayHighlight?: string;
   calendarEventPalette?: string;
+  /**
+   * Tasks-specific options (used when componentId === "tasks").
+   */
+  tasksProvider?: "demo" | "google";
+  tasksListId?: string;
   /**
    * Transport-specific options (used when componentId === "transport").
    */
@@ -123,17 +130,23 @@ export const makeDefaultAppearance = (): CellAppearance => ({
   brandingLogoUrl: "",
   brandingText: "",
   calendarShowUpcoming: true,
+  // Default to demo/sample data to avoid calling Google until explicitly enabled
+  calendarProvider: "demo",
+  calendarId: "primary",
   calendarAccentColor: "",
   calendarMutedColor: "",
   calendarCellBackground: "",
   calendarTodayHighlight: "",
   calendarEventPalette: "",
+  tasksProvider: "demo",
+  tasksListId: "",
   transportStopPlace: "62356",
   transportTimeFormat: "24h",
   transportMaxDepartures: 10,
   transportBadgeColor: "",
   transportBadgeBorder: "",
   transportBadgeTextColor: "#000000",
+  transportBadgeRadius: 10,
   transportDelayColor: "#ef4444",
   mediaType: "image",
   mediaUrls: "",

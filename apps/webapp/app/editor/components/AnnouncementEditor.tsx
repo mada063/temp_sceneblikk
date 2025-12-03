@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { FiBold, FiItalic, FiList } from "react-icons/fi";
+import { useI18n } from "../../lib/i18n";
 
 type AnnouncementEditorProps = {
   value: string;
@@ -20,6 +21,8 @@ export function AnnouncementEditor({
   onChange,
   placeholder = "Enter announcement text...",
 }: AnnouncementEditorProps) {
+  const { t } = useI18n();
+  const effectivePlaceholder = placeholder || t("editor", "announcementPlaceholder");
   const [selectedTag, setSelectedTag] = useState<HeadingTag>("h1");
   const [showDropdown, setShowDropdown] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
@@ -180,7 +183,7 @@ export function AnnouncementEditor({
           type="button"
           onClick={handleBold}
           className="flex items-center justify-center rounded p-1.5 text-custom-color-600 transition hover:bg-custom-color-100 dark:text-custom-color-300 dark:hover:bg-custom-color-700"
-          title="Bold"
+          title={t("editor", "richTextBoldTitle")}
         >
           <FiBold className="h-4 w-4" />
         </button>
@@ -188,7 +191,7 @@ export function AnnouncementEditor({
           type="button"
           onClick={handleItalic}
           className="flex items-center justify-center rounded p-1.5 text-custom-color-600 transition hover:bg-custom-color-100 dark:text-custom-color-300 dark:hover:bg-custom-color-700"
-          title="Italic"
+          title={t("editor", "richTextItalicTitle")}
         >
           <FiItalic className="h-4 w-4" />
         </button>
@@ -196,7 +199,7 @@ export function AnnouncementEditor({
           type="button"
           onClick={handleBulletList}
           className="flex items-center justify-center rounded p-1.5 text-custom-color-600 transition hover:bg-custom-color-100 dark:text-custom-color-300 dark:hover:bg-custom-color-700"
-          title="Bullet list"
+          title={t("editor", "richTextListTitle")}
         >
           <FiList className="h-4 w-4" />
         </button>
@@ -205,7 +208,7 @@ export function AnnouncementEditor({
         ref={textareaRef}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
+        placeholder={effectivePlaceholder}
         rows={6}
         className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
       />
@@ -222,7 +225,7 @@ export function AnnouncementEditor({
         >
           <div className="p-1">
             <div className="text-[10px] font-semibold uppercase tracking-wide text-custom-color-500 dark:text-custom-color-400 px-2 py-1">
-              Apply tag:
+              {t("editor", "richTextApplyTagLabel")}
             </div>
             {(["h1", "h2", "h3", "h4", "p"] as HeadingTag[]).map((tag) => (
               <button

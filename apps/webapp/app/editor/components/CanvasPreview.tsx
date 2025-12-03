@@ -26,6 +26,7 @@ import {
   makeDefaultAppearance,
 } from "../../lib/layout-types";
 import { PLACEHOLDER_MAP } from "../../lib/placeholders";
+import { useI18n } from "../../lib/i18n";
 import type {
   DrawSelectionBounds,
   GridGeometry,
@@ -111,6 +112,7 @@ export function CanvasPreview({
   onRemoveConnection,
   cells,
 }: CanvasPreviewProps) {
+  const { t, locale } = useI18n();
   const [borderPosition, setBorderPosition] = useState<{ x: number; y: number; cellX: number; cellY: number } | null>(null);
   const hoveredCellRef = useRef<{ key: string; element: HTMLElement | null }>({ key: "", element: null });
   const [gridReady, setGridReady] = useState(false);
@@ -444,7 +446,7 @@ export function CanvasPreview({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-custom-color-800 dark:text-custom-color-100">
-            Canvas preview
+            {t("editor", "canvasPreviewTitle")}
           </h2>
           <p className="text-xs uppercase tracking-[0.28em] text-custom-color-600 dark:text-custom-color-200">
             {canvasTitle}
@@ -452,16 +454,21 @@ export function CanvasPreview({
         </div>
         <div className="flex flex-wrap gap-3 text-xs text-custom-color-700/70 dark:text-custom-color-100/70">
           <div className="rounded-full bg-white/70 px-3 py-1 dark:bg-custom-color-800/70">
-            {(geometry.widthIn * geometry.heightIn).toFixed(0)} in² surface
+            {(geometry.widthIn * geometry.heightIn).toFixed(0)} in²{" "}
+            {t("editor", "canvasSurfaceSuffix")}
           </div>
           <div className="rounded-full bg-white/70 px-3 py-1 dark:bg-custom-color-800/70">
-            ~{Math.round(geometry.widthPx)} px width
+            ~{Math.round(geometry.widthPx)} px{" "}
+            {t("editor", "canvasWidthSuffix")}
           </div>
           <div className="rounded-full bg-white/70 px-3 py-1 dark:bg-custom-color-800/70">
-            {config.columns} × {config.rows} grid
+            {config.columns} × {config.rows}{" "}
+            {t("editor", "canvasGridSuffix")}
           </div>
           <div className="rounded-full bg-white/70 px-3 py-1 dark:bg-custom-color-800/70">
-            {config.orientation === "landscape" ? "Landscape" : "Portrait"}
+            {config.orientation === "landscape"
+              ? t("editor", "orientationLandscapeLabel")
+              : t("editor", "orientationPortraitLabel")}
           </div>
         </div>
       </div>
@@ -634,7 +641,9 @@ export function CanvasPreview({
                       className="text-xs font-semibold uppercase tracking-[0.18em]"
                       style={{ color: textColor }}
                     >
-                      {placeholder.label}
+                      {locale === "nb" && placeholder.labelNb
+                        ? placeholder.labelNb
+                        : placeholder.label}
                     </span>
                   </div>
                 );
@@ -653,15 +662,23 @@ export function CanvasPreview({
                         color: textColor,
                       }}
                     >
-                      Panel
+                      {t("editor", "panelLabel")}
                     </span>
                     <span
                       className="text-[10px] uppercase tracking-[0.22em]"
                       style={{ color: hexToRgba(textColor, 0.72) }}
                     >
                       {panelEntryCount > 0
-                        ? primaryPanelEntry?.label ?? panelEntries[0].componentId
-                        : "Empty"}
+                        ? (() => {
+                            if (!primaryPanelEntry) {
+                              return panelEntries[0].componentId;
+                            }
+                            if (locale === "nb" && primaryPanelEntry.labelNb) {
+                              return primaryPanelEntry.labelNb;
+                            }
+                            return primaryPanelEntry.label;
+                          })()
+                        : t("editor", "panelEmptyLabel")}
                     </span>
                     {panelEntryCount > 1 ? (
                       <span
@@ -671,7 +688,8 @@ export function CanvasPreview({
                           color: hexToRgba(textColor, 0.68),
                         }}
                       >
-                        + {panelEntryCount - 1} more
+                        + {panelEntryCount - 1}{" "}
+                        {t("editor", "panelMoreSuffix")}
                       </span>
                     ) : null}
                     <span

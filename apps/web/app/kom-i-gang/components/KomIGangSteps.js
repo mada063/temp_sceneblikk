@@ -5,35 +5,95 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { FaUserPlus, FaCubes, FaPalette, FaTv, FaLink } from "react-icons/fa";
 import AnimatedImage from "@/components/AnimatedImage";
+import { useI18n } from "@/app/i18n";
 
 const KomIGangSteps = () => {
-  const steps = [
-    {
-      title: "Registrer deg",
-      description: "Opprett en konto på Sceneblikk for å komme i gang med digital skilting.",
-      icon: <FaUserPlus className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />,
-    },
-    {
-      title: "Lag scene",
-      description: "Lag dine egne scener med innhold som bilder, tekst og værmeldinger.",
-      icon: <FaCubes className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />,
-    },
-    {
-      title: "Presenter scene",
-      description: "Presenter scene på skjermene dine.",
-      icon: <FaPalette className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />,
-    },
-    {
-      title: "Sjekk oppetider",
-      description: "Sjekk oppetider for sceneene dine.",
-      icon: <FaTv className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />,
-    },
-    {
-      title: "Endre innhold",
-      description: "Endre innholdet i sceneene dine og se endringene i sanntid.",
-      icon: <FaLink className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />,
-    },
-  ];
+  const { locale } = useI18n();
+
+  const steps =
+    locale === "nb"
+      ? [
+          {
+            title: "Registrer deg",
+            description:
+              "Opprett en konto på Sceneblikk for å komme i gang med digital skilting.",
+            icon: (
+              <FaUserPlus className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />
+            ),
+          },
+          {
+            title: "Lag scene",
+            description:
+              "Lag dine egne scener med innhold som bilder, tekst og værmeldinger.",
+            icon: (
+              <FaCubes className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />
+            ),
+          },
+          {
+            title: "Presenter scene",
+            description: "Presenter scenen på skjermene dine.",
+            icon: (
+              <FaPalette className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />
+            ),
+          },
+          {
+            title: "Sjekk oppetider",
+            description: "Sjekk oppetider for scenene dine.",
+            icon: (
+              <FaTv className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />
+            ),
+          },
+          {
+            title: "Endre innhold",
+            description:
+              "Endre innholdet i scenene dine og se endringene i sanntid.",
+            icon: (
+              <FaLink className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />
+            ),
+          },
+        ]
+      : [
+          {
+            title: "Create an account",
+            description:
+              "Create a Sceneblikk account to start building your digital signage.",
+            icon: (
+              <FaUserPlus className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />
+            ),
+          },
+          {
+            title: "Build your scenes",
+            description:
+              "Create scenes with images, text, weather, transport data and more.",
+            icon: (
+              <FaCubes className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />
+            ),
+          },
+          {
+            title: "Go live on screens",
+            description:
+              "Present your scenes on any screen with a modern web browser.",
+            icon: (
+              <FaPalette className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />
+            ),
+          },
+          {
+            title: "Check uptime",
+            description:
+              "Monitor uptime and playback health across your connected devices.",
+            icon: (
+              <FaTv className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />
+            ),
+          },
+          {
+            title: "Update content",
+            description:
+              "Update scenes and see changes propagate to your screens in real time.",
+            icon: (
+              <FaLink className="w-12 h-12 text-custom-color-600 dark:text-custom-color-200" />
+            ),
+          },
+        ];
   
   return (
     <div className="relative flex items-center justify-center h-screen px-4 py-16">

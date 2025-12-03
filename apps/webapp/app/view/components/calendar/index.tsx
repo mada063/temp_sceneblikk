@@ -7,7 +7,13 @@ import { CalendarLarge } from "./CalendarLarge";
 import { CalendarXLarge } from "./CalendarXLarge";
 import type { CalendarProps, PanelSize } from "./types";
 
-export function Calendar({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: CalendarProps) {
+export function Calendar({
+  appearance,
+  colSpan = 1,
+  rowSpan = 1,
+  totalGridSize,
+  orientation,
+}: CalendarProps) {
   // Calculate panel size for responsive display
   const panelSize = useMemo((): PanelSize => {
     const cols = colSpan ?? 1;
@@ -45,6 +51,7 @@ export function Calendar({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }
     colSpan,
     rowSpan,
     totalGridSize,
+    orientation,
   };
 
   switch (panelSize) {

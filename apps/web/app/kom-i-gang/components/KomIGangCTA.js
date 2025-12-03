@@ -7,14 +7,28 @@ import Button from '@/components/Button';
 import Button2 from '@/components/Button2';
 import AnimatedText from '@/components/AnimatedText';
 import AnimatedParagraph from '@/components/AnimatedParagraph';
+import { useI18n } from '@/app/i18n';
 
 const KomIGangCTA = () => {
+  const { locale } = useI18n();
+
+  const heading =
+    locale === 'nb' ? 'Klar til å starte?' : 'Ready to get started?';
+
+  const body =
+    locale === 'nb'
+      ? 'Sceneblikk er helt gratis og kjøres i nettleseren. Du trenger kun en skjerm og en PC for å komme i gang.'
+      : 'Sceneblikk is completely free and runs in your browser. You only need a screen and a computer to get started.';
+
+  const primaryCta = locale === 'nb' ? 'Registrer nå' : 'Register now';
+  const secondaryCta = locale === 'nb' ? 'Kontakt oss' : 'Contact us';
+
   return (
     <div className="flex items-center justify-center h-screen px-4">
       <div className="w-full max-w-6xl">
         <h1 className='mb-8'>
         <AnimatedText 
-          text="Klar til å starte?"
+          text={heading}
           size="text-3xl md:text-4xl lg:text-6xl"
           primaryFont="font-serif"
           fontWeight="font-medium"
@@ -26,7 +40,7 @@ const KomIGangCTA = () => {
           order={1}
           className="text-base md:text-lg lg:text-lg mb-12"
         >
-            Sceneblikk er helt gratis og kjøres i nettleseren. Du trenger kun en skjerm og en PC for å komme i gang.
+            {body}
         </AnimatedParagraph>
         <div className="flex flex-row gap-4">
             <motion.div
@@ -36,7 +50,7 @@ const KomIGangCTA = () => {
               transition={{ delay: 0.3, duration: 0.5 }}
             >
               <Button href="https://app.sceneblikk.no/login">
-                Registrer nå
+              {primaryCta}
               </Button>
             </motion.div>
             <motion.div
@@ -46,7 +60,7 @@ const KomIGangCTA = () => {
               transition={{ delay: 0.4, duration: 0.5 }}
             >
               <Button2 href="/kontakt">
-                Kontakt oss
+              {secondaryCta}
               </Button2>
             </motion.div>
           </div>

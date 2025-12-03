@@ -6,8 +6,17 @@ import { motion } from 'framer-motion'
 import AnimatedText from '@/components/AnimatedText'
 import AnimatedParagraph from '@/components/AnimatedParagraph'
 import AnimatedImage from '@/components/AnimatedImage'
+import { useI18n } from '@/app/i18n'
 
 const StotteLanding = () => {
+  const { locale } = useI18n();
+
+  const title = locale === 'nb' ? 'Støtte' : 'Support';
+  const subtitle =
+    locale === 'nb'
+      ? 'Her er noen av våre vanligste spørsmål!'
+      : 'Here are some of the most common questions we get!';
+
   return (
     <div className="flex items-center justify-center h-screen px-4">
       <div className="flex flex-col lg:flex-row w-full max-w-6xl items-center gap-12">
@@ -15,7 +24,7 @@ const StotteLanding = () => {
         <div className="w-full lg:w-1/2 text-center lg:text-left">
           <h1 className="mb-8">
             <AnimatedText 
-              text="Støtte"
+              text={title}
               size="text-4xl md:text-5xl lg:text-7xl"
               primaryFont="font-serif"
               fontWeight="font-medium"
@@ -24,7 +33,7 @@ const StotteLanding = () => {
           </h1>
           <h2 className="mb-8">
             <AnimatedText 
-              text="Her er noen av våre vanligste spørsmål!"
+              text={subtitle}
               size="text-xl md:text-2xl lg:text-3xl"
               order={1}
             />

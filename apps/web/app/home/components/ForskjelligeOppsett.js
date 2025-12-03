@@ -4,42 +4,83 @@ import { motion } from 'framer-motion';
 import { FiGrid, FiMaximize2, FiLayers, FiDroplet } from 'react-icons/fi';
 import AnimatedText from '@/components/AnimatedText';
 import AnimatedParagraph from '@/components/AnimatedParagraph';
-
-const cards = [
-  {
-    title: "Grid-format",
-    icon: FiGrid,
-    description:
-      "Velg antall rader og kolonner og la systemet regne ut en jevn fordeling. Rutenettet skalerer automatisk til skjermens størrelse.",
-  },
-  {
-    title: "Koble celler",
-    icon: FiMaximize2,
-    description:
-      "Koble sammen naboceller til større paneler. Bruk dette til brede bannere, store medieflater eller kombinerte informasjonsfelt.",
-  },
-  {
-    title: "Layout-bibliotek",
-    icon: FiLayers,
-    description:
-      "Lagre og gjenbruk oppsett. Start fra ferdige maler eller bygg helt frie oppsett hvor celler strekkes, flyttes og kopieres.",
-  },
-  {
-    title: "Farger og tema",
-    icon: FiDroplet,
-    description:
-      "Gi hver celle eller panel egen bakgrunnsfarge, transparens og tema. Systemet støtter både lys og mørk modus automatisk.",
-  },
-];
+import { useI18n } from '@/app/i18n';
 
 const ForskjelligeOppsett = () => {
+  const { locale } = useI18n();
+
+  const title =
+    locale === 'nb'
+      ? 'Fleksible skjermoppsett'
+      : 'Flexible screen layouts';
+
+  const intro =
+    locale === 'nb'
+      ? 'Design «inch-perfect» lerret med vårt fleksible grid-system. Dra og slipp komponenter på rutenettet, koble celler sammen til større paneler, og lagre oppsett som kan gjenbrukes på tvers av skjermer.'
+      : 'Design inch-perfect canvases with our flexible grid system. Drag and drop components onto the grid, merge cells into larger panels and reuse layouts across every screen.';
+
+  const cards =
+    locale === 'nb'
+      ? [
+          {
+            title: 'Grid-format',
+            icon: FiGrid,
+            description:
+              'Velg antall rader og kolonner og la systemet regne ut en jevn fordeling. Rutenettet skalerer automatisk til skjermens størrelse.',
+          },
+          {
+            title: 'Koble celler',
+            icon: FiMaximize2,
+            description:
+              'Koble sammen naboceller til større paneler. Bruk dette til brede bannere, store medieflater eller kombinerte informasjonsfelt.',
+          },
+          {
+            title: 'Layout-bibliotek',
+            icon: FiLayers,
+            description:
+              'Lagre og gjenbruk oppsett. Start fra ferdige maler eller bygg helt frie oppsett hvor celler strekkes, flyttes og kopieres.',
+          },
+          {
+            title: 'Farger og tema',
+            icon: FiDroplet,
+            description:
+              'Gi hver celle eller panel egen bakgrunnsfarge, transparens og tema. Systemet støtter både lys og mørk modus automatisk.',
+          },
+        ]
+      : [
+          {
+            title: 'Grid layout',
+            icon: FiGrid,
+            description:
+              'Choose rows and columns and let the system calculate an even distribution. The grid automatically scales to the screen size.',
+          },
+          {
+            title: 'Merge cells',
+            icon: FiMaximize2,
+            description:
+              'Merge neighbouring cells into larger panels. Perfect for wide banners, big media areas or combined information blocks.',
+          },
+          {
+            title: 'Layout library',
+            icon: FiLayers,
+            description:
+              'Save and reuse layouts. Start from templates or build completely freeform layouts where cells can be stretched, moved and copied.',
+          },
+          {
+            title: 'Colors and themes',
+            icon: FiDroplet,
+            description:
+              'Give each cell or panel its own background, transparency and theme. The system supports light and dark mode automatically.',
+          },
+        ];
+
   return (
     <div className="relative flex items-center justify-center h-screen px-4 py-16">
       <div className="relative z-10 w-full max-w-7xl text-custom-color-900 dark:text-white">
         <div className="max-w-3xl mb-12 px-4 md:px-0">
           <h1 className="mb-6">
             <AnimatedText
-              text="Fleksible skjermoppsett"
+              text={title}
               size="text-3xl md:text-4xl lg:text-6xl"
               primaryFont="font-serif"
               fontWeight="font-medium"
@@ -51,9 +92,7 @@ const ForskjelligeOppsett = () => {
             order={1}
             className="text-base md:text-lg lg:text-lg"
           >
-            Design inch-perfect canvases med vårt fleksible grid-system. Dra og
-            slipp komponenter på rutenettet, koble celler sammen til større paneler,
-            og lagre oppsett som kan gjenbrukes på tvers av skjermer.
+            {intro}
           </AnimatedParagraph>
         </div>
 

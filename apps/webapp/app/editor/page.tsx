@@ -65,10 +65,12 @@ import type {
   ResizeState,
   ConnectionState,
 } from "./types";
+import { useI18n } from "../lib/i18n";
 
 export default function EditorPage() {
   const router = useRouter();
   const { user } = useAuth();
+  const { t, locale } = useI18n();
   const [config, setConfig] = useState<GridConfig>(() => ({
     ...DEFAULT_GRID_CONFIG,
   }));
@@ -861,11 +863,10 @@ export default function EditorPage() {
 
   const canvasTitle = useMemo(() => {
     const roundedRatio = geometry.aspectRatio.toFixed(2);
+    // Keep a neutral, mostly numeric label for now; units are the same in both locales.
     return `${geometry.widthIn.toFixed(1)} in × ${geometry.heightIn.toFixed(
       1,
-    )} in • ${roundedRatio}:1 ratio • ${config.columns} × ${
-      config.rows
-    } grid`;
+    )} in • ${roundedRatio}:1 • ${config.columns} × ${config.rows}`;
   }, [config.columns, config.rows, geometry]);
 
   const handleScreenSizeChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -1446,16 +1447,21 @@ export default function EditorPage() {
   }, [isFreeformSelected, selectedPanelEntries, selectedEntryId]);
   let selectedComponentLabel: string | undefined;
   if (selectedComponentId != null) {
-    const placeholderLabel = PLACEHOLDER_MAP[selectedComponentId]?.label;
-    if (placeholderLabel) {
-      selectedComponentLabel = placeholderLabel;
+    const definition = PLACEHOLDER_MAP[selectedComponentId];
+    if (definition) {
+      const label =
+        locale === "nb" && definition.labelNb ? definition.labelNb : definition.label;
+      selectedComponentLabel = label;
     } else if (isFreeformSelected) {
+      const panelLabel = t("editor", "panelLabel");
+      const itemLabel =
+        selectedPanelEntriesCount === 1
+          ? t("editor", "panelItemSingular")
+          : t("editor", "panelItemPlural");
       selectedComponentLabel =
         selectedPanelEntriesCount > 0
-          ? `Panel • ${selectedPanelEntriesCount} ${
-              selectedPanelEntriesCount === 1 ? "item" : "items"
-            }`
-          : "Panel";
+          ? `${panelLabel} • ${selectedPanelEntriesCount} ${itemLabel}`
+          : panelLabel;
     }
   }
 
@@ -1599,18 +1605,17 @@ export default function EditorPage() {
                 className="inline-flex items-center gap-2 rounded-full border border-custom-color-400 px-4 py-2 text-sm font-semibold text-custom-color-600 transition hover:bg-custom-color-200/50 dark:border-custom-color-300/40 dark:text-custom-color-50 dark:hover:bg-custom-color-700/40"
               >
                 <FiArrowLeft className="h-4 w-4" />
-                Back
+                {t("common", "back")}
               </Link>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-custom-color-600 dark:text-custom-color-200">
-                Editor
+                {t("editor", "pageBreadcrumb")}
               </p>
             </div>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Layout designer
+              {t("editor", "pageTitle")}
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-custom-color-700/80 dark:text-custom-color-100/75">
-              Configure the canvas, assemble components, and fine-tune module spans
-              before launching to the full-screen player.
+              {t("editor", "pageSubtitle")}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -1620,7 +1625,7 @@ export default function EditorPage() {
               className="inline-flex items-center gap-2 rounded-full border border-custom-color-400 bg-transparent px-4 py-2 text-sm font-semibold text-custom-color-600 transition hover:bg-custom-color-200/40 dark:border-custom-color-300/40 dark:text-custom-color-100 dark:hover:bg-custom-color-700/50"
             >
               <FiRefreshCw className="h-4 w-4" />
-              Reset layout
+              {t("editor", "resetLayout")}
             </button>
             <button
               type="button"
@@ -1629,8 +1634,8 @@ export default function EditorPage() {
             >
               <FiRotateCcw className="h-4 w-4" />
               {config.orientation === "landscape"
-                ? "Rotate to portrait"
-                : "Rotate to landscape"}
+                ? t("editor", "rotateToPortrait")
+                : t("editor", "rotateToLandscape")}
             </button>
             <button
               type="button"
@@ -1638,7 +1643,7 @@ export default function EditorPage() {
               className="inline-flex items-center gap-2 rounded-full bg-custom-color-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:bg-custom-color-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-custom-color-300 dark:bg-custom-color-400 dark:hover:bg-custom-color-300"
             >
               <FiMonitor className="h-4 w-4" />
-              View full screen
+              {t("editor", "viewFullscreen")}
             </button>
           </div>
         </header>
@@ -1740,17 +1745,16 @@ export default function EditorPage() {
             />
             <div className="glass-surface rounded-3xl border border-white/30 p-6 shadow-lg dark:border-white/10">
               <h2 className="text-lg font-semibold text-custom-color-800 dark:text-custom-color-100">
-                Need to monitor content?
+                {t("editor", "ctaMonitorTitle")}
               </h2>
               <p className="mt-2 text-sm text-custom-color-700/80 dark:text-custom-color-100/70">
-                Jump into the dashboard to track playback status, spot stale
-                layouts, and coordinate with your signage team.
+                {t("editor", "ctaMonitorBody")}
               </p>
               <Link
                 href="/dashboard"
                 className="mt-4 inline-flex items-center gap-2 rounded-full border border-custom-color-400 px-4 py-2 text-sm font-semibold text-custom-color-600 transition hover:bg-custom-color-200/50 dark:border-custom-color-300/40 dark:text-custom-color-50 dark:hover:bg-custom-color-700/40"
               >
-                Open dashboard
+                {t("editor", "ctaOpenDashboard")}
               </Link>
             </div>
           </section>

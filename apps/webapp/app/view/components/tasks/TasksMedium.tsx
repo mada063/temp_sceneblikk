@@ -9,7 +9,13 @@ type TasksMediumProps = TasksProps & {
   fadingOutTaskIds?: Set<string>;
 };
 
-export function TasksMedium({ appearance, tasksData, onCompleteTopTask, fadingOutTaskIds }: TasksMediumProps) {
+export function TasksMedium({
+  appearance,
+  tasksData,
+  onCompleteTopTask,
+  fadingOutTaskIds,
+  orientation,
+}: TasksMediumProps) {
   return (
     <TasksSmall
       appearance={appearance}
@@ -17,6 +23,7 @@ export function TasksMedium({ appearance, tasksData, onCompleteTopTask, fadingOu
       onCompleteTopTask={onCompleteTopTask}
       fadingOutTaskIds={fadingOutTaskIds}
       maxTasks={8}
+      orientation={orientation}
     />
   );
 }

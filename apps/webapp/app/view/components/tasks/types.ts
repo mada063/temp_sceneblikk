@@ -1,4 +1,4 @@
-import type { CellAppearance } from "../../../lib/layout-types";
+import type { CellAppearance, Orientation } from "../../../lib/layout-types";
 
 export type TasksProps = {
   appearance: CellAppearance;
@@ -6,6 +6,7 @@ export type TasksProps = {
   rowSpan?: number;
   totalGridSize?: number;
   panelSize?: PanelSize;
+  orientation?: Orientation;
 };
 
 export type PanelSize = "tiny" | "small" | "medium" | "large" | "xlarge";
@@ -28,6 +29,7 @@ export type Task = {
   completed: boolean;
   status?: "needsAction" | "completed";
   priority?: "low" | "medium" | "high";
+  category?: string;
   dueDate?: string;
   due?: string; // ISO 8601 format from Google Tasks
   notes?: string;

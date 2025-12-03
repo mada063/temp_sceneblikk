@@ -2,6 +2,7 @@ import Footer from "@/components/Footer";
 import Header from "../components/Header";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import "./globals.css";
+import { I18nProvider } from "./i18n";
 
 export const metadata = {
   title: {
@@ -69,10 +70,12 @@ export default function RootLayout({ children }) {
         <meta name="theme-color" content="#0179C8" />
       </head>
       <body className="antialiased text-custom-color-900 transition-colors duration-300 dark:text-custom-color-50">
-        <AnimatedBackground />
-        <Header />
-        {children}
-        <Footer />
+        <I18nProvider>
+          <AnimatedBackground />
+          <Header />
+          {children}
+          <Footer />
+        </I18nProvider>
       </body>
     </html>
   );

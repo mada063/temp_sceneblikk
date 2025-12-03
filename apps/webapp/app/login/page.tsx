@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../lib/auth-context";
 import { FiMail, FiLock, FiLogIn, FiUserPlus, FiUser } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
+import { useI18n } from "../lib/i18n";
 
 export default function LoginPage() {
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -29,7 +31,7 @@ export default function LoginPage() {
       }
       router.push("/dashboard");
     } catch (err: any) {
-      setError(err.message || "Authentication failed. Please try again.");
+      setError(err.message || t("login", "authFailed"));
     } finally {
       setLoading(false);
     }
@@ -42,7 +44,7 @@ export default function LoginPage() {
       await signInWithGoogle();
       router.push("/dashboard");
     } catch (err: any) {
-      setError(err.message || "Google sign-in failed. Please try again.");
+      setError(err.message || t("login", "googleFailed"));
     } finally {
       setLoading(false);
     }
@@ -55,7 +57,7 @@ export default function LoginPage() {
       await signInAsGuest();
       router.push("/dashboard");
     } catch (err: any) {
-      setError(err.message || "Guest sign-in failed. Please try again.");
+      setError(err.message || t("login", "guestFailed"));
     } finally {
       setLoading(false);
     }
@@ -73,8 +75,8 @@ export default function LoginPage() {
             </h1>
             <p className="mt-2 text-sm text-custom-color-700/80 dark:text-custom-color-100/75">
               {isSignUp
-                ? "Create an account to get started"
-                : "Sign in to access your layouts"}
+                ? t("login", "subtitleSignUp")
+                : t("login", "subtitleSignIn")}
             </p>
           </div>
 
@@ -90,7 +92,7 @@ export default function LoginPage() {
                 htmlFor="email"
                 className="mb-2 block text-sm font-semibold text-custom-color-800 dark:text-custom-color-100"
               >
-                Email
+                {t("login", "emailLabel")}
               </label>
               <div className="relative">
                 <FiMail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-custom-color-500 dark:text-custom-color-300" />
@@ -101,7 +103,7 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   className="w-full rounded-xl border border-white/20 bg-white/50 px-10 py-3 text-sm text-custom-color-900 placeholder-custom-color-500/60 transition focus:border-custom-color-400 focus:bg-white/80 focus:outline-none focus:ring-2 focus:ring-custom-color-400/30 dark:border-white/10 dark:bg-custom-color-800/50 dark:text-white dark:placeholder-custom-color-300/50 dark:focus:border-custom-color-300 dark:focus:bg-custom-color-800/70"
-                  placeholder="you@example.com"
+                  placeholder={t("login", "emailPlaceholder")}
                 />
               </div>
             </div>
@@ -112,7 +114,7 @@ export default function LoginPage() {
                   htmlFor="displayName"
                   className="mb-2 block text-sm font-semibold text-custom-color-800 dark:text-custom-color-100"
                 >
-                  Name (optional)
+                  {t("login", "nameLabel")}
                 </label>
                 <div className="relative">
                   <FiUser className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-custom-color-500 dark:text-custom-color-300" />
@@ -122,7 +124,7 @@ export default function LoginPage() {
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     className="w-full rounded-xl border border-white/20 bg-white/50 px-10 py-3 text-sm text-custom-color-900 placeholder-custom-color-500/60 transition focus:border-custom-color-400 focus:bg-white/80 focus:outline-none focus:ring-2 focus:ring-custom-color-400/30 dark:border-white/10 dark:bg-custom-color-800/50 dark:text-white dark:placeholder-custom-color-300/50 dark:focus:border-custom-color-300 dark:focus:bg-custom-color-800/70"
-                    placeholder="Your name"
+                    placeholder={t("login", "namePlaceholder")}
                   />
                 </div>
               </div>
@@ -133,7 +135,7 @@ export default function LoginPage() {
                 htmlFor="password"
                 className="mb-2 block text-sm font-semibold text-custom-color-800 dark:text-custom-color-100"
               >
-                Password
+                {t("login", "passwordLabel")}
               </label>
               <div className="relative">
                 <FiLock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-custom-color-500 dark:text-custom-color-300" />
@@ -156,16 +158,16 @@ export default function LoginPage() {
               className="w-full rounded-full bg-custom-color-500 px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-custom-color-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-custom-color-300 disabled:opacity-50 dark:bg-custom-color-400 dark:hover:bg-custom-color-300"
             >
               {loading ? (
-                "Please wait…"
+                t("login", "primaryLoading")
               ) : isSignUp ? (
                 <>
                   <FiUserPlus className="mr-2 inline h-4 w-4" />
-                  Create account
+                  {t("login", "primarySignUp")}
                 </>
               ) : (
                 <>
                   <FiLogIn className="mr-2 inline h-4 w-4" />
-                  Sign in
+                  {t("login", "primarySignIn")}
                 </>
               )}
             </button>
@@ -178,7 +180,7 @@ export default function LoginPage() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-white/80 px-2 text-custom-color-500 dark:bg-custom-color-800/70 dark:text-custom-color-300">
-                  Or continue with
+                  {t("login", "orContinueWith")}
                 </span>
               </div>
             </div>
@@ -190,7 +192,7 @@ export default function LoginPage() {
               className="w-full rounded-full border border-white/20 bg-white/50 px-5 py-3 text-sm font-semibold text-custom-color-900 transition hover:bg-white/80 hover:shadow-md disabled:opacity-50 dark:border-white/10 dark:bg-custom-color-800/50 dark:text-white dark:hover:bg-custom-color-800/70"
             >
               <FcGoogle className="mr-2 inline h-5 w-5" />
-              Sign in with Google
+              {t("login", "signInWithGoogle")}
             </button>
 
             <button
@@ -199,7 +201,7 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full rounded-full border border-custom-color-400 bg-transparent px-5 py-3 text-sm font-semibold text-custom-color-600 transition hover:bg-custom-color-200/40 disabled:opacity-50 dark:border-custom-color-300/40 dark:text-custom-color-100 dark:hover:bg-custom-color-700/50"
             >
-              Continue as guest
+              {t("login", "continueAsGuest")}
             </button>
 
             <div className="text-center">
@@ -212,8 +214,8 @@ export default function LoginPage() {
                 className="text-sm text-custom-color-600 underline transition hover:text-custom-color-500 dark:text-custom-color-200 dark:hover:text-custom-color-100"
               >
                 {isSignUp
-                  ? "Already have an account? Sign in"
-                  : "Don't have an account? Sign up"}
+                  ? t("login", "toggleToSignIn")
+                  : t("login", "toggleToSignUp")}
               </button>
             </div>
           </div>

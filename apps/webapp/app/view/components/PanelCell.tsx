@@ -2,7 +2,7 @@
 
 import { ComponentRenderer } from "./ComponentRenderer";
 import { usePanelCycle } from "../hooks/usePanelCycle";
-import type { PanelEntry, CellAppearance } from "../../lib/layout-types";
+import type { PanelEntry, CellAppearance, Orientation } from "../../lib/layout-types";
 import { cloneAppearance } from "../../lib/layout-types";
 
 type PanelCellProps = {
@@ -11,12 +11,20 @@ type PanelCellProps = {
   colSpan?: number;
   rowSpan?: number;
   totalGridSize?: number;
+  orientation?: Orientation;
 };
 
 /**
  * Cell component for panels that cycles through multiple entries.
  */
-export function PanelCell({ panelEntries, appearance, colSpan, rowSpan, totalGridSize }: PanelCellProps) {
+export function PanelCell({
+  panelEntries,
+  appearance,
+  colSpan,
+  rowSpan,
+  totalGridSize,
+  orientation,
+}: PanelCellProps) {
   const { activeEntry } = usePanelCycle(
     panelEntries.length > 1 ? panelEntries : undefined,
   );
@@ -63,6 +71,7 @@ export function PanelCell({ panelEntries, appearance, colSpan, rowSpan, totalGri
       colSpan={colSpan}
       rowSpan={rowSpan}
       totalGridSize={totalGridSize}
+      orientation={orientation}
     />
   );
 }

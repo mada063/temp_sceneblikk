@@ -1,7 +1,7 @@
 "use client";
 
 import { PLACEHOLDER_MAP } from "../../lib/placeholders";
-import type { CellAppearance, PanelEntry } from "../../lib/layout-types";
+import type { CellAppearance, PanelEntry, Orientation } from "../../lib/layout-types";
 import { FREEFORM_COMPONENT_ID } from "../../editor/utils/grid";
 import { Clock } from "./Clock";
 import { Weather } from "./weather";
@@ -13,6 +13,7 @@ import { Media } from "./media";
 import { Charts } from "./charts";
 import { Calendar } from "./calendar";
 import { Tasks } from "./tasks";
+import { useI18n } from "../../lib/i18n";
 
 type ComponentRendererProps = {
   componentId: string;
@@ -21,6 +22,7 @@ type ComponentRendererProps = {
   colSpan?: number;
   rowSpan?: number;
   totalGridSize?: number;
+  orientation?: Orientation;
 };
 
 /**
@@ -35,55 +37,130 @@ export function ComponentRenderer({
   colSpan,
   rowSpan,
   totalGridSize,
+  orientation,
 }: ComponentRendererProps) {
+  const { locale } = useI18n();
   // Dedicated implementation for the clock component
   if (componentId === "clock") {
-    return <Clock appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
+    return (
+      <Clock
+        appearance={appearance}
+        colSpan={colSpan}
+        rowSpan={rowSpan}
+        totalGridSize={totalGridSize}
+      />
+    );
   }
 
   // Dedicated implementation for the weather component
   if (componentId === "weather") {
-    return <Weather appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
+    return (
+      <Weather
+        appearance={appearance}
+        colSpan={colSpan}
+        rowSpan={rowSpan}
+        totalGridSize={totalGridSize}
+      />
+    );
   }
 
   // Dedicated implementation for the news component
   if (componentId === "news") {
-    return <News appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
+    return (
+      <News
+        appearance={appearance}
+        colSpan={colSpan}
+        rowSpan={rowSpan}
+        totalGridSize={totalGridSize}
+      />
+    );
   }
 
   // Dedicated implementation for the announcements component
   if (componentId === "announcement") {
-    return <Announcements appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
+    return (
+      <Announcements
+        appearance={appearance}
+        colSpan={colSpan}
+        rowSpan={rowSpan}
+        totalGridSize={totalGridSize}
+      />
+    );
   }
 
   // Dedicated implementation for the branding component
   if (componentId === "brand") {
-    return <Branding appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
+    return (
+      <Branding
+        appearance={appearance}
+        colSpan={colSpan}
+        rowSpan={rowSpan}
+        totalGridSize={totalGridSize}
+      />
+    );
   }
 
   // Dedicated implementation for the transport component
   if (componentId === "transport") {
-    return <Transport appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
+    return (
+      <Transport
+        appearance={appearance}
+        colSpan={colSpan}
+        rowSpan={rowSpan}
+        totalGridSize={totalGridSize}
+      />
+    );
   }
 
   // Dedicated implementation for the calendar component
   if (componentId === "calendar") {
-    return <Calendar appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
+    return (
+      <Calendar
+        appearance={appearance}
+        colSpan={colSpan}
+        rowSpan={rowSpan}
+        totalGridSize={totalGridSize}
+        orientation={orientation}
+      />
+    );
   }
 
   // Dedicated implementation for the tasks component
   if (componentId === "tasks") {
-    return <Tasks appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
+    return (
+      <Tasks
+        appearance={appearance}
+        colSpan={colSpan}
+        rowSpan={rowSpan}
+        totalGridSize={totalGridSize}
+        orientation={orientation}
+      />
+    );
   }
 
   // Dedicated implementation for the media component
   if (componentId === "media") {
-    return <Media appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
+    return (
+      <Media
+        appearance={appearance}
+        colSpan={colSpan}
+        rowSpan={rowSpan}
+        totalGridSize={totalGridSize}
+      />
+    );
   }
 
   // Dedicated implementation for the charts component
   if (componentId === "charts") {
-    return <Charts appearance={appearance} colSpan={colSpan} rowSpan={rowSpan} totalGridSize={totalGridSize} />;
+    return (
+      <Charts
+        appearance={appearance}
+        colSpan={colSpan}
+        rowSpan={rowSpan}
+        totalGridSize={totalGridSize}
+        orientation={orientation}
+      />
+    );
   }
 
   // Handle panels (freeform regions) that cycle through entries
@@ -122,7 +199,9 @@ export function ComponentRenderer({
           className="text-sm font-semibold uppercase tracking-[0.24em]"
           style={{ color: appearance.textColor }}
         >
-          {placeholder.label}
+          {locale === "nb" && placeholder.labelNb
+            ? placeholder.labelNb
+            : placeholder.label}
         </span>
       </div>
     );

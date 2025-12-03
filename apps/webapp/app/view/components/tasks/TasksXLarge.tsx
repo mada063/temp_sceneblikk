@@ -11,11 +11,20 @@ type TasksXLargeProps = TasksProps & {
   fadingOutTaskIds?: Set<string>;
 };
 
-export function TasksXLarge({ appearance, tasksData, onCompleteTopTask, fadingOutTaskIds = new Set() }: TasksXLargeProps) {
+export function TasksXLarge({
+  appearance,
+  tasksData,
+  onCompleteTopTask,
+  fadingOutTaskIds = new Set(),
+  orientation,
+}: TasksXLargeProps) {
   const primaryColor = appearance.textColor || "#ffffff";
   const mutedColor = appearance.textColor
     ? hexToRgba(appearance.textColor, 0.65)
     : "#ffffff80";
+  const borderColor = hexToRgba(primaryColor, 0.25);
+  const rowBackground = hexToRgba(primaryColor, 0.05);
+  const isPortrait = orientation === "portrait";
 
   const taskList = tasksData?.taskList;
   const allTasks = tasksData?.tasks ?? [];
@@ -105,14 +114,19 @@ export function TasksXLarge({ appearance, tasksData, onCompleteTopTask, fadingOu
     const dueDateText = formatDueDate(task);
     const priorityColor = getPriorityColor(task.priority);
 
+    const rowShapeClasses = isPortrait
+      ? "rounded-2xl px-3 py-2"
+      : "rounded-lg bg-white/5 p-4";
+
     return (
       <div
         key={task.id}
-        className={`flex items-start gap-3 rounded-lg border border-white/10 bg-white/5 p-4 transition-transform duration-300 ease-out ${
+        className={`flex items-start gap-3 transition-transform duration-300 ease-out ${
           isFadingOut ? "animate-fade-out pointer-events-none" : ""
-        } ${rowAnimationClass}`}
+        } ${rowShapeClasses} ${rowAnimationClass}`}
         style={{
-          borderColor: `${primaryColor}50`,
+          borderColor,
+          backgroundColor: isPortrait ? rowBackground : undefined,
           ...rowBaseStyle,
           animationDelay: rowAnimationDelay,
           animationFillMode: rowAnimationClass ? "forwards" : undefined,
@@ -185,7 +199,7 @@ export function TasksXLarge({ appearance, tasksData, onCompleteTopTask, fadingOu
               >
                 OPPGAVER
               </p>
-              <p className="text-2xl font-semibold leading-tight">{taskList.title}</p>
+              <p className="text-2xl font-semibold leading-tight" style={{ color: primaryColor }}>{taskList.title}</p>
             </div>
           </header>
         )}
@@ -194,7 +208,7 @@ export function TasksXLarge({ appearance, tasksData, onCompleteTopTask, fadingOu
             className="text-base font-medium text-center"
             style={{ color: mutedColor }}
           >
-            Ingen oppgaver
+            
           </div>
         </div>
       </div>
@@ -211,7 +225,7 @@ export function TasksXLarge({ appearance, tasksData, onCompleteTopTask, fadingOu
           >
             OPPGAVER
           </p>
-          <p className="text-2xl font-semibold leading-tight">{taskList?.title}</p>
+          <p className="text-2xl font-semibold leading-tight" style={{ color: primaryColor }}>{taskList?.title}</p>
         </div>
       </header>
       <div className="flex-1 grid grid-cols-2 gap-4 overflow-y-auto">

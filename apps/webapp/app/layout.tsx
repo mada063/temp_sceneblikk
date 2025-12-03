@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "./lib/auth-context";
 import { RequireAuth } from "./components/RequireAuth";
+import { I18nProvider } from "./lib/i18n";
 
 const interSans = Inter({
   variable: "--font-inter-sans",
@@ -45,9 +46,11 @@ export default function RootLayout({
         className={`${interSans.variable} antialiased`}
       >
         <AuthProvider>
-          <RequireAuth>
-            {children}
-          </RequireAuth>
+          <I18nProvider>
+            <RequireAuth>
+              {children}
+            </RequireAuth>
+          </I18nProvider>
         </AuthProvider>
       </body>
     </html>

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { FiMoreHorizontal, FiSearch, FiX } from "react-icons/fi";
 import { PLACEHOLDER_LIBRARY } from "../../lib/placeholders";
+import { useI18n } from "../../lib/i18n";
 
 const STORAGE_KEY = "component-library-position";
 
@@ -39,6 +40,7 @@ export function DraggableComponentLibrary({
   onClose,
   initialPosition,
 }: DraggableComponentLibraryProps) {
+  const { t, locale } = useI18n();
   const [searchQuery, setSearchQuery] = useState("");
   const [position, setPosition] = useState<Position>(() => {
     // Always read from localStorage on mount to ensure we get the latest saved position
@@ -148,14 +150,14 @@ export function DraggableComponentLibrary({
             <FiMoreHorizontal className="h-4 w-4" />
         </div>
         <h3 className="text-xs font-semibold uppercase tracking-[0.22em] text-custom-color-600 dark:text-custom-color-200">
-          Component library
+          {t("editor", "componentLibraryLabel")}
         </h3>
         {onClose && (
           <button
             type="button"
             onClick={onClose}
             className="ml-auto rounded-lg p-1.5 text-custom-color-600 transition hover:bg-custom-color-200/50 hover:text-custom-color-800 dark:text-custom-color-200 dark:hover:bg-custom-color-700/50 dark:hover:text-custom-color-100"
-            aria-label="Close component library"
+            aria-label={t("editor", "detachComponentLibrary")}
           >
             <FiX className="h-4 w-4" />
           </button>
@@ -168,7 +170,7 @@ export function DraggableComponentLibrary({
           <FiSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-custom-color-800 dark:text-custom-color-50" />
           <input
             type="search"
-            placeholder="Search components..."
+            placeholder={t("editor", "searchComponentsPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-lg border border-custom-color-50 bg-white/95 pl-10 pr-3 py-2 text-sm font-medium text-custom-color-800 dark:text-custom-color-50 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50 dark:placeholder:text-custom-color-300/50"
@@ -190,10 +192,14 @@ export function DraggableComponentLibrary({
                 <component.icon className="mt-1 h-5 w-5 text-custom-color-600 dark:text-custom-color-200" />
                 <div>
                   <p className="text-sm font-semibold text-custom-color-900 dark:text-custom-color-100">
-                    {component.label}
+                    {locale === "nb" && component.labelNb
+                      ? component.labelNb
+                      : component.label}
                   </p>
                   <p className="text-xs text-custom-color-700/80 dark:text-custom-color-100/60">
-                    {component.description}
+                    {locale === "nb" && component.descriptionNb
+                      ? component.descriptionNb
+                      : component.description}
                   </p>
                 </div>
               </div>
@@ -203,10 +209,10 @@ export function DraggableComponentLibrary({
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <FiSearch className="mb-3 h-8 w-8 text-custom-color-800 dark:text-custom-color-50" />
             <p className="text-sm font-semibold text-custom-color-800 dark:text-custom-color-50">
-              No components found
+              {t("editor", "noComponentsFoundTitle")}
             </p>
             <p className="mt-1 text-xs text-custom-color-500 dark:text-custom-color-300">
-              Try a different search term
+              {t("editor", "noComponentsFoundBody")}
             </p>
           </div>
         )}

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { useMemo, useEffect, useState } from "react";
@@ -13,7 +14,16 @@ import {
   FiPlusCircle,
 } from "react-icons/fi";
 import { useAuth } from "../lib/auth-context";
-import { subscribeToUserDevices, getUserLayouts, getEngagementAnalytics, type DeviceStatus, type SavedLayout, type EngagementAnalytics } from "../lib/firestore";
+import {
+  subscribeToUserDevices,
+  getUserLayouts,
+  getEngagementAnalytics,
+  type DeviceStatus,
+  type SavedLayout,
+  type EngagementAnalytics,
+} from "../lib/firestore";
+import { useI18n } from "../lib/i18n";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 type RecentEdit = {
   id: string;
@@ -62,6 +72,7 @@ function getStatusLabel(status: string): string {
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [devices, setDevices] = useState<DeviceStatus[]>([]);
   const [recentEdits, setRecentEdits] = useState<RecentEdit[]>([]);
   const [showChangelog, setShowChangelog] = useState(false);
@@ -146,18 +157,18 @@ export default function DashboardPage() {
     const total = devices.length || 1;
     
     return [
-      { 
-        title: "Live playback", 
+      {
+        title: t("dashboard", "livePlayback"),
         value: Math.round((onlineCount / total) * 100), 
         accent: "from-custom-color-400 to-custom-color-300" 
       },
-      { 
-        title: "Standby", 
+      {
+        title: t("dashboard", "standby"),
         value: Math.round((standbyCount / total) * 100), 
         accent: "from-amber-200/90 to-amber-400/60" 
       },
-      { 
-        title: "Offline", 
+      {
+        title: t("dashboard", "offline"),
         value: Math.round((offlineCount / total) * 100), 
         accent: "from-rose-200/90 to-rose-400/60" 
       },
@@ -175,26 +186,29 @@ export default function DashboardPage() {
                 className="inline-flex items-center gap-2 rounded-full border border-custom-color-400 px-4 py-2 text-sm font-semibold text-custom-color-600 transition hover:bg-custom-color-200/50 dark:border-custom-color-300/40 dark:text-custom-color-50 dark:hover:bg-custom-color-700/40"
               >
                 <FiArrowLeft className="h-4 w-4" />
-                Back
+                {t("common", "back")}
               </Link>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-custom-color-600 dark:text-custom-color-200">
-                Dashboard
+                {t("common", "dashboard")}
               </p>
             </div>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Playback operations overview
+              {t("dashboard", "heading")}
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-custom-color-700/80 dark:text-custom-color-100/75">
-              Monitor every live screen, spot stale content, and keep signage running flawlessly.
+              {t("dashboard", "subheading")}
             </p>
           </div>
-          <Link
-            href="/editor"
-            className="inline-flex items-center gap-2 rounded-full bg-custom-color-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:bg-custom-color-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-custom-color-300 dark:bg-custom-color-400 dark:hover:bg-custom-color-300"
-          >
-            <FiPlusCircle className="h-4 w-4" />
-            Create new layout
-          </Link>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            <Link
+              href="/editor"
+              className="inline-flex items-center gap-2 rounded-full bg-custom-color-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:bg-custom-color-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-custom-color-300 dark:bg-custom-color-400 dark:hover:bg-custom-color-300"
+            >
+              <FiPlusCircle className="h-4 w-4" />
+              {t("dashboard", "createLayout")}
+            </Link>
+          </div>
         </header>
 
         <section className="grid gap-8 lg:grid-cols-[2fr_1fr]">
@@ -207,12 +221,14 @@ export default function DashboardPage() {
                 type="button"
                 onClick={() => {
                   // Reports functionality - placeholder for now
-                  alert("Reports feature coming soon! This will show detailed analytics and engagement metrics.");
+                  alert(
+                    "Reports feature coming soon! This will show detailed analytics and engagement metrics.",
+                  );
                 }}
                 className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-custom-color-700 transition hover:border-white/40 hover:bg-white/20 dark:text-custom-color-100"
               >
                 <FiEye className="h-3.5 w-3.5" />
-                View reports
+                {t("dashboard", "viewReports")}
               </button>
             </div>
 
@@ -220,7 +236,7 @@ export default function DashboardPage() {
               {activeDevices.length === 0 ? (
                 <div className="rounded-2xl border border-white/15 bg-white/80 p-6 text-center dark:border-white/10 dark:bg-custom-color-800/70">
                   <p className="text-sm text-custom-color-700/80 dark:text-custom-color-100/70">
-                    No active devices. Open the player view in fullscreen to see device status here.
+                    {t("dashboard", "noDevices")}
                   </p>
                 </div>
               ) : (

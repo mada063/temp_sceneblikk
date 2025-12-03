@@ -6,26 +6,41 @@ import { motion } from "framer-motion";
 import { FaUsers, FaHandSparkles } from "react-icons/fa";
 import { MdLiveTv } from "react-icons/md";
 import AnimatedImage from "@/components/AnimatedImage";
+import { useI18n } from "@/app/i18n";
 
 const Bulletpoints = () => {
+  const { locale } = useI18n();
+
   const features = [
     {
-      title: "Freeform Grid-system",
+      title: locale === "nb" ? "Freeform grid-system" : "Freeform grid system",
       description:
-        "Plasser komponenter fritt på rutenettet, juster størrelsen på celler og bygg oppsett som passer perfekt til skjermen.",
-      icon: <FaUsers className="w-24 h-24 text-custom-color-600 dark:text-custom-color-400" />,
+        locale === "nb"
+          ? "Plasser komponenter fritt på rutenettet, juster størrelsen på celler og bygg oppsett som passer perfekt til skjermen."
+          : "Place components freely on the grid, adjust cell sizes and build layouts that fit each screen perfectly.",
+      icon: (
+        <FaUsers className="w-24 h-24 text-custom-color-600 dark:text-custom-color-400" />
+      ),
     },
     {
-      title: "Live oppdatering",
+      title: locale === "nb" ? "Live oppdatering" : "Live updates",
       description:
-        "Endringer i editoren oppdateres øyeblikkelig på alle aktive skjermer – alltid synkronisert.",
-      icon: <MdLiveTv className="w-24 h-24 text-custom-color-600 dark:text-custom-color-400" />,
+        locale === "nb"
+          ? "Endringer i editoren oppdateres øyeblikkelig på alle aktive skjermer – alltid synkronisert."
+          : "Changes in the editor are reflected instantly on every active screen – always in sync.",
+      icon: (
+        <MdLiveTv className="w-24 h-24 text-custom-color-600 dark:text-custom-color-400" />
+      ),
     },
     {
-      title: "Mange komponenter",
+      title: locale === "nb" ? "Mange komponenter" : "Many components",
       description:
-        "Velg mellom komponenter som vær, nyheter, klokker, bilder, video, transport og mer – alle med egne innstillinger.",
-      icon: <FaHandSparkles className="w-24 h-24 text-custom-color-600 dark:text-custom-color-400" />,
+        locale === "nb"
+          ? "Velg mellom komponenter som vær, nyheter, klokker, bilder, video, transport og mer – alle med egne innstillinger."
+          : "Choose between components like weather, news, clocks, images, video, transport and more – each with its own settings.",
+      icon: (
+        <FaHandSparkles className="w-24 h-24 text-custom-color-600 dark:text-custom-color-400" />
+      ),
     },
   ];
 

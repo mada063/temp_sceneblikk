@@ -8,6 +8,7 @@ import { useMinuteFlipAnimation } from "./useMinuteFlipAnimation";
 import type { TransportProps, TransportData, PanelSize } from "./types";
 import { formatDepartureTime, minutesUntilDeparture } from "./utils";
 import { FiActivity } from "react-icons/fi";
+import { hexToRgba } from "../calendar/utils";
 
 type TransportLargeProps = TransportProps & {
   transportData: TransportData | null;
@@ -126,6 +127,8 @@ function LargeStopSection({
   lineFontSize,
 }: LargeStopSectionProps) {
   const primaryColor = appearance.textColor || "#ffffff";
+  const rowBorderColor = hexToRgba(primaryColor, 0.25);
+  const rowBackground = hexToRgba(primaryColor, 0.05);
   const departures = useMemo(
     () => (data?.departures ? data.departures.slice(0, maxDepartures) : []),
     [data?.departures, maxDepartures]
@@ -206,9 +209,10 @@ function LargeStopSection({
             return (
               <div
                 key={row.id}
-                className={`flex items-center justify-between gap-4 border-b border-opacity-30 pb-3 last:border-b-0 ${rowAnimationClass}`}
+                className={`flex items-center justify-between gap-4 rounded-2xl px-3 py-2 ${rowAnimationClass}`}
                 style={{
-                  borderColor: `${primaryColor}50`,
+                  borderColor: rowBorderColor,
+                  backgroundColor: rowBackground,
                   ...rowBaseStyle,
                   animationDelay: rowAnimationDelay,
                   animationFillMode: rowAnimationClass ? "forwards" : undefined,

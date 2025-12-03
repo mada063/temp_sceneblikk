@@ -9,7 +9,13 @@ import { ChartsXLarge } from "./ChartsXLarge";
 import type { ChartsProps, PanelSize } from "./types";
 import { parseChartConfig } from "./utils";
 
-export function Charts({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: ChartsProps) {
+export function Charts({
+  appearance,
+  colSpan = 1,
+  rowSpan = 1,
+  totalGridSize,
+  orientation,
+}: ChartsProps) {
   const {
     chartsConfig = "",
   } = appearance;
@@ -45,16 +51,35 @@ export function Charts({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: 
     return "xlarge";
   }, [colSpan, rowSpan, totalGridSize]);
 
+  // In portrait orientation the screen is taller, so we can use a richer layout
+  // by stepping each logical size up one level (S → M, M → L, L → XL, etc.).
+  const effectivePanelSize: PanelSize = (() => {
+    if (orientation !== "portrait") return panelSize;
+    switch (panelSize) {
+      case "tiny":
+        return "small";
+      case "small":
+        return "medium";
+      case "medium":
+        return "large";
+      case "xlarge":
+        return "xlarge";
+      case "large":
+      default:
+        return panelSize;
+    }
+  })();
+
   const commonProps = {
     appearance,
     chartConfig,
-    panelSize,
+    panelSize: effectivePanelSize,
     colSpan,
     rowSpan,
     totalGridSize,
   };
 
-  switch (panelSize) {
+  switch (effectivePanelSize) {
     case "tiny":
       return <ChartsTiny {...commonProps} />;
     case "small":

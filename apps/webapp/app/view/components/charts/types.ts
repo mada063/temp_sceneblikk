@@ -1,4 +1,4 @@
-import type { CellAppearance } from "../../../lib/layout-types";
+import type { CellAppearance, Orientation } from "../../../lib/layout-types";
 
 export type ChartsProps = {
   appearance: CellAppearance;
@@ -6,6 +6,7 @@ export type ChartsProps = {
   rowSpan?: number;
   totalGridSize?: number;
   panelSize?: PanelSize;
+  orientation?: Orientation;
 };
 
 export type ChartDataPoint = {

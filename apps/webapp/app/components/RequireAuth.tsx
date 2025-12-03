@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "../lib/auth-context";
+import { useI18n } from "../lib/i18n";
 
 type RequireAuthProps = {
   children: ReactNode;
@@ -15,6 +16,7 @@ export function RequireAuth({ children }: RequireAuthProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useI18n();
 
   const isPublic = PUBLIC_ROUTES.has(pathname ?? "");
   const isLoginPage = pathname === "/login";
@@ -40,7 +42,7 @@ export function RequireAuth({ children }: RequireAuthProps) {
       <div className="flex min-h-screen items-center justify-center bg-custom-color-100 text-black transition-colors duration-300 dark:bg-custom-color-900 dark:text-white">
         <div className="glass-surface rounded-3xl border border-white/30 px-8 py-6 text-center shadow-lg dark:border-white/10">
           <p className="text-sm text-custom-color-700/80 dark:text-custom-color-100/75">
-            Checking your session…
+            {t("auth", "checkingSession")}
           </p>
         </div>
       </div>
@@ -58,7 +60,7 @@ export function RequireAuth({ children }: RequireAuthProps) {
       <div className="flex min-h-screen items-center justify-center bg-custom-color-100 text-black transition-colors duration-300 dark:bg-custom-color-900 dark:text-white">
         <div className="glass-surface rounded-3xl border border-white/30 px-8 py-6 text-center shadow-lg dark:border-white/10">
           <p className="text-sm text-custom-color-700/80 dark:text-custom-color-100/75">
-            Redirecting to login…
+            {t("auth", "redirectingToLogin")}
           </p>
         </div>
       </div>

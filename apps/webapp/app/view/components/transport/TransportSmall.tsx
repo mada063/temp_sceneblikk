@@ -8,6 +8,7 @@ import { useMinuteFlipAnimation } from "./useMinuteFlipAnimation";
 import type { TransportProps, TransportData, PanelSize } from "./types";
 import { formatDepartureTime, minutesUntilDeparture } from "./utils";
 import { FiActivity } from "react-icons/fi";
+import { hexToRgba } from "../calendar/utils";
 
 type TransportSmallProps = TransportProps & {
   transportData: TransportData | null;
@@ -22,6 +23,8 @@ type TransportSmallProps = TransportProps & {
 
 export function TransportSmall({ appearance, transportData, loading, error, timeFormat = "24h", maxDepartures = 5, panelSize = "small" }: TransportSmallProps) {
   const primaryColor = appearance.textColor || "#ffffff";
+  const rowBorderColor = hexToRgba(primaryColor, 0.25);
+  const rowBackground = hexToRgba(primaryColor, 0.05);
   const badgeColor = appearance.transportBadgeColor || primaryColor;
   const badgeBorder = appearance.transportBadgeBorder || primaryColor;
   const badgeTextColor = appearance.transportBadgeTextColor || "#000000";
@@ -107,10 +110,12 @@ export function TransportSmall({ appearance, transportData, loading, error, time
               ? { opacity: 0 }
               : undefined;
           return (
-            <div 
-              key={row.id} 
-              className={`flex items-center justify-between gap-2 ${rowAnimationClass}`}
-              style={{ 
+            <div
+              key={row.id}
+              className={`flex items-center justify-between gap-2 rounded-2xl px-3 py-2 ${rowAnimationClass}`}
+              style={{
+                borderColor: rowBorderColor,
+                backgroundColor: rowBackground,
                 ...rowBaseStyle,
                 animationDelay: rowAnimationDelay,
                 animationFillMode: rowAnimationClass ? "forwards" : undefined,

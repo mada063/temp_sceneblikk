@@ -6,6 +6,7 @@ import { FiTrash2 } from "react-icons/fi";
 
 import { PLACEHOLDER_MAP } from "../../lib/placeholders";
 import type { PanelEntry } from "../../lib/layout-types";
+import { useI18n } from "../../lib/i18n";
 
 type PanelPlaybackPanelProps = {
   entries: PanelEntry[];
@@ -26,6 +27,8 @@ export function PanelPlaybackPanel({
   selectedEntryId,
   onSelectEntry,
 }: PanelPlaybackPanelProps) {
+  const { t, locale } = useI18n();
+
   if (entries.length <= 1) {
     return null;
   }
@@ -34,24 +37,27 @@ export function PanelPlaybackPanel({
     <div className="glass-surface rounded-3xl border border-white/40 p-6 shadow-lg dark:border-white/10">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-sm font-semibold uppercase tracking-[0.22em] text-custom-color-600 dark:text-custom-color-200">
-          Panel playback
+          {t("editor", "panelPlaybackTitle")}
         </h3>
         <span className="rounded-full bg-white/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-custom-color-800 dark:bg-custom-color-700/60 dark:text-custom-color-50">
-          Cycle · {totalDuration}s
+          {t("editor", "panelPlaybackCyclePrefix")} · {totalDuration}s
         </span>
       </div>
       <p className="mt-2 text-xs text-custom-color-700/80 dark:text-custom-color-100/70">
-        Adjust each componentʼs duration. The panel loops through this order continuously.
+        {t("editor", "panelPlaybackDescription")}
         {entries.length >= 2 && (
           <span className="block mt-1">
-            Click an entry to edit its individual settings.
+            {t("editor", "panelPlaybackClickHint")}
           </span>
         )}
       </p>
       <div className="mt-4 space-y-3">
         {entries.map((entry, index) => {
           const definition = PLACEHOLDER_MAP[entry.componentId];
-          const label = definition?.label ?? entry.componentId;
+          const label =
+            definition && locale === "nb" && definition.labelNb
+              ? definition.labelNb
+              : definition?.label ?? entry.componentId;
           const isSelected = selectedEntryId === entry.id;
           // Allow selecting any entry when there are 2 or more entries in the panel
           // This allows editing individual settings for each component
@@ -84,7 +90,7 @@ export function PanelPlaybackPanel({
                     {label}
                     {isSelected && canSelect && (
                       <span className="ml-2 text-xs font-normal normal-case opacity-70">
-                        (editing settings)
+                        {t("editor", "panelPlaybackEditingSuffix")}
                       </span>
                     )}
                   </p>
@@ -93,7 +99,7 @@ export function PanelPlaybackPanel({
                       ? "text-custom-color-700/70 dark:text-custom-color-200/60"
                       : "text-white/70 dark:text-custom-color-200/60"
                   }`}>
-                    {entry.duration}s display
+                    {entry.duration}s
                   </p>
                 </div>
               </div>
@@ -108,7 +114,7 @@ export function PanelPlaybackPanel({
                     ? "bg-custom-color-400/30 text-custom-color-900 dark:bg-custom-color-300/30 dark:text-custom-color-50"
                     : "bg-black/30 text-white dark:bg-black/50"
                 }`}>
-                  Duration (s)
+                  {t("editor", "panelPlaybackDurationLabel")}
                   <input
                     type="number"
                     min={1}
@@ -132,7 +138,7 @@ export function PanelPlaybackPanel({
                   }`}
                 >
                   <FiTrash2 className="h-3 w-3" />
-                  Remove
+                  {t("editor", "panelPlaybackRemove")}
                 </button>
               </div>
             </div>

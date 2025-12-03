@@ -8,6 +8,7 @@ import { useMinuteFlipAnimation } from "./useMinuteFlipAnimation";
 import type { TransportProps, TransportData, PanelSize } from "./types";
 import { formatDepartureTime, minutesUntilDeparture } from "./utils";
 import { FiActivity } from "react-icons/fi";
+import { hexToRgba } from "../calendar/utils";
 
 type TransportXLargeProps = TransportProps & {
   transportData: TransportData | null;
@@ -20,6 +21,8 @@ type TransportXLargeProps = TransportProps & {
 
 export function TransportXLarge({ appearance, transportData, loading, error, timeFormat = "24h", maxDepartures = 15, panelSize = "xlarge" }: TransportXLargeProps) {
   const primaryColor = appearance.textColor || "#ffffff";
+  const rowBorderColor = hexToRgba(primaryColor, 0.25);
+  const rowBackground = hexToRgba(primaryColor, 0.05);
   const badgeColor = appearance.transportBadgeColor || primaryColor;
   const badgeBorder = appearance.transportBadgeBorder || primaryColor;
   const badgeTextColor = appearance.transportBadgeTextColor || "#000000";
@@ -105,11 +108,12 @@ export function TransportXLarge({ appearance, transportData, loading, error, tim
               ? { opacity: 0 }
               : undefined;
           return (
-            <div 
-              key={row.id} 
-              className={`flex items-center justify-between gap-4 border-b border-opacity-30 pb-4 last:border-b-0 ${rowAnimationClass}`}
-              style={{ 
-                borderColor: `${primaryColor}50`,
+            <div
+              key={row.id}
+              className={`flex items-center justify-between gap-4 rounded-2xl px-3 py-2 ${rowAnimationClass}`}
+              style={{
+                borderColor: rowBorderColor,
+                backgroundColor: rowBackground,
                 ...rowBaseStyle,
                 animationDelay: rowAnimationDelay,
                 animationFillMode: rowAnimationClass ? "forwards" : undefined,

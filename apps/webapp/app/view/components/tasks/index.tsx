@@ -7,9 +7,122 @@ import { TasksXLarge } from "./TasksXLarge";
 import { buildSampleTasksData } from "./utils";
 import type { TasksProps, PanelSize, TasksData, Task } from "./types";
 
-export function Tasks({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: TasksProps) {
-  // Use example data for now - this will be replaced with Google Tasks API data
-  const [tasksData, setTasksData] = useState<TasksData | null>(() => buildSampleTasksData());
+export function Tasks({
+  appearance,
+  colSpan = 1,
+  rowSpan = 1,
+  totalGridSize,
+  orientation,
+}: TasksProps) {
+  const [tasksData, setTasksData] = useState<TasksData | null>(() =>
+    appearance.tasksProvider === "google" ? null : buildSampleTasksData(),
+  );
+
+  // Load tasks from Google Tasks when explicitly configured; otherwise keep demo data
+  useEffect(() => {
+    if (appearance.tasksProvider !== "google") {
+      // Ensure demo data is used when Google integration is not selected
+      setTasksData(buildSampleTasksData());
+      return;
+    }
+
+    const abortController = new AbortController();
+
+    const load = async () => {
+      try {
+        const params = new URLSearchParams();
+        if (appearance.tasksListId && appearance.tasksListId.trim() !== "") {
+          params.set("taskListId", appearance.tasksListId.trim());
+        }
+
+        const response = await fetch(`/api/google/tasks${params.toString() ? `?${params.toString()}` : ""}`, {
+          signal: abortController.signal,
+        });
+
+        if (!response.ok) {
+          // eslint-disable-next-line no-console
+          console.warn("Google Tasks API returned non-OK response, using demo data instead.");
+          setTasksData(buildSampleTasksData());
+          return;
+        }
+
+        const data: {
+          taskList?: {
+            id: string;
+            title: string;
+            updated?: string;
+          } | null;
+          tasks?: Array<{
+            id: string;
+            title: string;
+            status?: "needsAction" | "completed";
+            due?: string;
+            notes?: string;
+            updated?: string;
+          }>;
+        } = await response.json();
+
+        const incomingTasks = data.tasks ?? [];
+        if (!data.taskList || incomingTasks.length === 0) {
+          // Nothing configured yet – keep demo data so the panel is never empty
+          setTasksData(buildSampleTasksData());
+          return;
+        }
+
+        const now = new Date();
+        const mappedTasks: Task[] = incomingTasks.map((task) => {
+          const completed = task.status === "completed";
+          const dueDateOnly = task.due ? task.due.split("T")[0] : undefined;
+
+          let priority: "low" | "medium" | "high" | undefined;
+          if (task.due) {
+            const dueDate = new Date(task.due);
+            const diffMs = dueDate.getTime() - now.getTime();
+            const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+            if (diffDays < 0) priority = "high";
+            else if (diffDays <= 2) priority = "medium";
+            else priority = "low";
+          }
+
+          return {
+            id: task.id,
+            title: task.title,
+            completed,
+            status: task.status,
+            priority,
+            dueDate: dueDateOnly,
+            due: task.due,
+            notes: task.notes,
+            updated: task.updated,
+            taskListId: data.taskList?.id,
+          };
+        });
+
+        setTasksData({
+          taskList: {
+            id: data.taskList.id,
+            title: data.taskList.title,
+            updated: data.taskList.updated,
+          },
+          tasks: mappedTasks,
+          lastUpdated: new Date(),
+        });
+      } catch (error) {
+        if (abortController.signal.aborted) return;
+        // eslint-disable-next-line no-console
+        console.error("Failed to load Google Tasks, falling back to demo data:", error);
+        setTasksData(buildSampleTasksData());
+      }
+    };
+
+    load().catch(() => {
+      // Swallow top-level errors – inner try/catch already logs and falls back
+    });
+
+    return () => {
+      abortController.abort();
+    };
+  }, [appearance.tasksProvider, appearance.tasksListId]);
 
   // Calculate panel size for responsive display
   const panelSize = useMemo((): PanelSize => {
@@ -33,55 +146,6 @@ export function Tasks({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: T
     if (fraction < 0.75) return "large";
     return "xlarge";
   }, [colSpan, rowSpan, totalGridSize]);
-
-  // For demonstration: simulate adding/removing tasks
-  useEffect(() => {
-    if (!tasksData) return;
-
-    const interval = setInterval(() => {
-      setTasksData((current) => {
-        if (!current) return current;
-
-        const currentTasks = current.tasks;
-        // Randomly add or remove tasks for demo
-        const shouldAdd = Math.random() > 0.7 && currentTasks.length < 10;
-        const shouldRemove = Math.random() > 0.8 && currentTasks.length > 3;
-
-        if (shouldAdd) {
-          const newTask: Task = {
-            id: `new-${Date.now()}`,
-            title: `Ny oppgave ${currentTasks.length + 1}`,
-            completed: false,
-            status: "needsAction",
-            priority: ["low", "medium", "high"][Math.floor(Math.random() * 3)] as "low" | "medium" | "high",
-            taskListId: current.taskList.id,
-            updated: new Date().toISOString(),
-          };
-          return {
-            ...current,
-            tasks: [...currentTasks, newTask],
-            lastUpdated: new Date(),
-          };
-        }
-
-        if (shouldRemove) {
-          const incompleteTasks = currentTasks.filter((t) => !t.completed);
-          if (incompleteTasks.length > 0) {
-            const toRemove = incompleteTasks[Math.floor(Math.random() * incompleteTasks.length)];
-            return {
-              ...current,
-              tasks: currentTasks.filter((t) => t.id !== toRemove.id),
-              lastUpdated: new Date(),
-            };
-          }
-        }
-
-        return current;
-      });
-    }, 10000); // Change every 10 seconds for demo
-
-    return () => clearInterval(interval);
-  }, [tasksData]);
 
   const [fadingOutTaskIds, setFadingOutTaskIds] = useState<Set<string>>(new Set());
 
@@ -156,6 +220,7 @@ export function Tasks({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: T
         onCompleteTopTask={handleCompleteTopTask}
         fadingOutTaskIds={fadingOutTaskIds}
         maxTasks={1}
+        orientation={orientation}
       />
     );
   } else if (fraction <= 1/4) {
@@ -166,6 +231,7 @@ export function Tasks({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: T
         onCompleteTopTask={handleCompleteTopTask}
         fadingOutTaskIds={fadingOutTaskIds}
         maxTasks={3}
+        orientation={orientation}
       />
     );
   } else if (fraction <= 1/2) {
@@ -175,6 +241,7 @@ export function Tasks({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: T
         tasksData={tasksData}
         onCompleteTopTask={handleCompleteTopTask}
         fadingOutTaskIds={fadingOutTaskIds}
+        orientation={orientation}
       />
     );
   } else {
@@ -185,6 +252,7 @@ export function Tasks({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: T
         tasksData={tasksData}
         onCompleteTopTask={handleCompleteTopTask}
         fadingOutTaskIds={fadingOutTaskIds}
+        orientation={orientation}
       />
     );
   }

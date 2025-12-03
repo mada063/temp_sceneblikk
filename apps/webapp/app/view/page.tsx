@@ -58,7 +58,7 @@ export default function ViewPage() {
   const [showDeviceSettings, setShowDeviceSettings] = useState(false);
   const [deviceNameDraft, setDeviceNameDraft] = useState("");
   const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const deviceIdRef = useRef<string | null>(null);
+  const deviceIdRef = useRef<string>("");
   const gridRef = useRef<HTMLDivElement>(null);
   const [gridReady, setGridReady] = useState(false);
   const currentSessionIdRef = useRef<string | null>(null);
@@ -813,6 +813,7 @@ export default function ViewPage() {
                       colSpan={cell.colSpan}
                       rowSpan={cell.rowSpan}
                       totalGridSize={config.columns * config.rows}
+                      orientation={config.orientation}
                     />
                   ) : (
                     <ComponentRenderer
@@ -821,6 +822,7 @@ export default function ViewPage() {
                       colSpan={cell.colSpan}
                       rowSpan={cell.rowSpan}
                       totalGridSize={config.columns * config.rows}
+                      orientation={config.orientation}
                     />
                   )}
                 </div>

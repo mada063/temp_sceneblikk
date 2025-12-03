@@ -11,6 +11,7 @@ import {
 } from "../../lib/layout-types";
 import { PLACEHOLDER_LIBRARY } from "../../lib/placeholders";
 import type { GridGeometry } from "../types";
+import { useI18n } from "../../lib/i18n";
 
 type GridSettingsPanelProps = {
   config: GridConfig;
@@ -57,6 +58,8 @@ export function GridSettingsPanel({
   onDetachLibrary,
   isLibraryDetached = false,
 }: GridSettingsPanelProps) {
+  const { t } = useI18n();
+
   return (
     <aside className="glass-surface flex h-full flex-col overflow-hidden rounded-3xl border border-custom-color-200/70 bg-white/95 p-0 shadow-lg transition-colors dark:border-white/10 dark:bg-custom-color-900/80">
       <div className="border-b border-custom-color-100/80 px-6 py-4 dark:border-white/10">
@@ -67,7 +70,7 @@ export function GridSettingsPanel({
         >
           <span className="flex items-center gap-2">
             <FiSliders className="h-4 w-4" aria-hidden />
-            Grid settings
+            {t("editor", "gridSettings")}
           </span>
           <FiChevronDown
             className={`h-4 w-4 transition-transform ${isSettingsCollapsed ? "" : "rotate-180"}`}
@@ -100,7 +103,7 @@ export function GridSettingsPanel({
               onClick={onToggleLibrary}
               className="flex flex-1 items-center justify-between text-xs font-semibold uppercase tracking-[0.22em] text-custom-color-600 transition hover:text-custom-color-500 dark:text-custom-color-200 dark:hover:text-custom-color-100"
             >
-              <span>Component library</span>
+              <span>{t("editor", "componentLibraryLabel")}</span>
               <FiChevronDown
                 className={`h-4 w-4 transition-transform ${isLibraryCollapsed ? "" : "rotate-180"}`}
                 aria-hidden
@@ -111,8 +114,8 @@ export function GridSettingsPanel({
                 type="button"
                 onClick={onDetachLibrary}
                 className="rounded-lg p-1.5 text-custom-color-600 transition hover:bg-custom-color-200/50 hover:text-custom-color-800 dark:text-custom-color-200 dark:hover:bg-custom-color-700/50 dark:hover:text-custom-color-100"
-                aria-label="Detach component library"
-                title="Detach component library"
+                aria-label={t("editor", "detachComponentLibrary")}
+                title={t("editor", "detachComponentLibrary")}
               >
                 <FiMaximize2 className="h-4 w-4" />
               </button>
@@ -159,13 +162,14 @@ function GridSettingsContent({
   geometry,
 }: GridSettingsContentProps) {
   const [summaryCollapsed, setSummaryCollapsed] = useState(true);
+  const { t } = useI18n();
 
   return (
     <div className="mt-4 space-y-3 text-sm text-custom-color-900 dark:text-custom-color-50">
       <div className="space-y-1.5">
         <label className="block">
           <span className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.14em] text-custom-color-600 dark:text-custom-color-200">
-            Screen size (inches)
+            {t("editor", "screenSizeInchesLabel")}
             <span>{config.screenInches.toFixed(1)} in</span>
           </span>
           <input
@@ -185,7 +189,7 @@ function GridSettingsContent({
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
             <span className="text-xs font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
-              Grid columns
+              {t("editor", "gridColumnsLabel")}
             </span>
             <input
               type="number"
@@ -198,7 +202,7 @@ function GridSettingsContent({
           </label>
           <label className="block">
             <span className="text-xs font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
-              Grid rows
+              {t("editor", "gridRowsLabel")}
             </span>
             <input
               type="number"
@@ -215,7 +219,7 @@ function GridSettingsContent({
       <div className="space-y-1.5">
         <label className="block">
           <span className="text-xs font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
-            Grid gap (px)
+            {t("editor", "gridGapLabel")}
           </span>
           <input
             type="number"
@@ -231,7 +235,7 @@ function GridSettingsContent({
       <div className="space-y-1.5">
         <label className="block">
           <span className="text-xs font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
-            Background color
+            {t("editor", "backgroundColorLabel")}
           </span>
           <div className="mt-1.5">
             <ColorPicker
@@ -248,7 +252,7 @@ function GridSettingsContent({
           onClick={() => setSummaryCollapsed(!summaryCollapsed)}
           className="flex w-full items-center justify-between px-4 py-3 text-xs font-semibold uppercase tracking-[0.22em] text-custom-color-600 transition hover:text-custom-color-500 dark:text-custom-color-200 dark:hover:text-custom-color-100"
         >
-          <span>Grid summary</span>
+          <span>{t("editor", "gridSummaryLabel")}</span>
           <FiChevronDown
             className={`h-4 w-4 transition-transform ${summaryCollapsed ? "" : "rotate-180"}`}
             aria-hidden
@@ -288,6 +292,7 @@ type ComponentLibraryProps = {
 
 function ComponentLibrary({ onDragStartPalette }: ComponentLibraryProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const { t, locale } = useI18n();
 
   const filteredComponents = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -309,7 +314,7 @@ function ComponentLibrary({ onDragStartPalette }: ComponentLibraryProps) {
           <FiSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-custom-color-800 dark:text-custom-color-50" />
           <input
             type="search"
-            placeholder="Search components..."
+            placeholder={t("editor", "searchComponentsPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-lg border border-custom-color-50 bg-white/95 pl-10 pr-3 py-2 text-sm font-medium text-custom-color-800 dark:text-custom-color-50 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50 dark:placeholder:text-custom-color-300/50"
@@ -329,10 +334,14 @@ function ComponentLibrary({ onDragStartPalette }: ComponentLibraryProps) {
                 <component.icon className="mt-1 h-5 w-5 text-custom-color-600 dark:text-custom-color-200" />
                 <div>
                   <p className="text-sm font-semibold text-custom-color-900 dark:text-custom-color-100">
-                    {component.label}
+                    {locale === "nb" && component.labelNb
+                      ? component.labelNb
+                      : component.label}
                   </p>
                   <p className="text-xs text-custom-color-700/80 dark:text-custom-color-100/60">
-                    {component.description}
+                    {locale === "nb" && component.descriptionNb
+                      ? component.descriptionNb
+                      : component.description}
                   </p>
                 </div>
               </div>

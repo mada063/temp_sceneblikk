@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { CalendarProps, CalendarEvent } from "./types";
 import {
   buildSampleEvents,
@@ -34,11 +34,102 @@ export function CalendarSmall({ appearance }: CalendarProps) {
     [appearance.calendarEventPalette],
   );
 
+  const [eventsByDate, setEventsByDate] = useState<Record<string, CalendarEvent[]>>(() =>
+    appearance.calendarProvider === "google"
+      ? {}
+      : buildSampleEvents(year, month, eventPalette),
+  );
+
+  useEffect(() => {
+    if (appearance.calendarProvider !== "google") {
+      setEventsByDate(buildSampleEvents(year, month, eventPalette));
+      return;
+    }
+
+    const abortController = new AbortController();
+
+    const load = async () => {
+      try {
+        const params = new URLSearchParams({
+          year: String(year),
+          month: String(month),
+        });
+        if (appearance.calendarId && appearance.calendarId.trim() !== "") {
+          params.set("calendarId", appearance.calendarId.trim());
+        }
+
+        const response = await fetch(`/api/google/calendar?${params.toString()}`, {
+          signal: abortController.signal,
+        });
+
+        if (!response.ok) {
+          // eslint-disable-next-line no-console
+          console.warn("Google Calendar API returned non-OK response, using demo data instead.");
+          setEventsByDate(buildSampleEvents(year, month, eventPalette));
+          return;
+        }
+
+        const data: {
+          events?: Array<{
+            id: string;
+            summary: string;
+            start: string;
+            end?: string | null;
+            allDay?: boolean;
+          }>;
+        } = await response.json();
+
+        const incomingEvents = data.events ?? [];
+        if (incomingEvents.length === 0) {
+          setEventsByDate({});
+          return;
+        }
+
+        const next: Record<string, CalendarEvent[]> = {};
+        incomingEvents.forEach((rawEvent, index) => {
+          const startDate = new Date(rawEvent.start);
+          const key = makeDateKey(startDate);
+
+          const hours = startDate.getHours().toString().padStart(2, "0");
+          const minutes = startDate.getMinutes().toString().padStart(2, "0");
+          const timeLabel = rawEvent.allDay ? undefined : `${hours}:${minutes}`;
+
+          const list = next[key] ?? [];
+          const color =
+            eventPalette.length > 0
+              ? eventPalette[(index + list.length) % eventPalette.length]
+              : undefined;
+
+          list.push({
+            id: rawEvent.id,
+            title: rawEvent.summary,
+            time: timeLabel,
+            color,
+          });
+
+          next[key] = list;
+        });
+
+        setEventsByDate(next);
+      } catch (error) {
+        if (abortController.signal.aborted) return;
+        // eslint-disable-next-line no-console
+        console.error("Failed to load Google Calendar events, falling back to demo data:", error);
+        setEventsByDate(buildSampleEvents(year, month, eventPalette));
+      }
+    };
+
+    load();
+
+    return () => {
+      abortController.abort();
+    };
+  }, [appearance.calendarProvider, appearance.calendarId, year, month, eventPalette]);
+
   const todayEvents = useMemo(() => {
-    const eventsByDate = buildSampleEvents(year, month, eventPalette);
     const todayKey = makeDateKey(new Date(year, month, day));
     return eventsByDate[todayKey] ?? [];
-  }, [year, month, day, eventPalette]);
+  }, [year, month, day, eventsByDate]);
 
   const dayLabel = new Intl.DateTimeFormat("nb-NO", {
     weekday: "long",

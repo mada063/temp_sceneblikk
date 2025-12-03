@@ -110,20 +110,20 @@ export function ChartsXLarge({ appearance, chartConfig }: ChartsXLargeProps) {
       }
 
       case "RadarChart": {
+        const maxValue = Math.max(...chartConfig.data.map((d) => d.value), 100);
         const metrics = chartConfig.data.map((dp) => ({
           name: dp.label,
-          maxValue: Math.max(...chartConfig.data.map((d) => d.value), 100),
+          maxValue,
           formatter: (v: number) => String(v),
         }));
 
         const radarEntity = {
           id: "entity-1",
           name: chartConfig.title || "Data",
-          color: dp.color || chartColor,
+          color: chartConfig.seriesColors?.[0] || chartColor,
           values: chartConfig.data.map((dp) => dp.value),
           normalizedValues: chartConfig.data.map((dp) => {
-            const max = Math.max(...chartConfig.data.map((d) => d.value), 100);
-            return max > 0 ? (dp.value / max) * 100 : 0;
+            return maxValue > 0 ? (dp.value / maxValue) * 100 : 0;
           }),
         };
 

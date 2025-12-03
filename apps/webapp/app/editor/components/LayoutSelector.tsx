@@ -5,6 +5,7 @@ import { FiSave, FiFolder, FiTrash2, FiPlus } from "react-icons/fi";
 import { useAuth } from "../../lib/auth-context";
 import { getUserLayouts, saveLayout, deleteLayout, type SavedLayout } from "../../lib/firestore";
 import type { GridConfig, GridCell } from "../../lib/layout-types";
+import { useI18n } from "../../lib/i18n";
 
 type LayoutSelectorProps = {
   currentConfig: GridConfig;
@@ -18,6 +19,7 @@ export function LayoutSelector({
   onLoadLayout,
 }: LayoutSelectorProps) {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [layouts, setLayouts] = useState<SavedLayout[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -67,7 +69,7 @@ export function LayoutSelector({
   };
 
   const handleDelete = async (layoutId: string) => {
-    if (!confirm("Are you sure you want to delete this layout?")) return;
+    if (!confirm(t("editor", "deleteLayoutConfirm"))) return;
     try {
       await deleteLayout(layoutId);
       await loadLayouts();
@@ -90,7 +92,7 @@ export function LayoutSelector({
     <div className="glass-surface rounded-2xl border border-white/30 p-4 shadow-md dark:border-white/10">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-custom-color-800 dark:text-custom-color-100">
-          Saved Layouts
+          {t("editor", "savedLayoutsTitle")}
         </h3>
         <button
           type="button"
@@ -102,7 +104,7 @@ export function LayoutSelector({
           className="inline-flex items-center gap-1.5 rounded-full bg-custom-color-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-custom-color-400 dark:bg-custom-color-400 dark:hover:bg-custom-color-300"
         >
           <FiSave className="h-3.5 w-3.5" />
-          Save
+          {t("editor", "saveButtonLabel")}
         </button>
       </div>
 
@@ -112,7 +114,7 @@ export function LayoutSelector({
             type="text"
             value={layoutName}
             onChange={(e) => setLayoutName(e.target.value)}
-            placeholder="Layout name"
+            placeholder={t("editor", "saveDialogPlaceholder")}
             className="mb-2 w-full rounded-lg border border-white/20 bg-white/70 px-3 py-2 text-sm text-custom-color-900 placeholder-custom-color-500/60 focus:border-custom-color-400 focus:outline-none dark:bg-custom-color-700/50 dark:text-white"
             autoFocus
           />
@@ -123,7 +125,7 @@ export function LayoutSelector({
               disabled={saving || !layoutName.trim()}
               className="flex-1 rounded-lg bg-custom-color-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-custom-color-400 disabled:opacity-50 dark:bg-custom-color-400"
             >
-              {saving ? "Saving..." : "Save"}
+              {saving ? t("editor", "saveDialogSaving") : t("editor", "saveDialogSave")}
             </button>
             <button
               type="button"
@@ -133,7 +135,7 @@ export function LayoutSelector({
               }}
               className="rounded-lg border border-white/20 bg-white/50 px-3 py-1.5 text-xs font-semibold text-custom-color-700 transition hover:bg-white/70 dark:bg-custom-color-700/50 dark:text-custom-color-100"
             >
-              Cancel
+              {t("editor", "saveDialogCancel")}
             </button>
           </div>
         </div>
@@ -141,11 +143,11 @@ export function LayoutSelector({
 
       {loading ? (
         <p className="text-xs text-custom-color-700/70 dark:text-custom-color-100/70">
-          Loading layouts...
+          {t("editor", "loadingLayouts")}
         </p>
       ) : layouts.length === 0 ? (
         <p className="text-xs text-custom-color-700/70 dark:text-custom-color-100/70">
-          No saved layouts. Create one to get started.
+          {t("editor", "noLayouts")}
         </p>
       ) : (
         <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
