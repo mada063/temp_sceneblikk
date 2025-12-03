@@ -28,6 +28,12 @@ const messages = {
       openDashboard: "Åpne dashbord",
       launchPlayer: "Start avspiller",
       explore: "Utforsk →",
+      quickStartEditorDescription:
+        "Design responsive skiltingsoppsett med nøyaktige rutenett.",
+      quickStartDashboardDescription:
+        "Overvåk skjermer, se oppdateringer og følg med på engasjement.",
+      quickStartPlayerDescription:
+        "Forhåndsvis skiltingen i fullskjerm før du publiserer.",
     },
     dashboard: {
       heading: "Oversikt over avspilling",
@@ -292,6 +298,12 @@ const messages = {
       openDashboard: "Open dashboard",
       launchPlayer: "Launch player",
       explore: "Explore →",
+      quickStartEditorDescription:
+        "Design responsive signage layouts with inch-perfect grids.",
+      quickStartDashboardDescription:
+        "Monitor screens, view updates, and track engagement.",
+      quickStartPlayerDescription:
+        "Preview the full-screen signage player experience.",
     },
     dashboard: {
       heading: "Playback operations overview",

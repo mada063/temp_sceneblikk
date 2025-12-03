@@ -39,20 +39,19 @@ export function HomeClient() {
       href: "/editor",
       label: t("home", "startEditing"),
       icon: FiLayout,
-      description:
-        "Design responsive signage layouts with inch-perfect grids.",
+      description: t("home", "quickStartEditorDescription"),
     },
     {
       href: "/dashboard",
       label: t("home", "openDashboard"),
       icon: FiBarChart2,
-      description: "Monitor screens, view updates, and track engagement.",
+      description: t("home", "quickStartDashboardDescription"),
     },
     {
       href: "/view",
       label: t("home", "launchPlayer"),
       icon: FiMonitor,
-      description: "Preview the full-screen signage player experience.",
+      description: t("home", "quickStartPlayerDescription"),
     },
   ];
 
