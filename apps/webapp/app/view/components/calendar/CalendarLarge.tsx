@@ -66,7 +66,7 @@ export function CalendarLarge({ appearance }: CalendarProps) {
 
     const abortController = new AbortController();
 
-    const load = async () => {
+    const load = async (controller: AbortController = abortController) => {
       try {
         const params = new URLSearchParams({
           year: String(year),
@@ -77,7 +77,7 @@ export function CalendarLarge({ appearance }: CalendarProps) {
         }
 
         const response = await fetch(`/api/google/calendar?${params.toString()}`, {
-          signal: abortController.signal,
+          signal: controller.signal,
         });
 
         if (!response.ok) {
@@ -130,17 +130,26 @@ export function CalendarLarge({ appearance }: CalendarProps) {
 
         setEventsByDate(next);
       } catch (error) {
-        if (abortController.signal.aborted) return;
+        if (controller.signal.aborted) return;
         // eslint-disable-next-line no-console
         console.error("Failed to load Google Calendar events, falling back to demo data:", error);
         setEventsByDate(buildSampleEvents(year, month, eventPalette));
       }
     };
 
+    // Load immediately on mount or when dependencies change
     load();
+
+    // Set up polling interval: fetch every 30 minutes (30 * 60 * 1000 ms)
+    const intervalId = setInterval(() => {
+      // Create a new abort controller for each interval call
+      const intervalAbortController = new AbortController();
+      load(intervalAbortController);
+    }, 30 * 60 * 1000);
 
     return () => {
       abortController.abort();
+      clearInterval(intervalId);
     };
   }, [appearance.calendarProvider, appearance.calendarId, year, month, eventPalette]);
 

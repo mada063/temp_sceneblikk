@@ -28,7 +28,7 @@ export function Tasks({
 
     const abortController = new AbortController();
 
-    const load = async () => {
+    const load = async (controller: AbortController = abortController) => {
       try {
         const params = new URLSearchParams();
         if (appearance.tasksListId && appearance.tasksListId.trim() !== "") {
@@ -36,7 +36,7 @@ export function Tasks({
         }
 
         const response = await fetch(`/api/google/tasks${params.toString() ? `?${params.toString()}` : ""}`, {
-          signal: abortController.signal,
+          signal: controller.signal,
         });
 
         if (!response.ok) {
@@ -108,19 +108,30 @@ export function Tasks({
           lastUpdated: new Date(),
         });
       } catch (error) {
-        if (abortController.signal.aborted) return;
+        if (controller.signal.aborted) return;
         // eslint-disable-next-line no-console
         console.error("Failed to load Google Tasks, falling back to demo data:", error);
         setTasksData(buildSampleTasksData());
       }
     };
 
+    // Load immediately on mount or when dependencies change
     load().catch(() => {
       // Swallow top-level errors – inner try/catch already logs and falls back
     });
 
+    // Set up polling interval: fetch every 30 minutes (30 * 60 * 1000 ms)
+    const intervalId = setInterval(() => {
+      // Create a new abort controller for each interval call
+      const intervalAbortController = new AbortController();
+      load(intervalAbortController).catch(() => {
+        // Swallow top-level errors – inner try/catch already logs and falls back
+      });
+    }, 30 * 60 * 1000);
+
     return () => {
       abortController.abort();
+      clearInterval(intervalId);
     };
   }, [appearance.tasksProvider, appearance.tasksListId]);
 
