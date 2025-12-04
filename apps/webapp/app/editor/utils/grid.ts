@@ -92,10 +92,17 @@ export const createPanelEntry = (componentId: string): PanelEntry => ({
 });
 
 export const clonePanelEntries = (entries?: PanelEntry[]) =>
-  entries ? entries.map((entry) => ({ 
-    ...entry,
-    appearance: entry.appearance ? cloneAppearance(entry.appearance) : undefined,
-  })) : [];
+  entries
+    ? entries.map((entry) => ({
+        ...entry,
+        // Only include `appearance` when it actually exists; avoid
+        // explicitly setting it to `undefined`, which breaks Firestore
+        // when layouts are persisted.
+        ...(entry.appearance
+          ? { appearance: cloneAppearance(entry.appearance) }
+          : {}),
+      }))
+    : [];
 
 export const clearComponentRegion = (
   key: string,

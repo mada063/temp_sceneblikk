@@ -18,6 +18,29 @@ import {
 import { db } from "./firebase";
 import type { GridConfig, GridCell, PersistedLayoutState } from "./layout-types";
 
+// Helper to remove any `undefined` values from nested objects/arrays before
+// persisting to Firestore (which disallows `undefined` anywhere in the data).
+function removeUndefinedDeep<T>(value: T): T {
+  if (value === null || typeof value !== "object") {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => removeUndefinedDeep(item)) as unknown as T;
+  }
+
+  const result: Record<string, unknown> = {};
+
+  Object.entries(value as Record<string, unknown>).forEach(([key, val]) => {
+    if (val === undefined) {
+      return;
+    }
+    result[key] = removeUndefinedDeep(val);
+  });
+
+  return result as T;
+}
+
 export type SavedLayout = {
   id: string;
   userId: string;
@@ -51,8 +74,8 @@ export async function saveLayout(
   const layoutData = {
     userId,
     name,
-    config,
-    cells,
+    config: removeUndefinedDeep(config),
+    cells: removeUndefinedDeep(cells),
     updatedAt: serverTimestamp(),
   };
 
