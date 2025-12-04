@@ -9,6 +9,9 @@ import type { TransportProps, TransportData, PanelSize } from "./types";
 import { formatDepartureTime, minutesUntilDeparture } from "./utils";
 import { FiActivity } from "react-icons/fi";
 
+// Loosely typed icon components to avoid react-icons vs local React type incompatibilities
+const ActivityIcon = FiActivity as React.ComponentType<{ className?: string }>;
+
 type TransportTinyProps = TransportProps & {
   transportData: TransportData | null;
   secondaryTransportData?: TransportData | null;
@@ -33,7 +36,7 @@ export function TransportTiny({ appearance, transportData, loading, error, timeF
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-xl opacity-50 animate-pulse" style={{ color: primaryColor }}>
-          <FiActivity />
+          <ActivityIcon />
         </div>
       </div>
     );

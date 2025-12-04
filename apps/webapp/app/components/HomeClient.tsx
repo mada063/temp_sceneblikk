@@ -107,25 +107,31 @@ export function HomeClient() {
         </section>
 
         <section className="grid gap-6 md:grid-cols-3">
-          {quickLinks.map(({ href, label, icon: Icon, description }) => (
-            <Link
-              key={href}
-              href={href}
-              className="group relative overflow-hidden rounded-2xl border border-white/40 bg-white/80 p-6 text-custom-color-900 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl dark:border-white/10 dark:bg-custom-color-800/70 dark:text-white"
-            >
-              <div className="absolute inset-0 -z-10 bg-gradient-to-br from-custom-color-100/40 via-transparent to-custom-color-300/35 opacity-0 transition group-hover:opacity-100 dark:from-custom-color-700/25 dark:to-custom-color-500/35" />
-              <div className="mb-4 inline-flex items-center justify-center rounded-xl bg-custom-color-500/15 p-3 text-custom-color-600 dark:bg-custom-color-400/20 dark:text-custom-color-200">
-                <Icon className="h-6 w-6" aria-hidden />
-              </div>
-              <h3 className="text-lg font-semibold">{label}</h3>
-              <p className="mt-2 text-sm text-custom-color-700/80 dark:text-custom-color-100/75">
-                {description}
-              </p>
-              <span className="mt-4 inline-flex items-center text-xs font-semibold uppercase tracking-[0.22em] text-custom-color-500 dark:text-custom-color-200">
-                {t("home", "explore")}
-              </span>
-            </Link>
-          ))}
+          {quickLinks.map(({ href, label, icon, description }) => {
+            const IconComponent = icon as React.ComponentType<{
+              className?: string;
+              "aria-hidden"?: boolean;
+            }>;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className="group relative overflow-hidden rounded-2xl border border-white/40 bg-white/80 p-6 text-custom-color-900 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl dark:border-white/10 dark:bg-custom-color-800/70 dark:text-white"
+              >
+                <div className="absolute inset-0 -z-10 bg-gradient-to-br from-custom-color-100/40 via-transparent to-custom-color-300/35 opacity-0 transition group-hover:opacity-100 dark:from-custom-color-700/25 dark:to-custom-color-500/35" />
+                <div className="mb-4 inline-flex items-center justify-center rounded-xl bg-custom-color-500/15 p-3 text-custom-color-600 dark:bg-custom-color-400/20 dark:text-custom-color-200">
+                  <IconComponent className="h-6 w-6" aria-hidden />
+                </div>
+                <h3 className="text-lg font-semibold">{label}</h3>
+                <p className="mt-2 text-sm text-custom-color-700/80 dark:text-custom-color-100/75">
+                  {description}
+                </p>
+                <span className="mt-4 inline-flex items-center text-xs font-semibold uppercase tracking-[0.22em] text-custom-color-500 dark:text-custom-color-200">
+                  {t("home", "explore")}
+                </span>
+              </Link>
+            );
+          })}
         </section>
       </div>
     </main>

@@ -13,6 +13,12 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FiArrowLeft, FiMonitor, FiRefreshCw, FiRotateCcw } from "react-icons/fi";
+
+// Loosely typed icon components to avoid react-icons vs local React type incompatibilities
+const ArrowLeftIcon = FiArrowLeft as React.ComponentType<{ className?: string }>;
+const MonitorIcon = FiMonitor as React.ComponentType<{ className?: string }>;
+const RefreshIcon = FiRefreshCw as React.ComponentType<{ className?: string }>;
+const RotateIcon = FiRotateCcw as React.ComponentType<{ className?: string }>;
 import { PLACEHOLDER_MAP } from "../lib/placeholders";
 import {
   DEFAULT_GRID_CONFIG,
@@ -1604,7 +1610,7 @@ export default function EditorPage() {
                 href="/dashboard"
                 className="inline-flex items-center gap-2 rounded-full border border-custom-color-400 px-4 py-2 text-sm font-semibold text-custom-color-600 transition hover:bg-custom-color-200/50 dark:border-custom-color-300/40 dark:text-custom-color-50 dark:hover:bg-custom-color-700/40"
               >
-                <FiArrowLeft className="h-4 w-4" />
+                <ArrowLeftIcon className="h-4 w-4" />
                 {t("common", "back")}
               </Link>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-custom-color-600 dark:text-custom-color-200">
@@ -1624,7 +1630,7 @@ export default function EditorPage() {
               onClick={resetLayout}
               className="inline-flex items-center gap-2 rounded-full border border-custom-color-400 bg-transparent px-4 py-2 text-sm font-semibold text-custom-color-600 transition hover:bg-custom-color-200/40 dark:border-custom-color-300/40 dark:text-custom-color-100 dark:hover:bg-custom-color-700/50"
             >
-              <FiRefreshCw className="h-4 w-4" />
+              <RefreshIcon className="h-4 w-4" />
               {t("editor", "resetLayout")}
             </button>
             <button
@@ -1632,7 +1638,7 @@ export default function EditorPage() {
               onClick={toggleOrientation}
               className="inline-flex items-center gap-2 rounded-full border border-custom-color-400 bg-transparent px-4 py-2 text-sm font-semibold text-custom-color-600 transition hover:bg-custom-color-200/40 dark:border-custom-color-300/40 dark:text-custom-color-100 dark:hover:bg-custom-color-700/50"
             >
-              <FiRotateCcw className="h-4 w-4" />
+              <RotateIcon className="h-4 w-4" />
               {config.orientation === "landscape"
                 ? t("editor", "rotateToPortrait")
                 : t("editor", "rotateToLandscape")}
@@ -1642,7 +1648,7 @@ export default function EditorPage() {
               onClick={takeToPlayer}
               className="inline-flex items-center gap-2 rounded-full bg-custom-color-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:bg-custom-color-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-custom-color-300 dark:bg-custom-color-400 dark:hover:bg-custom-color-300"
             >
-              <FiMonitor className="h-4 w-4" />
+              <MonitorIcon className="h-4 w-4" />
               {t("editor", "viewFullscreen")}
             </button>
           </div>

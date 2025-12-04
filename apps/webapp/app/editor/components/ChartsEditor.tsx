@@ -61,6 +61,10 @@ export function ChartsEditor({ value, onChange }: ChartsEditorProps) {
   const isInternalUpdate = useRef(false);
   const lastSentValueRef = useRef<string>("");
 
+  // Loosely typed icon components to avoid react-icons vs local React type incompatibilities
+  const CloseIcon = FiX as React.ComponentType<{ className?: string }>;
+  const PlusIcon = FiPlus as React.ComponentType<{ className?: string }>;
+
   // Chart types available from dallastek-ui
   const chartTypes = [
     "BarChart",
@@ -495,7 +499,7 @@ export function ChartsEditor({ value, onChange }: ChartsEditorProps) {
                 onClick={() => removeDataPoint(point.id)}
                 className="flex h-10 w-10 items-center justify-center rounded-lg border border-custom-color-300/50 bg-white/80 text-custom-color-600 transition hover:bg-custom-color-100 dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-300 dark:hover:bg-custom-color-700"
               >
-                <FiX className="h-4 w-4" />
+                <CloseIcon className="h-4 w-4" />
               </button>
             )}
           </div>
@@ -505,7 +509,7 @@ export function ChartsEditor({ value, onChange }: ChartsEditorProps) {
           onClick={addDataPoint}
           className="flex w-full items-center justify-center gap-2 rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-600 transition hover:bg-custom-color-100 dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-300 dark:hover:bg-custom-color-700"
         >
-          <FiPlus className="h-4 w-4" />
+          <PlusIcon className="h-4 w-4" />
           <span>Add data point</span>
         </button>
       </div>

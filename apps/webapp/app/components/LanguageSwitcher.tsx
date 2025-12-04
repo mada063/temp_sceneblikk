@@ -24,6 +24,10 @@ export default function LanguageSwitcher() {
   const { locale, setLocale } = useI18n();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const ChevronIcon = FiChevronDown as React.ComponentType<{
+    className?: string;
+    "aria-hidden"?: boolean;
+  }>;
 
   const current = LOCALES.find((item) => item.code === locale) ?? LOCALES[0];
 
@@ -67,7 +71,7 @@ export default function LanguageSwitcher() {
           </span>
           <span>{current.code.toUpperCase()}</span>
         </span>
-        <FiChevronDown
+        <ChevronIcon
           className={`h-3 w-3 transition-transform ${
             open ? "rotate-180" : ""
           }`}

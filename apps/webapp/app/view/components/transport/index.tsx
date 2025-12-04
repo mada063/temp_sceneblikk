@@ -10,6 +10,9 @@ import { fetchTransportData } from "./utils";
 import type { TransportProps, PanelSize, TransportData } from "./types";
 import { FiActivity } from "react-icons/fi";
 
+// Loosely typed icon component to avoid react-icons vs local React type incompatibilities
+const ActivityIcon = FiActivity as React.ComponentType<{ className?: string }>;
+
 export function Transport({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: TransportProps) {
   const {
     transportStopPlace = "62356",
@@ -133,7 +136,7 @@ export function Transport({ appearance, colSpan = 1, rowSpan = 1, totalGridSize 
           className="text-4xl opacity-50 animate-pulse"
           style={{ color: primaryColor }}
         >
-          <FiActivity />
+          <ActivityIcon />
         </div>
       </div>
     );

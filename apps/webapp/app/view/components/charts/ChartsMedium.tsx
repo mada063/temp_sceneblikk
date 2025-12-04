@@ -3,6 +3,9 @@
 import { useState, useMemo } from "react";
 import type { ChartsProps, ChartConfig } from "./types";
 import { FiBarChart2 } from "react-icons/fi";
+
+// Loosely typed icon components to avoid react-icons vs local React type incompatibilities
+const BarChartIcon = FiBarChart2 as React.ComponentType<{ className?: string }>;
 import { BarChart, LineChart, DoughnutChart, RadarChart } from "dallastek-ui";
 
 type ChartsMediumProps = ChartsProps & {
@@ -18,7 +21,7 @@ export function ChartsMedium({ appearance, chartConfig }: ChartsMediumProps) {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center opacity-50" style={{ color: primaryColor }}>
-          <FiBarChart2 className="mx-auto mb-2 h-8 w-8" />
+          <BarChartIcon className="mx-auto mb-2 h-8 w-8" />
           <div className="text-sm">No chart data</div>
         </div>
       </div>

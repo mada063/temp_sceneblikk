@@ -3,6 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { FiCloud, FiWind, FiDroplet } from "react-icons/fi";
 import { getWeatherIcon, type WeatherData, type ForecastItem } from "./utils";
+
+// Loosely typed icon components to avoid react-icons vs local React type incompatibilities
+const CloudIcon = FiCloud as React.ComponentType<{ className?: string }>;
+const WindIcon = FiWind as React.ComponentType<{ className?: string }>;
+const DropletIcon = FiDroplet as React.ComponentType<{ className?: string }>;
 import type { WeatherProps } from "./types";
 import { calculateChartDimensions, calculateDataPointX, calculateDataPointY } from "../../../lib/chart-utils";
 import { calculateTemperatureRange } from "./chart-config";
@@ -17,7 +22,7 @@ type WeatherXLargeProps = WeatherProps & {
 export function WeatherXLarge({ appearance, weatherData, loading, error, locationName, colSpan = 1, rowSpan = 1 }: WeatherXLargeProps) {
   const { showLocationForecast = true, showAirQuality = true, weatherTimeFormat = "24h" } = appearance;
   const primaryColor = appearance.textColor || "#ffffff";
-  const WeatherIcon = weatherData ? getWeatherIcon(weatherData.symbol) : FiCloud;
+  const WeatherIcon = weatherData ? getWeatherIcon(weatherData.symbol) : CloudIcon;
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const dimensionsInitialized = useRef(false);
@@ -272,7 +277,7 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
             className="text-4xl opacity-50 animate-pulse"
             style={{ color: primaryColor }}
           >
-            <FiCloud />
+            <CloudIcon />
           </div>
         </div>
       ) : error ? (

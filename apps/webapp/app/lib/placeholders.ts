@@ -1,4 +1,3 @@
-import { IconType } from "react-icons";
 import {
   FiActivity,
   FiBarChart2,
@@ -17,7 +16,8 @@ export type PlaceholderDefinition = {
   id: string;
   label: string;
   description: string;
-  icon: IconType;
+  // Loosely typed to avoid react-icons vs local React type incompatibilities
+  icon: any;
   // Optional Norwegian variants for labels/descriptions
   labelNb?: string;
   descriptionNb?: string;

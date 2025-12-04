@@ -29,6 +29,11 @@ export function AnnouncementEditor({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Loosely typed icon components to avoid react-icons vs local React type incompatibilities
+  const BoldIcon = FiBold as React.ComponentType<{ className?: string }>;
+  const ItalicIcon = FiItalic as React.ComponentType<{ className?: string }>;
+  const ListIcon = FiList as React.ComponentType<{ className?: string }>;
+
   const insertText = (before: string, after: string = "") => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -185,7 +190,7 @@ export function AnnouncementEditor({
           className="flex items-center justify-center rounded p-1.5 text-custom-color-600 transition hover:bg-custom-color-100 dark:text-custom-color-300 dark:hover:bg-custom-color-700"
           title={t("editor", "richTextBoldTitle")}
         >
-          <FiBold className="h-4 w-4" />
+          <BoldIcon className="h-4 w-4" />
         </button>
         <button
           type="button"
@@ -193,7 +198,7 @@ export function AnnouncementEditor({
           className="flex items-center justify-center rounded p-1.5 text-custom-color-600 transition hover:bg-custom-color-100 dark:text-custom-color-300 dark:hover:bg-custom-color-700"
           title={t("editor", "richTextItalicTitle")}
         >
-          <FiItalic className="h-4 w-4" />
+          <ItalicIcon className="h-4 w-4" />
         </button>
         <button
           type="button"
@@ -201,7 +206,7 @@ export function AnnouncementEditor({
           className="flex items-center justify-center rounded p-1.5 text-custom-color-600 transition hover:bg-custom-color-100 dark:text-custom-color-300 dark:hover:bg-custom-color-700"
           title={t("editor", "richTextListTitle")}
         >
-          <FiList className="h-4 w-4" />
+          <ListIcon className="h-4 w-4" />
         </button>
       </div>
       <textarea

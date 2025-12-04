@@ -8,6 +8,9 @@ import { useMinuteFlipAnimation } from "./useMinuteFlipAnimation";
 import type { TransportProps, TransportData, PanelSize } from "./types";
 import { formatDepartureTime, minutesUntilDeparture } from "./utils";
 import { FiActivity } from "react-icons/fi";
+
+// Loosely typed icon components to avoid react-icons vs local React type incompatibilities
+const ActivityIcon = FiActivity as React.ComponentType<{ className?: string }>;
 import { hexToRgba } from "../calendar/utils";
 
 type TransportSmallProps = TransportProps & {
@@ -36,7 +39,7 @@ export function TransportSmall({ appearance, transportData, loading, error, time
   if (loading || error || !transportData) {
     return (
       <div className="flex h-full items-center justify-center px-3">
-        {loading && <div className="text-2xl opacity-50 animate-pulse" style={{ color: primaryColor }}><FiActivity /></div>}
+        {loading && <div className="text-2xl opacity-50 animate-pulse" style={{ color: primaryColor }}><ActivityIcon /></div>}
         {error && <div className="text-[9px] font-medium text-center" style={{ color: `${primaryColor}CC` }}>{error}</div>}
         {!loading && !error && <div className="text-[9px] font-medium" style={{ color: `${primaryColor}CC` }}>Ingen avganger</div>}
       </div>

@@ -3,6 +3,12 @@
 import { useMemo, useState, type ChangeEvent, type DragEvent } from "react";
 
 import { FiChevronDown, FiSearch, FiSliders, FiMaximize2 } from "react-icons/fi";
+
+// Loosely typed icon components to avoid react-icons vs local React type incompatibilities
+const SlidersIcon = FiSliders as React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+const ChevronDownIcon = FiChevronDown as React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+const MaximizeIcon = FiMaximize2 as React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+const SearchIcon = FiSearch as React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
 import { ColorPicker } from "./ColorPicker";
 
 import {
@@ -69,10 +75,10 @@ export function GridSettingsPanel({
           className="flex w-full items-center justify-between text-sm font-semibold uppercase tracking-[0.22em] text-custom-color-600 transition hover:text-custom-color-500 dark:text-custom-color-200 dark:hover:text-custom-color-100"
         >
           <span className="flex items-center gap-2">
-            <FiSliders className="h-4 w-4" aria-hidden />
+            <SlidersIcon className="h-4 w-4" aria-hidden />
             {t("editor", "gridSettings")}
           </span>
-          <FiChevronDown
+          <ChevronDownIcon
             className={`h-4 w-4 transition-transform ${isSettingsCollapsed ? "" : "rotate-180"}`}
             aria-hidden
           />
@@ -104,7 +110,7 @@ export function GridSettingsPanel({
               className="flex flex-1 items-center justify-between text-xs font-semibold uppercase tracking-[0.22em] text-custom-color-600 transition hover:text-custom-color-500 dark:text-custom-color-200 dark:hover:text-custom-color-100"
             >
               <span>{t("editor", "componentLibraryLabel")}</span>
-              <FiChevronDown
+              <ChevronDownIcon
                 className={`h-4 w-4 transition-transform ${isLibraryCollapsed ? "" : "rotate-180"}`}
                 aria-hidden
               />
@@ -117,7 +123,7 @@ export function GridSettingsPanel({
                 aria-label={t("editor", "detachComponentLibrary")}
                 title={t("editor", "detachComponentLibrary")}
               >
-                <FiMaximize2 className="h-4 w-4" />
+                <MaximizeIcon className="h-4 w-4" />
               </button>
             )}
           </div>
@@ -253,7 +259,7 @@ function GridSettingsContent({
           className="flex w-full items-center justify-between px-4 py-3 text-xs font-semibold uppercase tracking-[0.22em] text-custom-color-600 transition hover:text-custom-color-500 dark:text-custom-color-200 dark:hover:text-custom-color-100"
         >
           <span>{t("editor", "gridSummaryLabel")}</span>
-          <FiChevronDown
+          <ChevronDownIcon
             className={`h-4 w-4 transition-transform ${summaryCollapsed ? "" : "rotate-180"}`}
             aria-hidden
           />
@@ -311,7 +317,7 @@ function ComponentLibrary({ onDragStartPalette }: ComponentLibraryProps) {
     <div className="flex h-full flex-col overflow-hidden">
       <div className="border-b border-custom-color-100/70 px-6 py-3 dark:border-white/10">
         <div className="relative">
-          <FiSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-custom-color-800 dark:text-custom-color-50" />
+          <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-custom-color-800 dark:text-custom-color-50" />
           <input
             type="search"
             placeholder={t("editor", "searchComponentsPlaceholder")}
@@ -349,7 +355,7 @@ function ComponentLibrary({ onDragStartPalette }: ComponentLibraryProps) {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <FiSearch className="mb-3 h-8 w-8 text-custom-color-800 dark:text-custom-color-50" />
+            <SearchIcon className="mb-3 h-8 w-8 text-custom-color-800 dark:text-custom-color-50" />
             <p className="text-sm font-semibold text-custom-color-800 dark:text-custom-color-50">
               No components found
             </p>

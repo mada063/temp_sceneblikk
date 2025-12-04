@@ -62,7 +62,8 @@ type CanvasPreviewProps = {
   drawBounds: DrawSelectionBounds | null;
   selectedCells: string[];
   selectionCount: number;
-  gridRef: RefObject<HTMLDivElement | null>;
+  // RefObject<T> already has current: T | null, so we don't include null in T here
+  gridRef: RefObject<HTMLDivElement>;
   onCanvasClick: () => void;
   onSelectCell: (key: string, options?: { multi?: boolean }) => void;
   onStartDraw: (
@@ -88,6 +89,10 @@ type CanvasPreviewProps = {
   onRemoveConnection: (key: string) => void;
   cells: Record<string, GridCell>;
 };
+
+// Loosely typed icon components to avoid react-icons vs local React type incompatibilities
+const TrashIcon = FiTrash2 as React.ComponentType<{ className?: string }>;
+const PlusIcon = FiPlus as React.ComponentType<{ className?: string }>;
 
 export function CanvasPreview({
   canvasTitle,
@@ -629,6 +634,10 @@ export function CanvasPreview({
 
               let content: ReactNode;
               if (placeholder) {
+                const PlaceholderIcon = placeholder.icon as React.ComponentType<{
+                  className?: string;
+                  style?: CSSProperties;
+                }>;
                 content = (
                   <div
                     draggable
@@ -636,7 +645,7 @@ export function CanvasPreview({
                     className="flex h-full w-full cursor-grab flex-col items-center justify-center gap-3 rounded-xl bg-transparent p-3 transition active:cursor-grabbing"
                     style={{ color: textColor }}
                   >
-                    <placeholder.icon className="h-8 w-8" style={{ color: textColor }} />
+                    <PlaceholderIcon className="h-8 w-8" style={{ color: textColor }} />
                     <span
                       className="text-xs font-semibold uppercase tracking-[0.18em]"
                       style={{ color: textColor }}
@@ -752,7 +761,7 @@ export function CanvasPreview({
                         className="absolute left-2 top-2 z-10 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] opacity-0 transition group-hover:opacity-100"
         
                       >
-                        <FiTrash2 className="h-3 w-3" />
+                        <TrashIcon className="h-3 w-3" />
                       </button>
                       {isFreeform && isHovered && !connectionState && borderPosition ? (
                         <button
@@ -773,12 +782,12 @@ export function CanvasPreview({
                             left: `${borderPosition.cellX}px`,
                             top: `${borderPosition.cellY}px`,
                           }}
-                        >
-                          {isNearConnection ? (
-                            <span className="text-lg leading-none">×</span>
-                          ) : (
-                            <FiPlus className="h-4 w-4" />
-                          )}
+                          >
+                            {isNearConnection ? (
+                              <span className="text-lg leading-none">×</span>
+                            ) : (
+                              <PlusIcon className="h-4 w-4" />
+                            )}
                         </button>
                       ) : null}
                       <button

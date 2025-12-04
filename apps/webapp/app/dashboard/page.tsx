@@ -175,6 +175,16 @@ export default function DashboardPage() {
     ];
   }, [devices, activeDevices]);
 
+  // Loosely typed icon components to avoid react-icons vs local React type incompatibilities
+  const ArrowLeftIcon = FiArrowLeft as React.ComponentType<{ className?: string }>;
+  const PlusCircleIcon = FiPlusCircle as React.ComponentType<{ className?: string }>;
+  const MonitorIcon = FiMonitor as React.ComponentType<{ className?: string }>;
+  const LayersIcon = FiLayers as React.ComponentType<{ className?: string }>;
+  const ClockIcon = FiClock as React.ComponentType<{ className?: string }>;
+  const ActivityIcon = FiActivity as React.ComponentType<{ className?: string }>;
+  const GlobeIcon = FiGlobe as React.ComponentType<{ className?: string }>;
+  const EyeIcon = FiEye as React.ComponentType<{ className?: string }>;
+
   return (
     <div className="min-h-screen bg-custom-color-100 text-black transition-colors duration-300 dark:bg-custom-color-900 dark:text-white">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-12 px-6 pb-20 pt-16 sm:px-10 lg:px-16">
@@ -185,7 +195,7 @@ export default function DashboardPage() {
                 href="/"
                 className="inline-flex items-center gap-2 rounded-full border border-custom-color-400 px-4 py-2 text-sm font-semibold text-custom-color-600 transition hover:bg-custom-color-200/50 dark:border-custom-color-300/40 dark:text-custom-color-50 dark:hover:bg-custom-color-700/40"
               >
-                <FiArrowLeft className="h-4 w-4" />
+                <ArrowLeftIcon className="h-4 w-4" />
                 {t("common", "back")}
               </Link>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-custom-color-600 dark:text-custom-color-200">
@@ -205,7 +215,7 @@ export default function DashboardPage() {
               href="/editor"
               className="inline-flex items-center gap-2 rounded-full bg-custom-color-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:bg-custom-color-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-custom-color-300 dark:bg-custom-color-400 dark:hover:bg-custom-color-300"
             >
-              <FiPlusCircle className="h-4 w-4" />
+              <PlusCircleIcon className="h-4 w-4" />
               {t("dashboard", "createLayout")}
             </Link>
           </div>
@@ -217,19 +227,19 @@ export default function DashboardPage() {
               <h2 className="text-lg font-semibold text-custom-color-800 dark:text-custom-color-100">
                 Active views
               </h2>
-              <button
-                type="button"
-                onClick={() => {
-                  // Reports functionality - placeholder for now
-                  alert(
-                    "Reports feature coming soon! This will show detailed analytics and engagement metrics.",
-                  );
-                }}
-                className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-custom-color-700 transition hover:border-white/40 hover:bg-white/20 dark:text-custom-color-100"
-              >
-                <FiEye className="h-3.5 w-3.5" />
-                {t("dashboard", "viewReports")}
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // Reports functionality - placeholder for now
+                      alert(
+                        "Reports feature coming soon! This will show detailed analytics and engagement metrics.",
+                      );
+                    }}
+                    className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-custom-color-700 transition hover:border-white/40 hover:bg-white/20 dark:text-custom-color-100"
+                  >
+                    <EyeIcon className="h-3.5 w-3.5" />
+                    {t("dashboard", "viewReports")}
+                  </button>
             </div>
 
             <div className="mt-6 grid gap-4">
@@ -256,12 +266,12 @@ export default function DashboardPage() {
                         <span
                           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-semibold uppercase tracking-[0.2em] ${statusStyles[device.effectiveStatus] || statusStyles.offline}`}
                         >
-                          <FiMonitor className="h-3 w-3" />
+                          <MonitorIcon className="h-3 w-3" />
                           {getStatusLabel(device.effectiveStatus)}
                         </span>
                         {device.layoutName && (
                           <span className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2.5 py-1 text-custom-color-700 dark:bg-custom-color-700/60 dark:text-custom-color-100/80">
-                            <FiLayers className="h-3 w-3" />
+                            <LayersIcon className="h-3 w-3" />
                             {device.layoutName}
                           </span>
                         )}
@@ -299,7 +309,7 @@ export default function DashboardPage() {
                       {edit.title}
                     </p>
                     <span className="flex items-center gap-1 text-[11px] uppercase tracking-[0.18em] text-custom-color-700/70 dark:text-custom-color-100/70">
-                      <FiClock className="h-3 w-3" />
+                      <ClockIcon className="h-3 w-3" />
                       {edit.timestamp}
                     </span>
                   </div>
@@ -314,7 +324,7 @@ export default function DashboardPage() {
               onClick={() => setShowChangelog(true)}
               className="mt-6 inline-flex items-center gap-2 rounded-full border border-custom-color-400 px-4 py-2 text-sm font-semibold text-custom-color-600 transition hover:bg-custom-color-200/50 dark:border-custom-color-300/40 dark:text-custom-color-50 dark:hover:bg-custom-color-700/40"
             >
-              <FiActivity className="h-4 w-4" />
+              <ActivityIcon className="h-4 w-4" />
               Review change log
             </button>
           </div>
@@ -356,7 +366,7 @@ export default function DashboardPage() {
                 </button>
               </div>
               <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-custom-color-700 dark:bg-custom-color-800/70 dark:text-custom-color-100">
-                <FiGlobe className="h-3.5 w-3.5" />
+                <GlobeIcon className="h-3.5 w-3.5" />
                 Live sync
               </span>
             </div>
@@ -555,8 +565,8 @@ export default function DashboardPage() {
                       <p className="text-sm font-semibold text-custom-color-900 dark:text-white">
                         {edit.title}
                       </p>
-                      <span className="flex items-center gap-1 text-[11px] uppercase tracking-[0.18em] text-custom-color-700/70 dark:text-custom-color-100/70">
-                        <FiClock className="h-3 w-3" />
+                    <span className="flex items-center gap-1 text-[11px] uppercase tracking-[0.18em] text-custom-color-700/70 dark:text-custom-color-100/70">
+                      <ClockIcon className="h-3 w-3" />
                         {edit.timestamp}
                       </span>
                     </div>

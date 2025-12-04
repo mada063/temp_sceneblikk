@@ -1,7 +1,6 @@
 "use client";
 
 import type { ReactElement } from "react";
-import type { IconType } from "react-icons";
 import {
   RiBusFill,
   RiPlaneFill,
@@ -10,7 +9,8 @@ import {
   RiTrainFill,
 } from "react-icons/ri";
 
-const ICON_MAP: Record<string, IconType> = {
+// Loosely typed to avoid react-icons vs local React type incompatibilities
+const ICON_MAP: Record<string, any> = {
   airplane: RiPlaneFill,
   air: RiPlaneFill,
   flight: RiPlaneFill,
@@ -47,7 +47,8 @@ type TransportBadgeProps = {
   size?: BadgeSizeVariant;
 };
 
-function getTransportIcon(mode?: string): IconType {
+// Return type loosened to avoid react-icons vs local React type incompatibilities
+function getTransportIcon(mode?: string): any {
   const normalized = mode?.toLowerCase() ?? "";
   return ICON_MAP[normalized] ?? RiBusFill;
 }

@@ -4,6 +4,9 @@ import type { ChangeEvent } from "react";
 
 import { FiTrash2 } from "react-icons/fi";
 
+// Loosely typed icon components to avoid react-icons vs local React type incompatibilities
+const TrashIcon = FiTrash2 as React.ComponentType<{ className?: string }>;
+
 import { PLACEHOLDER_MAP } from "../../lib/placeholders";
 import type { PanelEntry } from "../../lib/layout-types";
 import { useI18n } from "../../lib/i18n";
@@ -137,7 +140,7 @@ export function PanelPlaybackPanel({
                       : "bg-black/30 text-white hover:bg-black/50 dark:bg-black/50 dark:hover:bg-black/70"
                   }`}
                 >
-                  <FiTrash2 className="h-3 w-3" />
+                  <TrashIcon className="h-3 w-3" />
                   {t("editor", "panelPlaybackRemove")}
                 </button>
               </div>

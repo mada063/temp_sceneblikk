@@ -3,6 +3,10 @@
 import { useState, useEffect, useRef, type ChangeEvent } from "react";
 
 import { FiTrash2, FiSearch } from "react-icons/fi";
+
+// Loosely typed icon components to avoid react-icons vs local React type incompatibilities
+const SearchIcon = FiSearch as React.ComponentType<{ className?: string }>;
+const TrashIcon = FiTrash2 as React.ComponentType<{ className?: string }>;
 import timezones from "../../lib/timezones.json";
 // @ts-ignore - JSON import
 import weatherLocations from "../../lib/weather-locations.json";
@@ -202,7 +206,7 @@ function StopPlaceSelector({
               : "text-custom-color-800 dark:text-custom-color-50"
           }`}
         />
-        <FiSearch className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-custom-color-400 dark:text-custom-color-500" />
+        <SearchIcon className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-custom-color-400 dark:text-custom-color-500" />
       </div>
       
       {showDropdown && (searchResults.length > 0 || isSearching) && (
@@ -379,7 +383,7 @@ function WeatherLocationSelector({
               : "text-custom-color-800 dark:text-custom-color-50"
           }`}
         />
-        <FiSearch className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-custom-color-400 dark:text-custom-color-500" />
+        <SearchIcon className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-custom-color-400 dark:text-custom-color-500" />
       </div>
       
       {showDropdown && (searchResults.length > 0 || isSearching) && (
@@ -1974,7 +1978,7 @@ export function SelectedComponentPanel({
             disabled={!hasSelection}
             className="inline-flex items-center gap-2 rounded-full border border-custom-color-400 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-custom-color-600 transition hover:bg-custom-color-200/40 disabled:cursor-not-allowed disabled:opacity-60 dark:border-custom-color-300/40 dark:text-custom-color-100 dark:hover:bg-custom-color-700/50"
           >
-            <FiTrash2 className="h-3.5 w-3.5" />
+            <TrashIcon className="h-3.5 w-3.5" />
             {selectionCount > 1
               ? t("editor", "removeMultiple")
               : t("editor", "removeSingle")}

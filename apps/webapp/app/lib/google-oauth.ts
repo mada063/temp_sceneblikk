@@ -59,11 +59,12 @@ export async function handleOAuthCallback(code: string): Promise<void> {
   const { tokens } = await client.getToken(code);
 
   await persistTokens({
-    access_token: tokens.access_token,
-    refresh_token: tokens.refresh_token,
-    scope: tokens.scope,
-    token_type: tokens.token_type,
-    expiry_date: tokens.expiry_date,
+    // Normalize possible null values from Google to undefined so they fit StoredTokens
+    access_token: tokens.access_token ?? undefined,
+    refresh_token: tokens.refresh_token ?? undefined,
+    scope: tokens.scope ?? undefined,
+    token_type: tokens.token_type ?? undefined,
+    expiry_date: tokens.expiry_date ?? undefined,
   });
 }
 
@@ -82,9 +83,9 @@ export async function getAuthorizedOAuthClient() {
   client.on("tokens", async (newTokens) => {
     // Persist refreshed tokens (especially new expiry_date / access_token)
     await persistTokens({
-      access_token: newTokens.access_token,
+      access_token: newTokens.access_token ?? tokens.access_token,
       refresh_token: newTokens.refresh_token ?? tokens.refresh_token,
-      expiry_date: newTokens.expiry_date,
+      expiry_date: newTokens.expiry_date ?? tokens.expiry_date,
       scope: newTokens.scope ?? tokens.scope,
       token_type: newTokens.token_type ?? tokens.token_type,
     }).catch(() => {

@@ -5,6 +5,14 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../lib/auth-context";
 import { FiMail, FiLock, FiLogIn, FiUserPlus, FiUser } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
+
+// Loosely typed icon components to avoid react-icons vs local React type incompatibilities
+const MailIcon = FiMail as React.ComponentType<{ className?: string }>;
+const UserIcon = FiUser as React.ComponentType<{ className?: string }>;
+const LockIcon = FiLock as React.ComponentType<{ className?: string }>;
+const LogInIcon = FiLogIn as React.ComponentType<{ className?: string }>;
+const UserPlusIcon = FiUserPlus as React.ComponentType<{ className?: string }>;
+const GoogleIcon = FcGoogle as React.ComponentType<{ className?: string }>;
 import { useI18n } from "../lib/i18n";
 
 export default function LoginPage() {
@@ -95,7 +103,7 @@ export default function LoginPage() {
                 {t("login", "emailLabel")}
               </label>
               <div className="relative">
-                <FiMail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-custom-color-500 dark:text-custom-color-300" />
+                <MailIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-custom-color-500 dark:text-custom-color-300" />
                 <input
                   id="email"
                   type="email"
@@ -117,7 +125,7 @@ export default function LoginPage() {
                   {t("login", "nameLabel")}
                 </label>
                 <div className="relative">
-                  <FiUser className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-custom-color-500 dark:text-custom-color-300" />
+                  <UserIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-custom-color-500 dark:text-custom-color-300" />
                   <input
                     id="displayName"
                     type="text"
@@ -138,7 +146,7 @@ export default function LoginPage() {
                 {t("login", "passwordLabel")}
               </label>
               <div className="relative">
-                <FiLock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-custom-color-500 dark:text-custom-color-300" />
+                <LockIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-custom-color-500 dark:text-custom-color-300" />
                 <input
                   id="password"
                   type="password"
@@ -161,12 +169,12 @@ export default function LoginPage() {
                 t("login", "primaryLoading")
               ) : isSignUp ? (
                 <>
-                  <FiUserPlus className="mr-2 inline h-4 w-4" />
+                  <UserPlusIcon className="mr-2 inline h-4 w-4" />
                   {t("login", "primarySignUp")}
                 </>
               ) : (
                 <>
-                  <FiLogIn className="mr-2 inline h-4 w-4" />
+                  <LogInIcon className="mr-2 inline h-4 w-4" />
                   {t("login", "primarySignIn")}
                 </>
               )}
@@ -191,7 +199,7 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full rounded-full border border-white/20 bg-white/50 px-5 py-3 text-sm font-semibold text-custom-color-900 transition hover:bg-white/80 hover:shadow-md disabled:opacity-50 dark:border-white/10 dark:bg-custom-color-800/50 dark:text-white dark:hover:bg-custom-color-800/70"
             >
-              <FcGoogle className="mr-2 inline h-5 w-5" />
+              <GoogleIcon className="mr-2 inline h-5 w-5" />
               {t("login", "signInWithGoogle")}
             </button>
 

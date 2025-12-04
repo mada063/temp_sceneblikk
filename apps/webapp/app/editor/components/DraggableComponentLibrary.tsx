@@ -52,6 +52,11 @@ export function DraggableComponentLibrary({
   const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Loosely typed icon components to avoid react-icons vs local React type incompatibilities
+  const MoreHorizontalIcon = FiMoreHorizontal as React.ComponentType<{ className?: string }>;
+  const CloseIcon = FiX as React.ComponentType<{ className?: string }>;
+  const SearchIcon = FiSearch as React.ComponentType<{ className?: string }>;
+
   // Save position to localStorage whenever it changes
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -147,7 +152,7 @@ export function DraggableComponentLibrary({
       {/* Header with drag handle */}
       <div className="flex items-center justify-between border-b border-custom-color-100/70 px-6 py-4 dark:border-white/10">
         <div className="flex items-center gap-2 mr-2">
-            <FiMoreHorizontal className="h-4 w-4" />
+          <MoreHorizontalIcon className="h-4 w-4" />
         </div>
         <h3 className="text-xs font-semibold uppercase tracking-[0.22em] text-custom-color-600 dark:text-custom-color-200">
           {t("editor", "componentLibraryLabel")}
@@ -159,7 +164,7 @@ export function DraggableComponentLibrary({
             className="ml-auto rounded-lg p-1.5 text-custom-color-600 transition hover:bg-custom-color-200/50 hover:text-custom-color-800 dark:text-custom-color-200 dark:hover:bg-custom-color-700/50 dark:hover:text-custom-color-100"
             aria-label={t("editor", "detachComponentLibrary")}
           >
-            <FiX className="h-4 w-4" />
+            <CloseIcon className="h-4 w-4" />
           </button>
         )}
       </div>
@@ -167,7 +172,7 @@ export function DraggableComponentLibrary({
       {/* Search */}
       <div className="border-b border-custom-color-100/70 px-6 py-3 dark:border-white/10">
         <div className="relative">
-          <FiSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-custom-color-800 dark:text-custom-color-50" />
+          <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-custom-color-800 dark:text-custom-color-50" />
           <input
             type="search"
             placeholder={t("editor", "searchComponentsPlaceholder")}
@@ -182,32 +187,36 @@ export function DraggableComponentLibrary({
       <div className="flex-1 overflow-y-auto px-6 pb-6 pt-4 custom-scrollbar">
         {filteredComponents.length > 0 ? (
           <div className="grid gap-3">
-            {filteredComponents.map((component) => (
-              <div
-                key={component.id}
-                draggable
-                onDragStart={onDragStartPalette(component.id)}
-                className="group flex cursor-grab items-start gap-3 rounded-xl border border-custom-color-300/60 bg-white/85 p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-custom-color-400/70 hover:shadow-lg active:cursor-grabbing dark:border-white/10 dark:bg-custom-color-800/70"
-              >
-                <component.icon className="mt-1 h-5 w-5 text-custom-color-600 dark:text-custom-color-200" />
-                <div>
-                  <p className="text-sm font-semibold text-custom-color-900 dark:text-custom-color-100">
-                    {locale === "nb" && component.labelNb
-                      ? component.labelNb
-                      : component.label}
-                  </p>
-                  <p className="text-xs text-custom-color-700/80 dark:text-custom-color-100/60">
-                    {locale === "nb" && component.descriptionNb
-                      ? component.descriptionNb
-                      : component.description}
-                  </p>
+            {filteredComponents.map((component) => {
+              const PlaceholderIcon = component.icon as React.ComponentType<{ className?: string }>;
+
+              return (
+                <div
+                  key={component.id}
+                  draggable
+                  onDragStart={onDragStartPalette(component.id)}
+                  className="group flex cursor-grab items-start gap-3 rounded-xl border border-custom-color-300/60 bg-white/85 p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-custom-color-400/70 hover:shadow-lg active:cursor-grabbing dark:border-white/10 dark:bg-custom-color-800/70"
+                >
+                  <PlaceholderIcon className="mt-1 h-5 w-5 text-custom-color-600 dark:text-custom-color-200" />
+                  <div>
+                    <p className="text-sm font-semibold text-custom-color-900 dark:text-custom-color-100">
+                      {locale === "nb" && component.labelNb
+                        ? component.labelNb
+                        : component.label}
+                    </p>
+                    <p className="text-xs text-custom-color-700/80 dark:text-custom-color-100/60">
+                      {locale === "nb" && component.descriptionNb
+                        ? component.descriptionNb
+                        : component.description}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <FiSearch className="mb-3 h-8 w-8 text-custom-color-800 dark:text-custom-color-50" />
+            <SearchIcon className="mb-3 h-8 w-8 text-custom-color-800 dark:text-custom-color-50" />
             <p className="text-sm font-semibold text-custom-color-800 dark:text-custom-color-50">
               {t("editor", "noComponentsFoundTitle")}
             </p>

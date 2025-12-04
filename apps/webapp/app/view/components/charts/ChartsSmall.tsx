@@ -3,6 +3,9 @@
 import { useState } from "react";
 import type { ChartsProps, ChartConfig } from "./types";
 import { FiBarChart2 } from "react-icons/fi";
+
+// Loosely typed icon components to avoid react-icons vs local React type incompatibilities
+const BarChartIcon = FiBarChart2 as React.ComponentType<{ className?: string }>;
 import { BarChart, LineChart, DoughnutChart, RadarChart } from "dallastek-ui";
 
 type ChartsSmallProps = ChartsProps & {
@@ -18,7 +21,7 @@ export function ChartsSmall({ appearance, chartConfig }: ChartsSmallProps) {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center opacity-50" style={{ color: primaryColor }}>
-          <FiBarChart2 className="mx-auto mb-1 h-6 w-6" />
+          <BarChartIcon className="mx-auto mb-1 h-6 w-6" />
           <div className="text-xs">No chart data</div>
         </div>
       </div>

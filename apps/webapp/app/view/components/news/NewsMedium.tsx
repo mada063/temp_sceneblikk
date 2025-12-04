@@ -2,6 +2,9 @@
 
 import { useRef, useState, useEffect } from "react";
 import { FiActivity } from "react-icons/fi";
+
+// Loosely typed icon components to avoid react-icons vs local React type incompatibilities
+const ActivityIcon = FiActivity as React.ComponentType<{ className?: string }>;
 import type { NewsProps, NewsFeed, NewsItem, PanelSize } from "./types";
 
 type NewsMediumProps = NewsProps & {
@@ -51,7 +54,7 @@ export function NewsMedium({ appearance, newsData, loading, error, scrollSpeed =
           className="text-4xl opacity-50 animate-pulse"
           style={{ color: primaryColor }}
         >
-          <FiActivity />
+          <ActivityIcon />
         </div>
       </div>
     );

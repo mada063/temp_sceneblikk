@@ -1,7 +1,11 @@
-"use client";
+ "use client";
 
 import { useState, useEffect } from "react";
 import { FiSave, FiFolder, FiTrash2, FiPlus } from "react-icons/fi";
+
+// Loosely typed icon components to avoid react-icons vs local React type incompatibilities
+const SaveIcon = FiSave as React.ComponentType<{ className?: string }>;
+const TrashIcon = FiTrash2 as React.ComponentType<{ className?: string }>;
 import { useAuth } from "../../lib/auth-context";
 import { getUserLayouts, saveLayout, deleteLayout, type SavedLayout } from "../../lib/firestore";
 import type { GridConfig, GridCell } from "../../lib/layout-types";
@@ -103,7 +107,7 @@ export function LayoutSelector({
           }}
           className="inline-flex items-center gap-1.5 rounded-full bg-custom-color-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-custom-color-400 dark:bg-custom-color-400 dark:hover:bg-custom-color-300"
         >
-          <FiSave className="h-3.5 w-3.5" />
+          <SaveIcon className="h-3.5 w-3.5" />
           {t("editor", "saveButtonLabel")}
         </button>
       </div>
@@ -177,7 +181,7 @@ export function LayoutSelector({
                 onClick={() => handleDelete(layout.id)}
                 className="ml-2 rounded p-1 text-custom-color-600 opacity-0 transition hover:bg-rose-500/20 hover:text-rose-600 group-hover:opacity-100 dark:text-custom-color-300 dark:hover:text-rose-400"
               >
-                <FiTrash2 className="h-3.5 w-3.5" />
+                <TrashIcon className="h-3.5 w-3.5" />
               </button>
             </div>
           ))}

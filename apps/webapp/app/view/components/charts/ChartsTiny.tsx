@@ -3,6 +3,9 @@
 import type { ChartsProps, ChartConfig } from "./types";
 import { FiBarChart2 } from "react-icons/fi";
 
+// Loosely typed icon components to avoid react-icons vs local React type incompatibilities
+const BarChartIcon = FiBarChart2 as React.ComponentType<{ className?: string }>;
+
 type ChartsTinyProps = ChartsProps & {
   chartConfig: ChartConfig | null;
 };
@@ -14,7 +17,7 @@ export function ChartsTiny({ appearance, chartConfig }: ChartsTinyProps) {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-xs opacity-50" style={{ color: primaryColor }}>
-          <FiBarChart2 className="h-4 w-4" />
+          <BarChartIcon className="h-4 w-4" />
         </div>
       </div>
     );

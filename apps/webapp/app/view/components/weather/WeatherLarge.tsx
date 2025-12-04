@@ -3,6 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { FiCloud, FiWind, FiDroplet } from "react-icons/fi";
 import { getWeatherIcon, type WeatherData, type ForecastItem } from "./utils";
+
+// Loosely typed icon components to avoid react-icons vs local React type incompatibilities
+const CloudIcon = FiCloud as React.ComponentType<{ className?: string }>;
+const WindIcon = FiWind as React.ComponentType<{ className?: string }>;
+const DropletIcon = FiDroplet as React.ComponentType<{ className?: string }>;
 import type { WeatherProps } from "./types";
 import { calculateChartDimensions, calculateDataPointX, calculateDataPointY } from "../../../lib/chart-utils";
 import { calculateTemperatureRange } from "./chart-config";
@@ -17,7 +22,7 @@ type WeatherLargeProps = WeatherProps & {
 export function WeatherLarge({ appearance, weatherData, loading, error, locationName, colSpan = 1, rowSpan = 1 }: WeatherLargeProps) {
   const { showLocationForecast = true, weatherTimeFormat = "24h" } = appearance;
   const primaryColor = appearance.textColor || "#ffffff";
-  const WeatherIcon = weatherData ? getWeatherIcon(weatherData.symbol) : FiCloud;
+  const WeatherIcon = weatherData ? getWeatherIcon(weatherData.symbol) : CloudIcon;
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const dimensionsInitialized = useRef(false);
@@ -271,7 +276,7 @@ export function WeatherLarge({ appearance, weatherData, loading, error, location
             className="text-4xl opacity-50 animate-pulse"
             style={{ color: primaryColor }}
           >
-            <FiCloud />
+            <CloudIcon />
           </div>
         </div>
       ) : error ? (
@@ -305,9 +310,9 @@ export function WeatherLarge({ appearance, weatherData, loading, error, location
               >
                 {weatherData.temperature}°
               </div>
-              <div className="flex items-center gap-3 text-[9px] animate-fade-in" style={{ color: `${primaryColor}CC`, animationDelay: '0.5s', animationFillMode: 'both' }}>
-                <span><FiWind className="inline h-2.5 w-2.5" /> {weatherData.windSpeed} m/s</span>
-                <span><FiDroplet className="inline h-2.5 w-2.5" /> {weatherData.humidity}%</span>
+            <div className="flex items-center gap-3 text-[9px] animate-fade-in" style={{ color: `${primaryColor}CC`, animationDelay: '0.5s', animationFillMode: 'both' }}>
+                <span><WindIcon className="inline h-2.5 w-2.5" /> {weatherData.windSpeed} m/s</span>
+                <span><DropletIcon className="inline h-2.5 w-2.5" /> {weatherData.humidity}%</span>
               </div>
             </div>
           </div>

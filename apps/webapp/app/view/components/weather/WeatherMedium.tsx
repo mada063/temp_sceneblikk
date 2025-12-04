@@ -2,6 +2,11 @@
 
 import { FiCloud, FiWind, FiDroplet } from "react-icons/fi";
 import { getWeatherIcon, type WeatherData, type ForecastItem } from "./utils";
+
+// Loosely typed icon components to avoid react-icons vs local React type incompatibilities
+const CloudIcon = FiCloud as React.ComponentType<{ className?: string }>;
+const WindIcon = FiWind as React.ComponentType<{ className?: string }>;
+const DropletIcon = FiDroplet as React.ComponentType<{ className?: string }>;
 import type { WeatherProps } from "./types";
 
 type WeatherMediumProps = WeatherProps & {
@@ -14,7 +19,7 @@ type WeatherMediumProps = WeatherProps & {
 export function WeatherMedium({ appearance, weatherData, loading, error, locationName }: WeatherMediumProps) {
   const { showLocationForecast = true } = appearance;
   const primaryColor = appearance.textColor || "#ffffff";
-  const WeatherIcon = weatherData ? getWeatherIcon(weatherData.symbol) : FiCloud;
+  const WeatherIcon = weatherData ? getWeatherIcon(weatherData.symbol) : CloudIcon;
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-4 text-center">
@@ -23,7 +28,7 @@ export function WeatherMedium({ appearance, weatherData, loading, error, locatio
           className="text-4xl opacity-50 animate-pulse"
           style={{ color: primaryColor }}
         >
-          <FiCloud />
+          <CloudIcon />
         </div>
       ) : error ? (
         <div
@@ -57,14 +62,14 @@ export function WeatherMedium({ appearance, weatherData, loading, error, locatio
               className="flex items-center gap-1.5 animate-fade-in"
               style={{ color: `${primaryColor}CC`, animationDelay: '0.5s', animationFillMode: 'both' }}
             >
-              <FiWind className="h-3.5 w-3.5" />
+              <WindIcon className="h-3.5 w-3.5" />
               <span>{weatherData.windSpeed} m/s</span>
             </div>
             <div
               className="flex items-center gap-1.5 animate-fade-in"
               style={{ color: `${primaryColor}CC`, animationDelay: '0.6s', animationFillMode: 'both' }}
             >
-              <FiDroplet className="h-3.5 w-3.5" />
+              <DropletIcon className="h-3.5 w-3.5" />
               <span>{weatherData.humidity}%</span>
             </div>
           </div>
