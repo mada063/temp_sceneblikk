@@ -35,7 +35,7 @@ export default function Header() {
           <LanguageSwitcher />
           <div className="flex items-center gap-2">
             <Button2 href="/stotte">{t('header', 'support')}</Button2>
-            <Button href="http://app.sceneblikk.no/login">{t('header', 'login')}</Button>
+            <Button href="https://app.sceneblikk.no/login">{t('header', 'login')}</Button>
           </div>
         </div>
       </div>

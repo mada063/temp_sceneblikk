@@ -312,8 +312,8 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
                 {weatherData.temperature}°
               </div>
               <div className="flex items-center gap-4 text-[10px] animate-fade-in" style={{ color: `${primaryColor}CC`, animationDelay: '0.5s', animationFillMode: 'both' }}>
-                <span><FiWind className="inline h-3 w-3" /> {weatherData.windSpeed} m/s</span>
-                <span><FiDroplet className="inline h-3 w-3" /> {weatherData.humidity}%</span>
+                <span><WindIcon className="inline h-3 w-3" /> {weatherData.windSpeed} m/s</span>
+                <span><DropletIcon className="inline h-3 w-3" /> {weatherData.humidity}%</span>
                 {showAirQuality && weatherData.airQuality && (
                   <span>AQI: {weatherData.airQuality.aqi}</span>
                 )}

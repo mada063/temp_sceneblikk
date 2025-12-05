@@ -60,7 +60,7 @@ const Footer = () => {
           <Link href="/kom-i-gang" className="text-custom-color-800 hover:text-white hover:underline transition dark:text-white">
             {getStartedLabel}
           </Link>
-          <Link href="/login" className="text-custom-color-800 hover:text-white hover:underline transition dark:text-white">
+          <Link href="https://app.sceneblikk.no/login" className="text-custom-color-800 hover:text-white hover:underline transition dark:text-white">
             {loginLabel}
           </Link>
         </div>
