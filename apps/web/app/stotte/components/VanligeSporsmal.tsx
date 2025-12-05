@@ -126,3 +126,5 @@ const FAQItem = ({ faq, isOpen, onClick, index }: FAQItemProps) => {
 
 export default VanligeSporsmal;
 
+
+

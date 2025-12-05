@@ -17,3 +17,5 @@ const KomIGangLanding = () => {
 
 export default KomIGangLanding;
 
+
+

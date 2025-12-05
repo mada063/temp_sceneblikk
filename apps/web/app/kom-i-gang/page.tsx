@@ -11,3 +11,5 @@ export default function KomIGang() {
   return <KomIGangLanding />;
 }
 
+
+

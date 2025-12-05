@@ -11,3 +11,5 @@ export default function CookiesPage() {
   return <CookiesClient />;
 }
 
+
+

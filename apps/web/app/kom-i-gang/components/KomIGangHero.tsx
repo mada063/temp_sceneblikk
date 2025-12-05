@@ -45,3 +45,5 @@ const KomIGangHero = () => {
 
 export default KomIGangHero;
 
+
+

@@ -71,3 +71,5 @@ const KomIGangCTA = () => {
 
 export default KomIGangCTA;
 
+
+
