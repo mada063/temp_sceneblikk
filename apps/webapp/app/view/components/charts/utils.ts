@@ -17,7 +17,6 @@ export function parseChartConfig(configString: string): ChartConfig | null {
       xAxisLabel: parsed.xAxisLabel,
       yAxisLabel: parsed.yAxisLabel,
       title: parsed.title,
-      color: parsed.color,
     };
   } catch {
     return null;

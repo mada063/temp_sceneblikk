@@ -3,9 +3,12 @@
 import Link from 'next/link';
 import Button from './Button';
 import Button2 from './Button2';
-import Image from 'next/image';
+import NextImage from 'next/image';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useI18n } from '@/app/i18n';
+
+// Type-safe wrapper for Next.js Image component
+const Image = NextImage as any;
 
 export default function Header() {
   const { t } = useI18n();

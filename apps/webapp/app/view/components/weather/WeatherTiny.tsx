@@ -14,11 +14,12 @@ type WeatherTinyProps = WeatherProps & {
 };
 
 export function WeatherTiny({ appearance, weatherData, loading, error }: WeatherTinyProps) {
+  const { showTemperature = false } = appearance;
   const primaryColor = appearance.textColor || "#ffffff";
   const WeatherIcon = weatherData ? getWeatherIcon(weatherData.symbol) : CloudIcon;
 
   return (
-    <div className="flex h-full w-full items-center justify-center">
+    <div className={`flex h-full w-full ${showTemperature ? 'flex-col' : ''} items-center justify-center gap-2`}>
       {loading ? (
         <div
           className="text-4xl opacity-50"
@@ -33,12 +34,22 @@ export function WeatherTiny({ appearance, weatherData, loading, error }: Weather
         >
           <CloudIcon />
         </div>
-      ) : (
-        <WeatherIcon
-          className="h-16 w-16"
-          style={{ color: primaryColor }}
-        />
-      )}
+      ) : weatherData ? (
+        <>
+          <WeatherIcon
+            className="h-16 w-16 animate-cloud-fade-in"
+            style={{ color: primaryColor }}
+          />
+          {showTemperature && (
+            <div
+              className="text-xl font-semibold animate-fade-in"
+              style={{ color: primaryColor, animationDelay: '0.3s', animationFillMode: 'both' }}
+            >
+              {weatherData.temperature}°
+            </div>
+          )}
+        </>
+      ) : null}
     </div>
   );
 }

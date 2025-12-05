@@ -1,9 +1,14 @@
 'use client';
 
 import React from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
+import NextImage from 'next/image'
+import NextLink from 'next/link'
 import { useI18n } from '@/app/i18n'
+
+// Type-safe wrapper for Next.js Image component
+const Image = NextImage as any;
+// Type-safe wrapper for Next.js Link component
+const Link = NextLink as any;
 
 const Footer = () => {
   const { locale } = useI18n();

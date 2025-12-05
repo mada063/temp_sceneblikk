@@ -21,7 +21,7 @@ export function MinutesDisplay({
 }: MinutesDisplayProps): ReactElement {
   if (minutes === null) {
     return (
-      <span className={className} style={style}>
+      <span className={className} style={style as React.CSSProperties}>
         {fallback}
       </span>
     );
@@ -37,7 +37,7 @@ export function MinutesDisplay({
         alignItems: "baseline",
         gap: "0.15em",
         fontVariantNumeric: "tabular-nums",
-        ...style,
+        ...(style as React.CSSProperties),
       }}
     >
       <span className="inline-flex gap-[0.05em]">

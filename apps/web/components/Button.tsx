@@ -1,6 +1,9 @@
 'use client';
 import React, { ReactNode } from 'react';
-import Link from 'next/link';
+import NextLink from 'next/link';
+
+// Type-safe wrapper for Next.js Link component
+const Link = NextLink as any;
 
 interface ButtonProps {
   children: ReactNode;

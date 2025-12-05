@@ -5,6 +5,7 @@ export type CalendarProps = {
   colSpan?: number;
   rowSpan?: number;
   totalGridSize?: number;
+  orientation?: "portrait" | "landscape";
 };
 
 export type PanelSize = "tiny" | "small" | "medium" | "large" | "xlarge";
@@ -22,3 +23,4 @@ export type CalendarDay = {
   isCurrentMonth: boolean;
   events: CalendarEvent[];
 };
+

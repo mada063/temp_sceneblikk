@@ -140,7 +140,12 @@ export function TransportXLarge({ appearance, transportData, loading, error, tim
                   {row.dep.serviceType && <div className="opacity-70" style={{ color: primaryColor, fontSize: "0.75rem" }}>{row.dep.serviceType}</div>}
                 </div>
               </div>
-              <div className="text-right">
+              <div className="flex items-center gap-2">
+                {row.hasDelay && (
+                  <div className="opacity-90 font-medium" style={{ color: delayColor, fontSize: "0.75rem" }}>
+                    +{row.dep.delay} min
+                  </div>
+                )}
                 <MinutesDisplay
                   minutes={row.minutes}
                   fallback={row.fallback}
@@ -149,11 +154,6 @@ export function TransportXLarge({ appearance, transportData, loading, error, tim
                   style={{ color: primaryColor, fontSize: lineFontSize }}
                   animateDigits={minuteAnimationIds.has(row.id)}
                 />
-                {row.hasDelay && (
-                  <div className="opacity-90 font-medium mt-1" style={{ color: delayColor, fontSize: "0.75rem" }}>
-                    +{row.dep.delay} min
-                  </div>
-                )}
               </div>
             </div>
           );

@@ -14,6 +14,7 @@ type WeatherSmallProps = WeatherProps & {
 };
 
 export function WeatherSmall({ appearance, weatherData, loading, error }: WeatherSmallProps) {
+  const { showTemperature = true } = appearance;
   const primaryColor = appearance.textColor || "#ffffff";
   const WeatherIcon = weatherData ? getWeatherIcon(weatherData.symbol) : CloudIcon;
 
@@ -39,12 +40,14 @@ export function WeatherSmall({ appearance, weatherData, loading, error }: Weathe
             className="h-12 w-12 animate-cloud-fade-in"
             style={{ color: primaryColor }}
           />
-          <div
-            className="text-2xl font-semibold animate-fade-in"
-            style={{ color: primaryColor, animationDelay: '0.3s', animationFillMode: 'both' }}
-          >
-            {weatherData.temperature}°
-          </div>
+          {showTemperature && (
+            <div
+              className="text-2xl font-semibold animate-fade-in"
+              style={{ color: primaryColor, animationDelay: '0.3s', animationFillMode: 'both' }}
+            >
+              {weatherData.temperature}°
+            </div>
+          )}
         </>
       ) : null}
     </div>

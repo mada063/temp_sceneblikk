@@ -122,7 +122,7 @@ export function ChartsLarge({ appearance, chartConfig }: ChartsLargeProps) {
         const radarEntity = {
           id: "entity-1",
           name: chartConfig.title || "Data",
-          color: dp.color || chartColor,
+          color: chartColor,
           values: chartConfig.data.map((dp) => dp.value),
           normalizedValues: chartConfig.data.map((dp) => {
             const max = Math.max(...chartConfig.data.map((d) => d.value), 100);

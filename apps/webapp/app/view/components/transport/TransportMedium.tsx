@@ -241,7 +241,12 @@ function MediumStopSection({
                     </div>
                   )}
                 </div>
-                <div className="text-right">
+                <div className="flex items-center gap-2">
+                  {row.hasDelay && (
+                    <div className="opacity-90 font-medium" style={{ color: delayColor, fontSize: "0.5625rem" }}>
+                      +{row.dep.delay} min
+                    </div>
+                  )}
                   <MinutesDisplay
                     minutes={row.minutes}
                     fallback={row.fallback}
@@ -250,11 +255,6 @@ function MediumStopSection({
                     style={{ color: primaryColor, fontSize: lineFontSize }}
                     animateDigits={minuteAnimationIds.has(row.id)}
                   />
-                  {row.hasDelay && (
-                    <div className="opacity-90 font-medium" style={{ color: delayColor, fontSize: "0.5625rem" }}>
-                      +{row.dep.delay} min
-                    </div>
-                  )}
                 </div>
               </div>
             );

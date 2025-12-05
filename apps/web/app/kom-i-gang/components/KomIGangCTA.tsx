@@ -2,8 +2,11 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
+import NextImage from 'next/image';
 import Button from '@/components/Button';
+
+// Type-safe wrapper for Next.js Image component
+const Image = NextImage as any;
 import Button2 from '@/components/Button2';
 import AnimatedText from '@/components/AnimatedText';
 import AnimatedParagraph from '@/components/AnimatedParagraph';

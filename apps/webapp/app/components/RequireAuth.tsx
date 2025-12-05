@@ -1,13 +1,12 @@
 "use client";
 
-import type { ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "../lib/auth-context";
 import { useI18n } from "../lib/i18n";
 
 type RequireAuthProps = {
-  children: ReactNode;
+  children: React.ReactNode;
 };
 
 const PUBLIC_ROUTES = new Set<string>(["/", "/login"]);
