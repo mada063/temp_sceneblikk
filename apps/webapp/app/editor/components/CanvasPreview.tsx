@@ -748,7 +748,7 @@ export function CanvasPreview({
                     }
                   }}
                   className={className}
-                  style={spanStyle}
+                  style={spanStyle as React.CSSProperties}
                 >
                   {cell.componentId ? (
                     <>

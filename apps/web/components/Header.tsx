@@ -3,9 +3,12 @@
 import Link from 'next/link';
 import Button from './Button';
 import Button2 from './Button2';
-import Image from 'next/image';
+import NextImage from 'next/image';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useI18n } from '@/app/i18n';
+
+// Type-safe wrapper for Next.js Image component
+const Image = NextImage as any;
 
 export default function Header() {
   const { t } = useI18n();
@@ -32,7 +35,7 @@ export default function Header() {
           <LanguageSwitcher />
           <div className="flex items-center gap-2">
             <Button2 href="/stotte">{t('header', 'support')}</Button2>
-            <Button href="http://app.sceneblikk.no/login">{t('header', 'login')}</Button>
+            <Button href="https://app.sceneblikk.no/login">{t('header', 'login')}</Button>
           </div>
         </div>
       </div>

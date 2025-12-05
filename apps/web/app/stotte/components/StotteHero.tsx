@@ -1,8 +1,11 @@
 "use client";
 import Button from '@/components/Button'
 import React from 'react'
-import Image from 'next/image'
+import NextImage from 'next/image'
 import { motion } from 'framer-motion'
+
+// Type-safe wrapper for Next.js Image component
+const Image = NextImage as any;
 import AnimatedText from '@/components/AnimatedText'
 import AnimatedParagraph from '@/components/AnimatedParagraph'
 import AnimatedImage from '@/components/AnimatedImage'

@@ -46,6 +46,7 @@ const messages = {
       livePlayback: "Direkteavspilling",
       standby: "Ventemodus",
       offline: "Frakoblet",
+      logout: "Logg ut",
     },
     login: {
       subtitleSignUp: "Opprett en konto for å komme i gang",
@@ -316,6 +317,7 @@ const messages = {
       livePlayback: "Live playback",
       standby: "Standby",
       offline: "Offline",
+      logout: "Log out",
     },
     login: {
       subtitleSignUp: "Create an account to get started",

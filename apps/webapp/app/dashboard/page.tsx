@@ -10,6 +10,7 @@ import {
   FiEye,
   FiGlobe,
   FiLayers,
+  FiLogOut,
   FiMonitor,
   FiPlusCircle,
 } from "react-icons/fi";
@@ -24,6 +25,7 @@ import {
 } from "../lib/firestore";
 import { useI18n } from "../lib/i18n";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import { useRouter } from "next/navigation";
 
 type RecentEdit = {
   id: string;
@@ -71,14 +73,24 @@ function getStatusLabel(status: string): string {
 }
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, signOutUser } = useAuth();
   const { t } = useI18n();
+  const router = useRouter();
   const [devices, setDevices] = useState<DeviceStatus[]>([]);
   const [recentEdits, setRecentEdits] = useState<RecentEdit[]>([]);
   const [showChangelog, setShowChangelog] = useState(false);
   const [analytics, setAnalytics] = useState<EngagementAnalytics | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<7 | 30>(7);
+
+  const handleLogout = async () => {
+    try {
+      await signOutUser();
+      router.push("/login");
+    } catch (error) {
+      console.error("Failed to log out:", error);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -184,6 +196,7 @@ export default function DashboardPage() {
   const ActivityIcon = FiActivity as React.ComponentType<{ className?: string }>;
   const GlobeIcon = FiGlobe as React.ComponentType<{ className?: string }>;
   const EyeIcon = FiEye as React.ComponentType<{ className?: string }>;
+  const LogOutIcon = FiLogOut as React.ComponentType<{ className?: string }>;
 
   return (
     <div className="min-h-screen bg-custom-color-100 text-black transition-colors duration-300 dark:bg-custom-color-900 dark:text-white">
@@ -211,6 +224,14 @@ export default function DashboardPage() {
           </div>
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-sm font-semibold text-custom-color-700 transition hover:border-white/60 hover:bg-white/20 dark:text-custom-color-100"
+            >
+              <LogOutIcon className="h-4 w-4" />
+              {t("dashboard", "logout")}
+            </button>
             <Link
               href="/editor"
               className="inline-flex items-center gap-2 rounded-full bg-custom-color-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:bg-custom-color-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-custom-color-300 dark:bg-custom-color-400 dark:hover:bg-custom-color-300"

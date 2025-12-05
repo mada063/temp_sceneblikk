@@ -1,12 +1,15 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
+import NextImage from "next/image";
 import { motion } from "framer-motion";
 import { FaUsers, FaHandSparkles } from "react-icons/fa";
 import { MdLiveTv } from "react-icons/md";
 import AnimatedImage from "@/components/AnimatedImage";
 import { useI18n } from "@/app/i18n";
+
+// Type-safe wrapper for Next.js Image component
+const Image = NextImage as any;
 
 interface Feature {
   title: string;

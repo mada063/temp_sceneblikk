@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { TransportTiny } from "./TransportTiny";
 import { TransportSmall } from "./TransportSmall";
 import { TransportMedium } from "./TransportMedium";
 import { TransportLarge } from "./TransportLarge";
@@ -143,7 +142,7 @@ export function Transport({ appearance, colSpan = 1, rowSpan = 1, totalGridSize 
   }
 
   // Map panel sizes one step up: tiny->small, small->medium, medium->large, large->xlarge, xlarge->xlarge
-  const actualSize: PanelSize = 
+  const actualSize = 
     panelSize === "tiny" ? "small" :
     panelSize === "small" ? "medium" :
     panelSize === "medium" ? "large" :
@@ -151,8 +150,6 @@ export function Transport({ appearance, colSpan = 1, rowSpan = 1, totalGridSize 
     "xlarge";
 
   switch (actualSize) {
-    case "tiny":
-      return <TransportTiny {...commonProps} />;
     case "small":
       return <TransportSmall {...commonProps} />;
     case "medium":

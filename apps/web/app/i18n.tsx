@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 const SUPPORTED_LOCALES = ['nb', 'en'] as const;
 const DEFAULT_LOCALE = 'nb';
@@ -59,7 +59,7 @@ function getInitialLocale(): Locale {
   return DEFAULT_LOCALE;
 }
 
-export function I18nProvider({ children }: { children: ReactNode }) {
+export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
 
   // Use a stable default locale for server + first client render to avoid
@@ -96,7 +96,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     [locale],
   );
 
-  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
+  return <I18nContext.Provider value={value}>{children as any}</I18nContext.Provider>;
 }
 
 export function useI18n(): I18nContextType {

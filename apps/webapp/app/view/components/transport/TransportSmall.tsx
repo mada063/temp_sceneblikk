@@ -138,7 +138,12 @@ export function TransportSmall({ appearance, transportData, loading, error, time
                   {row.dep.destination}
                 </span>
               </div>
-              <div className="flex flex-col items-end gap-0.5">
+              <div className="flex items-center gap-1.5">
+                {row.hasDelay && (
+                  <div className="opacity-90 font-medium" style={{ color: delayColor, fontSize: "0.4375rem" }}>
+                    +{row.dep.delay}
+                  </div>
+                )}
                 <MinutesDisplay
                   minutes={row.minutes}
                   fallback={row.fallback}
@@ -147,11 +152,6 @@ export function TransportSmall({ appearance, transportData, loading, error, time
                   style={{ color: primaryColor, fontSize: lineFontSize }}
                   animateDigits={minuteAnimationIds.has(row.id)}
                 />
-                {row.hasDelay && (
-                  <div className="opacity-90 font-medium" style={{ color: delayColor, fontSize: "0.4375rem" }}>
-                    +{row.dep.delay}
-                  </div>
-                )}
               </div>
             </div>
           );

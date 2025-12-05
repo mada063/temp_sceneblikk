@@ -32,6 +32,7 @@ export function Clock({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: C
   const hasInitialized = useRef(false);
 
   // On load, scroll up from 00:00:00 to current time (iPhone-style)
+  // For analog clocks, start from 12:00:00 instead
   useEffect(() => {
     if (hasInitialized.current) return;
     
@@ -42,9 +43,13 @@ export function Clock({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: C
     // This ensures the clock lands on the correct time when animation completes
     const targetEndTime = new Date(animationStartTime + totalDuration);
     
-    // Start from 00:00:00 (today)
+    // Start from 00:00:00 (today) for digital, or 12:00:00 for analog
     const startTime = new Date(targetEndTime);
-    startTime.setHours(0);
+    if (clockStyle === "analog") {
+      startTime.setHours(12);
+    } else {
+      startTime.setHours(0);
+    }
     startTime.setMinutes(0);
     startTime.setSeconds(0);
     startTime.setMilliseconds(0);

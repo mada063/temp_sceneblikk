@@ -5,6 +5,10 @@ import type { TasksProps, TasksData, Task } from "./types";
 import { FiCircle, FiAlertCircle } from "react-icons/fi";
 import { hexToRgba } from "../calendar/utils";
 
+// Type-safe wrappers for react-icons components
+const CircleIcon = FiCircle as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+const AlertCircleIcon = FiAlertCircle as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+
 type TasksXLargeProps = TasksProps & {
   tasksData: TasksData | null;
   onCompleteTopTask?: () => void;
@@ -116,7 +120,7 @@ export function TasksXLarge({
 
     const rowShapeClasses = isPortrait
       ? "rounded-2xl px-3 py-2"
-      : "rounded-lg bg-white/5 p-4";
+      : "rounded-2xl bg-white/5 p-4";
 
     return (
       <div
@@ -133,7 +137,7 @@ export function TasksXLarge({
         }}
       >
         <div className="shrink-0 mt-0.5">
-          <FiCircle
+          <CircleIcon
             className="h-5 w-5"
             style={{ color: mutedColor }}
           />
@@ -168,7 +172,7 @@ export function TasksXLarge({
               )}
               {task.priority && (
                 <div className="flex items-center gap-1">
-                  <FiAlertCircle
+                  <AlertCircleIcon
                     className="h-3 w-3"
                     style={{ color: priorityColor }}
                   />

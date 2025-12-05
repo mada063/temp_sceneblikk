@@ -3,7 +3,6 @@ import Header from "../components/Header";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import "./globals.css";
 import { Providers } from "./Providers";
-import { ReactNode } from "react";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -63,7 +62,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html>
       <head>

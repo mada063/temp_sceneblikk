@@ -11,6 +11,15 @@ import {
   FiSettings,
   FiX,
 } from "react-icons/fi";
+
+// Type-safe wrappers for react-icons components
+const AlertTriangleIcon = FiAlertTriangle as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+const ArrowLeftIcon = FiArrowLeft as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+const MaximizeIcon = FiMaximize as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+const MinimizeIcon = FiMinimize as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+const MonitorIcon = FiMonitor as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+const SettingsIcon = FiSettings as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+const XIcon = FiX as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
 import { useAuth } from "../lib/auth-context";
 import { updateDeviceHeartbeat, getLayout, startViewSession, endViewSession } from "../lib/firestore";
 import {
@@ -573,7 +582,7 @@ export default function ViewPage() {
     return (
       <div className={`${containerClasses} flex flex-col items-center justify-center gap-6 px-6 text-center`}>
         <div className="rounded-3xl border border-white/20 bg-white/5 px-6 py-4 backdrop-blur">
-          <FiAlertTriangle className="mx-auto mb-3 h-10 w-10 text-custom-color-300" />
+          <AlertTriangleIcon className="mx-auto mb-3 h-10 w-10 text-custom-color-300" />
           <h1 className="text-xl font-semibold">No layout found</h1>
           <p className="mt-2 max-w-md text-sm text-white/70">
             We could not find a saved layout. Design a screen in the editor and
@@ -584,7 +593,7 @@ export default function ViewPage() {
           href="/editor"
           className="inline-flex items-center gap-2 rounded-full bg-custom-color-400 px-5 py-2 text-sm font-semibold text-white shadow-lg transition hover:bg-custom-color-300"
         >
-          <FiArrowLeft className="h-4 w-4" />
+          <ArrowLeftIcon className="h-4 w-4" />
           Return to editor
         </Link>
       </div>
@@ -602,7 +611,7 @@ export default function ViewPage() {
         }`}
       >
         <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-white/70">
-          <FiMonitor className="h-4 w-4" />
+          <MonitorIcon className="h-4 w-4" />
           Live player
         </span>
         <span className="hidden text-xs text-white/60 sm:inline">
@@ -615,12 +624,12 @@ export default function ViewPage() {
         >
           {isFullscreen ? (
             <>
-              <FiMinimize className="h-3.5 w-3.5" />
+              <MinimizeIcon className="h-3.5 w-3.5" />
               Exit fullscreen
-            </>
+            </> 
           ) : (
             <>
-              <FiMaximize className="h-3.5 w-3.5" />
+              <MaximizeIcon className="h-3.5 w-3.5" />
               Go fullscreen
             </>
           )}
@@ -630,14 +639,14 @@ export default function ViewPage() {
           onClick={() => setShowDeviceSettings(true)}
           className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white transition hover:border-white/40 hover:bg-white/20"
         >
-          <FiSettings className="h-3.5 w-3.5" />
+          <SettingsIcon className="h-3.5 w-3.5" />
           Device name
         </button>
         <Link
           href="/editor"
           className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white transition hover:border-white/40 hover:bg-white/20"
         >
-          <FiArrowLeft className="h-3.5 w-3.5" />
+          <ArrowLeftIcon className="h-3.5 w-3.5" />
           Back to editor
         </Link>
       </div>
@@ -659,7 +668,7 @@ export default function ViewPage() {
                 onClick={() => setShowDeviceSettings(false)}
                 className="rounded-full p-2 text-white/70 transition hover:bg-white/10 hover:text-white"
               >
-                <FiX className="h-5 w-5" />
+                <XIcon className="h-5 w-5" />
               </button>
             </div>
             <div className="space-y-4">

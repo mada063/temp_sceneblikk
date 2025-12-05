@@ -50,6 +50,7 @@ export type CellAppearance = {
   showLocationForecast?: boolean;
   showTwoCharts?: boolean; // Show 2 charts side by side (full screen only)
   weatherTimeFormat?: "12h" | "24h";
+  showTemperature?: boolean; // Show temperature on small and tiny weather components
   /**
    * News-specific options (used when componentId === "news").
    */
