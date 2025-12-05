@@ -4,7 +4,7 @@ import { FiCloud } from "react-icons/fi";
 import { getWeatherIcon, type WeatherData } from "./utils";
 
 // Loosely typed icon component to avoid react-icons vs local React type incompatibilities
-const CloudIcon = FiCloud as React.ComponentType<{ className?: string }>;
+const CloudIcon = FiCloud as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
 import type { WeatherProps } from "./types";
 
 type WeatherTinyProps = WeatherProps & {
@@ -16,7 +16,7 @@ type WeatherTinyProps = WeatherProps & {
 export function WeatherTiny({ appearance, weatherData, loading, error }: WeatherTinyProps) {
   const { showTemperature = false } = appearance;
   const primaryColor = appearance.textColor || "#ffffff";
-  const WeatherIcon = weatherData ? getWeatherIcon(weatherData.symbol) : CloudIcon;
+  const WeatherIcon = (weatherData ? getWeatherIcon(weatherData.symbol) : CloudIcon) as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
 
   return (
     <div className={`flex h-full w-full ${showTemperature ? 'flex-col' : ''} items-center justify-center gap-2`}>

@@ -4,9 +4,9 @@ import { FiCloud, FiWind, FiDroplet } from "react-icons/fi";
 import { getWeatherIcon, type WeatherData, type ForecastItem } from "./utils";
 
 // Loosely typed icon components to avoid react-icons vs local React type incompatibilities
-const CloudIcon = FiCloud as React.ComponentType<{ className?: string }>;
-const WindIcon = FiWind as React.ComponentType<{ className?: string }>;
-const DropletIcon = FiDroplet as React.ComponentType<{ className?: string }>;
+const CloudIcon = FiCloud as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+const WindIcon = FiWind as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+const DropletIcon = FiDroplet as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
 import type { WeatherProps } from "./types";
 
 type WeatherMediumProps = WeatherProps & {
@@ -19,7 +19,7 @@ type WeatherMediumProps = WeatherProps & {
 export function WeatherMedium({ appearance, weatherData, loading, error, locationName }: WeatherMediumProps) {
   const { showLocationForecast = true } = appearance;
   const primaryColor = appearance.textColor || "#ffffff";
-  const WeatherIcon = weatherData ? getWeatherIcon(weatherData.symbol) : CloudIcon;
+  const WeatherIcon = (weatherData ? getWeatherIcon(weatherData.symbol) : CloudIcon) as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-4 text-center">
@@ -76,7 +76,7 @@ export function WeatherMedium({ appearance, weatherData, loading, error, locatio
           {showLocationForecast && weatherData.forecast && weatherData.forecast.length > 0 && (
             <div className="mt-2 flex flex-wrap items-center justify-center gap-3 text-sm">
               {weatherData.forecast.slice(0, 5).map((item: ForecastItem, idx: number) => {
-                const ForecastIcon = getWeatherIcon(item.symbol);
+                const ForecastIcon = getWeatherIcon(item.symbol) as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
                 return (
                   <div
                     key={idx}

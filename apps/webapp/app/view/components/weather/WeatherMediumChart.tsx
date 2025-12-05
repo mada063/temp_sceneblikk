@@ -212,7 +212,7 @@ export function WeatherMediumChart({ appearance, weatherData, loading, error, lo
             {dataToShow.map((d: ForecastItem, idx: number) => {
               const x = calculateDataPointX(idx, dataToShow.length, graphWidth, padding.left);
               const y = calculateDataPointY(d.temperature, minTemp, maxTemp, graphHeight, padding.top);
-              const ForecastIcon = getWeatherIcon(d.symbol);
+              const ForecastIcon = getWeatherIcon(d.symbol) as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
               
               const labelInterval = dataToShow.length > 24 ? 3 : 2;
               const showTimeLabel = idx % labelInterval === 0 || idx === 0 || idx === dataToShow.length - 1;
