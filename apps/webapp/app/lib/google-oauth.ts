@@ -23,6 +23,16 @@ function getOAuthClient() {
   const redirectUri = process.env.GOOGLE_REDIRECT_URI;
 
   if (!clientId || !clientSecret || !redirectUri) {
+    // Helpful logging for production debugging – does NOT log actual values
+    // Only indicates which variables are present so we can diagnose misconfiguration.
+    // This will appear in server logs (e.g., Amplify / CloudWatch) but is safe.
+    // eslint-disable-next-line no-console
+    console.error("Google OAuth env check failed", {
+      hasClientId: Boolean(clientId),
+      hasClientSecret: Boolean(clientSecret),
+      hasRedirectUri: Boolean(redirectUri),
+    });
+
     throw new Error(
       "Google OAuth credentials are not configured (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / GOOGLE_REDIRECT_URI).",
     );
