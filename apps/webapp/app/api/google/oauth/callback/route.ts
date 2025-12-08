@@ -21,7 +21,8 @@ export async function GET(request: NextRequest) {
     await handleOAuthCallback(code);
     return NextResponse.redirect(new URL("/editor?google=connected", request.url));
   } catch (err) {
-    console.error("Failed to handle Google OAuth callback:", err);
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    console.error("Failed to handle Google OAuth callback:", errorMessage, err);
     return NextResponse.redirect(new URL("/editor?google=error", request.url));
   }
 }
