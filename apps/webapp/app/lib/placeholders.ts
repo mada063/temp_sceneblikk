@@ -8,6 +8,7 @@ import {
   FiImage,
   FiMapPin,
   FiNavigation,
+  FiServer,
   FiType,
   FiVideo,
 } from "react-icons/fi";
@@ -111,6 +112,14 @@ export const PLACEHOLDER_LIBRARY: PlaceholderDefinition[] = [
     labelNb: "Vær",
     descriptionNb: "Værvarsel og sanntidsværkort",
     icon: FiCloud,
+  },
+  {
+    id: "server",
+    label: "Server",
+    description: "Server status and monitoring",
+    labelNb: "Server",
+    descriptionNb: "Serverstatus og overvåking",
+    icon: FiServer,
   },
 ];
 

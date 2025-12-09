@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useRef, type ChangeEvent } from "react";
 
-import { FiTrash2, FiSearch } from "react-icons/fi";
+import { FiTrash2, FiSearch, FiPlus, FiX } from "react-icons/fi";
 
 // Loosely typed icon components to avoid react-icons vs local React type incompatibilities
 const SearchIcon = FiSearch as React.ComponentType<{ className?: string }>;
 const TrashIcon = FiTrash2 as React.ComponentType<{ className?: string }>;
+const PlusIcon = FiPlus as React.ComponentType<{ className?: string }>;
+const XIcon = FiX as React.ComponentType<{ className?: string }>;
 import timezones from "../../lib/timezones.json";
 // @ts-ignore - JSON import
 import weatherLocations from "../../lib/weather-locations.json";
@@ -591,6 +593,15 @@ export function SelectedComponentPanel({
       (entry) => entry.componentId === "tasks",
     );
   const isTasks = isDirectTasks || hasTasksInPanel;
+
+  const isDirectServer =
+    canShowComponentOptions && effectiveComponentId === "server";
+  const hasServerInPanel =
+    (isFreeformSelected || (componentId === "freeform-region" && allHaveSameComponent)) &&
+    !!selectedCellData?.panelEntries?.some(
+      (entry) => entry.componentId === "server",
+    );
+  const isServer = isDirectServer || hasServerInPanel;
   
   // Check if panel is full screen (takes up entire grid)
   const isFullScreen = isSingleSelection && selectedCellData && 
@@ -1888,6 +1899,92 @@ export function SelectedComponentPanel({
                       onAppearanceChange({ chartsConfig: value })
                     }
                   />
+                </div>
+              ) : null}
+              {isServer ? (
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    Server Options
+                  </p>
+                  <div className="space-y-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Server Type
+                    </span>
+                    <select
+                      value={appearance.serverType ?? "website"}
+                      onChange={(event) =>
+                        onAppearanceChange({ serverType: event.target.value })
+                      }
+                      className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
+                    >
+                      <option value="website">Website</option>
+                      <option value="minecraft">Minecraft</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Server URLs
+                    </span>
+                    <div className="space-y-2">
+                      {(() => {
+                        const urls = Array.isArray(appearance.serverUrls) && appearance.serverUrls.length > 0
+                          ? appearance.serverUrls
+                          : [""];
+                        return urls.map((url, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={url}
+                            onChange={(event) => {
+                              const currentUrls = Array.isArray(appearance.serverUrls) && appearance.serverUrls.length > 0
+                                ? [...appearance.serverUrls]
+                                : [""];
+                              currentUrls[index] = event.target.value;
+                              onAppearanceChange({ serverUrls: currentUrls });
+                            }}
+                            placeholder={appearance.serverType === "minecraft" ? "minecraft.example.com:25565" : "https://example.com or example.com"}
+                            className="flex-1 rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const currentUrls = Array.isArray(appearance.serverUrls) && appearance.serverUrls.length > 0
+                                ? [...appearance.serverUrls]
+                                : [""];
+                              // Don't allow removing if there's only one field
+                              if (currentUrls.length > 1) {
+                                currentUrls.splice(index, 1);
+                                onAppearanceChange({ serverUrls: currentUrls });
+                              }
+                            }}
+                            disabled={urls.length === 1}
+                            className="flex h-9 w-9 items-center justify-center rounded-lg border border-custom-color-300/50 bg-white/80 text-custom-color-600 shadow-sm hover:bg-custom-color-100 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-200 dark:hover:bg-custom-color-700"
+                          >
+                            <XIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ));
+                      })()}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentUrls = Array.isArray(appearance.serverUrls) && appearance.serverUrls.length > 0
+                            ? [...appearance.serverUrls]
+                            : [""];
+                          onAppearanceChange({ serverUrls: [...currentUrls, ""] });
+                        }}
+                        className="flex w-full items-center justify-center gap-2 rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-600 shadow-sm hover:bg-custom-color-100 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-200 dark:hover:bg-custom-color-700"
+                      >
+                        <PlusIcon className="h-4 w-4" />
+                        <span>Add Server URL</span>
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-custom-color-500 dark:text-custom-color-400">
+                      {appearance.serverType === "minecraft" 
+                        ? "Enter Minecraft server addresses (host:port)"
+                        : "Protocol (http/https) will be automatically detected from the URL"}
+                    </p>
+                  </div>
                 </div>
               ) : null}
               {isTasks ? (

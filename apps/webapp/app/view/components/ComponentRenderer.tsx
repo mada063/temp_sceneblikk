@@ -13,6 +13,7 @@ import { Media } from "./media";
 import { Charts } from "./charts";
 import { Calendar } from "./calendar";
 import { Tasks } from "./tasks";
+import { Server } from "./server";
 import { useI18n } from "../../lib/i18n";
 
 type ComponentRendererProps = {
@@ -159,6 +160,18 @@ export function ComponentRenderer({
         rowSpan={rowSpan}
         totalGridSize={totalGridSize}
         orientation={orientation}
+      />
+    );
+  }
+
+  // Dedicated implementation for the server component
+  if (componentId === "server") {
+    return (
+      <Server
+        appearance={appearance}
+        colSpan={colSpan}
+        rowSpan={rowSpan}
+        totalGridSize={totalGridSize}
       />
     );
   }

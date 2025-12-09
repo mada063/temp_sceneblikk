@@ -107,6 +107,11 @@ export type CellAppearance = {
    * Charts-specific options (used when componentId === "charts").
    */
   chartsConfig?: string; // JSON string of chart configuration (built from input fields)
+  /**
+   * Server-specific options (used when componentId === "server").
+   */
+  serverType?: string; // Server type selector (e.g., "website", "minecraft")
+  serverUrls?: string[]; // Array of server URLs
 };
 
 export const makeDefaultAppearance = (): CellAppearance => ({
@@ -154,6 +159,8 @@ export const makeDefaultAppearance = (): CellAppearance => ({
   mediaAutoPlay: true,
   mediaTransitionDuration: 5,
   chartsConfig: "",
+  serverType: "website",
+  serverUrls: [],
 });
 
 export const cloneAppearance = (appearance?: CellAppearance | null) =>
