@@ -1,14 +1,20 @@
 "use client";
 
-import { useMemo } from "react";
+import type { CSSProperties } from "react";
 import type { ServerProps, ServerData } from "./types";
 import { FiServer, FiCheckCircle, FiXCircle, FiAlertCircle } from "react-icons/fi";
 
 // Loosely typed icon components
-const ServerIcon = FiServer as React.ComponentType<{ className?: string }>;
-const CheckCircleIcon = FiCheckCircle as React.ComponentType<{ className?: string }>;
-const XCircleIcon = FiXCircle as React.ComponentType<{ className?: string }>;
-const AlertCircleIcon = FiAlertCircle as React.ComponentType<{ className?: string }>;
+type IconProps = {
+  className?: string;
+  style?: CSSProperties;
+  size?: number;
+};
+
+const ServerIcon = FiServer as React.ComponentType<IconProps>;
+const CheckCircleIcon = FiCheckCircle as React.ComponentType<IconProps>;
+const XCircleIcon = FiXCircle as React.ComponentType<IconProps>;
+const AlertCircleIcon = FiAlertCircle as React.ComponentType<IconProps>;
 
 type ServerSmallProps = ServerProps & {
   serverData: ServerData | null;
@@ -103,9 +109,9 @@ export function ServerSmall({ appearance, serverData, loading, error }: ServerSm
                 )}
                 {isMinecraft && (
                   <td className="text-[9px] font-medium py-1 text-right" style={{ color: primaryColor }}>
-                    {server.playersOnline !== null && server.playersMax !== null
+                    {server.playersOnline != null && server.playersMax != null
                       ? `${server.playersOnline}/${server.playersMax}`
-                      : server.playersOnline !== null
+                      : server.playersOnline != null
                       ? server.playersOnline.toString()
                       : "-"}
                   </td>
