@@ -1,5 +1,8 @@
 import { google } from "googleapis";
-import { getAuthorizedOAuthClient } from "./google-oauth";
+import {
+  getAuthorizedOAuthClient,
+  type StoredTokens,
+} from "./google-oauth";
 
 type GoogleCalendarEvent = {
   id: string;
@@ -25,13 +28,16 @@ type GoogleTaskItem = {
   position?: string | null;
 };
 
-export async function fetchGoogleCalendarEvents(input: {
-  calendarId?: string;
-  timeMin: string;
-  timeMax: string;
-  maxResults?: number;
-}): Promise<GoogleCalendarEvent[]> {
-  const auth = await getAuthorizedOAuthClient();
+export async function fetchGoogleCalendarEvents(
+  input: {
+    calendarId?: string;
+    timeMin: string;
+    timeMax: string;
+    maxResults?: number;
+  },
+  tokens: StoredTokens,
+): Promise<GoogleCalendarEvent[]> {
+  const auth = getAuthorizedOAuthClient(tokens);
   const calendar = google.calendar({ version: "v3", auth });
 
   const response = await calendar.events.list({
@@ -70,14 +76,17 @@ export async function fetchGoogleCalendarEvents(input: {
     });
 }
 
-export async function fetchGoogleTasks(input: {
-  taskListId?: string;
-  maxResults?: number;
-}): Promise<{
+export async function fetchGoogleTasks(
+  input: {
+    taskListId?: string;
+    maxResults?: number;
+  },
+  tokens: StoredTokens,
+): Promise<{
   taskList: GoogleTasksList | null;
   tasks: GoogleTaskItem[];
 }> {
-  const auth = await getAuthorizedOAuthClient();
+  const auth = getAuthorizedOAuthClient(tokens);
   const tasksApi = google.tasks({ version: "v1", auth });
 
   let taskListId = input.taskListId;

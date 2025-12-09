@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchGoogleCalendarEvents } from "../../../lib/google";
+import { deserializeTokensFromCookie } from "../../../lib/google-oauth";
 
 export const runtime = "nodejs";
 
@@ -26,12 +27,28 @@ export async function GET(request: NextRequest) {
   ).toISOString();
 
   try {
-    const events = await fetchGoogleCalendarEvents({
-      calendarId,
-      timeMin,
-      timeMax,
-      maxResults: 200,
-    });
+    const tokenCookie = request.cookies.get("google_oauth_tokens")?.value;
+    const tokens = deserializeTokensFromCookie(tokenCookie);
+
+    if (!tokens || !tokens.refresh_token) {
+      return NextResponse.json(
+        {
+          error:
+            "No Google account connected. Please connect Google in the editor first.",
+        },
+        { status: 401 },
+      );
+    }
+
+    const events = await fetchGoogleCalendarEvents(
+      {
+        calendarId,
+        timeMin,
+        timeMax,
+        maxResults: 200,
+      },
+      tokens,
+    );
 
     return NextResponse.json({ events });
   } catch (error) {

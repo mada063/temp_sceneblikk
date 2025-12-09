@@ -224,6 +224,8 @@ const messages = {
       calendarTodayLabel: "I dag",
       calendarUpcomingHeader: "Kommende hendelser",
       calendarNoUpcomingMessage: "Ingen planlagte aktiviteter denne måneden.",
+      googleOAuthConnected: "Google‑konto tilkoblet",
+      googleOAuthNotConnected: "Google‑konto ikke tilkoblet ennå",
       // Transport options
       transportOptionsTitle: "Reiseinformasjon",
       transportStopPlaceLabel: "Stoppested",
@@ -495,6 +497,8 @@ const messages = {
       calendarTodayLabel: "Today",
       calendarUpcomingHeader: "Upcoming events",
       calendarNoUpcomingMessage: "No scheduled events this month.",
+      googleOAuthConnected: "Google account connected",
+      googleOAuthNotConnected: "Google account not connected yet",
       // Transport options
       transportOptionsTitle: "Transport options",
       transportStopPlaceLabel: "Stop place",

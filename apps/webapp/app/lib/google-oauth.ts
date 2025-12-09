@@ -5,17 +5,13 @@ const OAUTH_SCOPES = [
   "https://www.googleapis.com/auth/tasks.readonly",
 ];
 
-type StoredTokens = {
+export type StoredTokens = {
   access_token?: string;
   refresh_token?: string;
   scope?: string;
   token_type?: string;
   expiry_date?: number;
 };
-
-// In-memory cache for tokens within this Node process.
-// This avoids extra Firebase Admin setup and is sufficient for your use case.
-let cachedTokens: StoredTokens | null = null;
 
 function getOAuthClient() {
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -41,46 +37,37 @@ function getOAuthClient() {
   return new google.auth.OAuth2(clientId, clientSecret, redirectUri);
 }
 
-async function persistTokens(tokens: StoredTokens): Promise<void> {
-  cachedTokens = {
-    ...(cachedTokens ?? {}),
-    ...tokens,
-  };
-}
-
-async function loadTokens(): Promise<StoredTokens | null> {
-  return cachedTokens;
-}
-
 export async function createOAuthUrl(): Promise<string> {
   const client = getOAuthClient();
 
   const url = client.generateAuthUrl({
     access_type: "offline",
-    prompt: "consent",
+    // Let Google decide when to re-prompt for consent; avoids forcing the
+    // approval screen every single time while still issuing a refresh token.
     scope: OAUTH_SCOPES,
   });
 
   return url;
 }
 
-export async function handleOAuthCallback(code: string): Promise<void> {
+export async function handleOAuthCallback(code: string): Promise<StoredTokens> {
   const client = getOAuthClient();
   const { tokens } = await client.getToken(code);
 
-  await persistTokens({
+  const normalized: StoredTokens = {
     // Normalize possible null values from Google to undefined so they fit StoredTokens
     access_token: tokens.access_token ?? undefined,
     refresh_token: tokens.refresh_token ?? undefined,
     scope: tokens.scope ?? undefined,
     token_type: tokens.token_type ?? undefined,
     expiry_date: tokens.expiry_date ?? undefined,
-  });
+  };
+
+  return normalized;
 }
 
-export async function getAuthorizedOAuthClient() {
+export function getAuthorizedOAuthClient(tokens: StoredTokens) {
   const client = getOAuthClient();
-  const tokens = await loadTokens();
 
   if (!tokens || !tokens.refresh_token) {
     throw new Error(
@@ -90,20 +77,37 @@ export async function getAuthorizedOAuthClient() {
 
   client.setCredentials(tokens);
 
-  client.on("tokens", async (newTokens) => {
-    // Persist refreshed tokens (especially new expiry_date / access_token)
-    await persistTokens({
-      access_token: newTokens.access_token ?? tokens.access_token,
-      refresh_token: newTokens.refresh_token ?? tokens.refresh_token,
-      expiry_date: newTokens.expiry_date ?? tokens.expiry_date,
-      scope: newTokens.scope ?? tokens.scope,
-      token_type: newTokens.token_type ?? tokens.token_type,
-    }).catch(() => {
-      // Swallow errors here – we don't want to break the request because of a failed background save
-    });
-  });
+  // We rely on Google's internal refresh handling using the refresh_token.
+  // Updated access tokens / expiry are kept per request and do not need to
+  // be persisted between requests, since the refresh_token remains valid.
 
   return client;
 }
 
+/**
+ * Serialize tokens so they can be stored in a secure HTTP-only cookie.
+ * This keeps them available across serverless cold starts without
+ * introducing extra infrastructure.
+ */
+export function serializeTokensForCookie(tokens: StoredTokens): string {
+  try {
+    return encodeURIComponent(JSON.stringify(tokens));
+  } catch {
+    return "";
+  }
+}
+
+export function deserializeTokensFromCookie(
+  raw: string | undefined | null,
+): StoredTokens | null {
+  if (!raw) return null;
+
+  try {
+    const json = decodeURIComponent(raw);
+    const parsed = JSON.parse(json);
+    return parsed as StoredTokens;
+  } catch {
+    return null;
+  }
+}
 

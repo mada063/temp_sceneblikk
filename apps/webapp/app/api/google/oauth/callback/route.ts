@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { handleOAuthCallback } from "../../../../lib/google-oauth";
+import {
+  handleOAuthCallback,
+  serializeTokensForCookie,
+} from "../../../../lib/google-oauth";
 
 export const runtime = "nodejs";
 
+// Persist Google OAuth tokens into a secure HTTP-only cookie so the user
+// only has to connect their Google account once per browser.
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
@@ -22,8 +27,25 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    await handleOAuthCallback(code);
-    return NextResponse.redirect(`${appBaseUrl}/editor?google=connected`);
+    const tokens = await handleOAuthCallback(code);
+
+    const response = NextResponse.redirect(
+      `${appBaseUrl}/editor?google=connected`,
+    );
+
+    const serialized = serializeTokensForCookie(tokens);
+    if (serialized) {
+      response.cookies.set("google_oauth_tokens", serialized, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        path: "/",
+        // Keep for a long time; refresh_token will be used to keep access fresh.
+        maxAge: 60 * 60 * 24 * 365, // 1 year
+      });
+    }
+
+    return response;
   } catch (err) {
     console.error("Failed to handle Google OAuth callback:", err);
     return NextResponse.redirect(`${appBaseUrl}/editor?google=error`);

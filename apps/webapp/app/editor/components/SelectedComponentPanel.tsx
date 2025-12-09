@@ -439,6 +439,7 @@ export function SelectedComponentPanel({
   selectedPanelEntries,
 }: SelectedComponentPanelProps) {
   const { t, locale } = useI18n();
+  const [googleConnected, setGoogleConnected] = useState<boolean | null>(null);
   const hasSelection = selectionCount > 0;
   const isSingleSelection = selectionCount === 1;
   // Allow component options to be shown if all selected cells have the same component type
@@ -452,6 +453,35 @@ export function SelectedComponentPanel({
       ? Math.max(config.rows - parseKey(primarySelectedCell).row, 1)
       : 1;
   const appearance = selectedAppearance ?? makeDefaultAppearance();
+
+  // Check once per editor session whether a Google account is already connected
+  useEffect(() => {
+    let cancelled = false;
+
+    const checkStatus = async () => {
+      try {
+        const response = await fetch("/api/google/oauth/status");
+        if (!response.ok) {
+          if (!cancelled) setGoogleConnected(false);
+          return;
+        }
+        const data: { connected?: boolean } = await response.json();
+        if (!cancelled) {
+          setGoogleConnected(Boolean(data?.connected));
+        }
+      } catch {
+        if (!cancelled) setGoogleConnected(false);
+      }
+    };
+
+    checkStatus().catch(() => {
+      // Swallow top-level errors – individual branches already set fallback state
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   
   // Track the previous border width to restore when toggling border back on
   const previousBorderWidthRef = useRef<number>(appearance.borderWidth > 0 ? appearance.borderWidth : 2);
@@ -1389,24 +1419,40 @@ export function SelectedComponentPanel({
                       </select>
                     </label>
                     {appearance.calendarProvider === "google" && (
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          try {
-                            const response = await fetch("/api/google/oauth/url");
-                            if (!response.ok) return;
-                            const data = await response.json();
-                            if (data?.url) {
-                              window.location.href = data.url as string;
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              const response = await fetch("/api/google/oauth/url");
+                              if (!response.ok) return;
+                              const data = await response.json();
+                              if (data?.url) {
+                                window.location.href = data.url as string;
+                              }
+                            } catch {
+                              // Silently ignore errors – user can retry
                             }
-                          } catch {
-                            // Silently ignore errors – user can retry
-                          }
-                        }}
-                        className="inline-flex items-center justify-center rounded-full border border-custom-color-400 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 transition hover:bg-custom-color-200/40 dark:border-custom-color-300/40 dark:text-custom-color-100 dark:hover:bg-custom-color-700/50"
-                      >
-                        {t("editor", "calendarConnectGoogleButton")}
-                      </button>
+                          }}
+                          className="inline-flex items-center justify-center rounded-full border border-custom-color-400 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 transition hover:bg-custom-color-200/40 dark:border-custom-color-300/40 dark:text-custom-color-100 dark:hover:bg-custom-color-700/50"
+                        >
+                          {t("editor", "calendarConnectGoogleButton")}
+                        </button>
+                        {googleConnected !== null && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-custom-color-500 dark:text-custom-color-400">
+                            <span
+                              className={`h-2 w-2 rounded-full ${
+                                googleConnected
+                                  ? "bg-emerald-400"
+                                  : "bg-amber-400"
+                              }`}
+                            />
+                            {googleConnected
+                              ? t("editor", "googleOAuthConnected")
+                              : t("editor", "googleOAuthNotConnected")}
+                          </span>
+                        )}
+                      </div>
                     )}
                     <p className="text-[10px] text-custom-color-500 dark:text-custom-color-400">
                       {t("editor", "calendarConnectGoogleHelp")}
@@ -2018,24 +2064,40 @@ export function SelectedComponentPanel({
                       </select>
                     </label>
                     {appearance.tasksProvider === "google" && (
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          try {
-                            const response = await fetch("/api/google/oauth/url");
-                            if (!response.ok) return;
-                            const data = await response.json();
-                            if (data?.url) {
-                              window.location.href = data.url as string;
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              const response = await fetch("/api/google/oauth/url");
+                              if (!response.ok) return;
+                              const data = await response.json();
+                              if (data?.url) {
+                                window.location.href = data.url as string;
+                              }
+                            } catch {
+                              // Ignore – user can retry
                             }
-                          } catch {
-                            // Ignore – user can retry
-                          }
-                        }}
-                        className="inline-flex items-center justify-center rounded-full border border-custom-color-400 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 transition hover:bg-custom-color-200/40 dark:border-custom-color-300/40 dark:text-custom-color-100 dark:hover:bg-custom-color-700/50"
-                      >
-                        {t("editor", "tasksConnectGoogleButton")}
-                      </button>
+                          }}
+                          className="inline-flex items-center justify-center rounded-full border border-custom-color-400 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 transition hover:bg-custom-color-200/40 dark:border-custom-color-300/40 dark:text-custom-color-100 dark:hover:bg-custom-color-700/50"
+                        >
+                          {t("editor", "tasksConnectGoogleButton")}
+                        </button>
+                        {googleConnected !== null && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-custom-color-500 dark:text-custom-color-400">
+                            <span
+                              className={`h-2 w-2 rounded-full ${
+                                googleConnected
+                                  ? "bg-emerald-400"
+                                  : "bg-amber-400"
+                              }`}
+                            />
+                            {googleConnected
+                              ? t("editor", "googleOAuthConnected")
+                              : t("editor", "googleOAuthNotConnected")}
+                          </span>
+                        )}
+                      </div>
                     )}
                     <p className="text-[10px] text-custom-color-500 dark:text-custom-color-400">
                       {t("editor", "tasksConnectGoogleHelp")}
