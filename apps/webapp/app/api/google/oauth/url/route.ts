@@ -8,7 +8,8 @@ export async function GET() {
     const url = await createOAuthUrl();
     return NextResponse.json({ url });
   } catch (error) {
-    console.error("Failed to create Google OAuth URL:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Failed to create Google OAuth URL:", errorMessage, error);
     return NextResponse.json(
       { error: "Failed to create Google OAuth URL." },
       { status: 500 },

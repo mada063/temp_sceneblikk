@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --custom-color-50: #f0f8ff;
@@ -16,20 +18,6 @@
   --foreground: var(--custom-color-900);
   --surface: rgba(255, 255, 255, 0.82);
   --surface-strong: #ffffff;
-}
-
-@theme inline {
-  --font-sans: var(--font-inter-sans);
-  --color-custom-color-50: var(--custom-color-50);
-  --color-custom-color-100: var(--custom-color-100);
-  --color-custom-color-200: var(--custom-color-200);
-  --color-custom-color-300: var(--custom-color-300);
-  --color-custom-color-400: var(--custom-color-400);
-  --color-custom-color-500: var(--custom-color-500);
-  --color-custom-color-600: var(--custom-color-600);
-  --color-custom-color-700: var(--custom-color-700);  
-  --color-custom-color-800: var(--custom-color-800);
-  --color-custom-color-900: var(--custom-color-900);
 }
 
 @media (prefers-color-scheme: dark) {
