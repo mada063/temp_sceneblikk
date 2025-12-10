@@ -11,6 +11,10 @@ import { getAirQualityLevel, type WeatherData } from "./utils";
 import type { WeatherProps } from "./types";
 import { calculateHoursToShow, type PanelSize } from "./chart-config";
 import { findWeatherLocation } from "./location-utils";
+import { checkRateLimit, getTimeUntilNextCall } from "../../../lib/rate-limit-client";
+
+// Rate limit: 1 hour (3600000 ms)
+const WEATHER_RATE_LIMIT_MS = 60 * 60 * 1000;
 
 export function Weather({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: WeatherProps) {
   const {
@@ -83,6 +87,16 @@ export function Weather({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }:
 
     const fetchWeatherData = async () => {
       try {
+        // Check rate limit before making API call
+        const rateLimitKey = `weather_${lat}_${lon}`;
+        if (!checkRateLimit(rateLimitKey, WEATHER_RATE_LIMIT_MS)) {
+          const timeRemaining = getTimeUntilNextCall(rateLimitKey, WEATHER_RATE_LIMIT_MS);
+          const minutesRemaining = Math.ceil(timeRemaining / (60 * 1000));
+          setError(`Rate limit exceeded. Please wait ${minutesRemaining} minute(s) before refreshing.`);
+          setLoading(false);
+          return;
+        }
+
         setLoading(true);
         setError(null);
 
@@ -208,6 +222,7 @@ export function Weather({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }:
     };
 
     fetchWeatherData();
+    // Interval set to 10 minutes, but rate limiting (1 hour) will prevent actual API calls if too soon
     const interval = setInterval(fetchWeatherData, 10 * 60 * 1000);
     return () => clearInterval(interval);
   }, [lat, lon, showAirQuality, showLocationForecast, panelSize, weatherTimeFormat, colSpan, rowSpan, totalGridSize, showTwoCharts, isFullScreen]);
@@ -229,6 +244,16 @@ export function Weather({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }:
 
     const fetchWeatherData2 = async () => {
       try {
+        // Check rate limit before making API call
+        const rateLimitKey = `weather_${lat2}_${lon2}`;
+        if (!checkRateLimit(rateLimitKey, WEATHER_RATE_LIMIT_MS)) {
+          const timeRemaining = getTimeUntilNextCall(rateLimitKey, WEATHER_RATE_LIMIT_MS);
+          const minutesRemaining = Math.ceil(timeRemaining / (60 * 1000));
+          setError2(`Rate limit exceeded. Please wait ${minutesRemaining} minute(s) before refreshing.`);
+          setLoading2(false);
+          return;
+        }
+
         setLoading2(true);
         setError2(null);
 
@@ -338,6 +363,7 @@ export function Weather({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }:
     };
 
     fetchWeatherData2();
+    // Interval set to 10 minutes, but rate limiting (1 hour) will prevent actual API calls if too soon
     const interval = setInterval(fetchWeatherData2, 10 * 60 * 1000);
     return () => clearInterval(interval);
   }, [lat2, lon2, showAirQuality, showLocationForecast, showTwoCharts, isFullScreen, weatherTimeFormat]);

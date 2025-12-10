@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchGoogleTasks } from "../../../lib/google";
 import { deserializeTokensFromCookie } from "../../../lib/google-oauth";
+import { checkRateLimit, getTimeUntilNextCall } from "../../../lib/rate-limit-server";
 
 export const runtime = "nodejs";
+
+// Rate limit: 30 minutes (1800000 ms)
+const TASKS_RATE_LIMIT_MS = 30 * 60 * 1000;
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
@@ -10,8 +14,25 @@ export async function GET(request: NextRequest) {
 
   const taskListId = searchParams.get("taskListId") ?? undefined;
 
+  // Create a unique key for rate limiting based on user session
+  const tokenCookie = request.cookies.get("google_oauth_tokens")?.value;
+  const rateLimitKey = `tasks_${taskListId || "default"}_${tokenCookie?.substring(0, 20) || "anonymous"}`;
+
+  // Check rate limit
+  if (!checkRateLimit(rateLimitKey, TASKS_RATE_LIMIT_MS)) {
+    const timeRemaining = getTimeUntilNextCall(rateLimitKey, TASKS_RATE_LIMIT_MS);
+    const minutesRemaining = Math.ceil(timeRemaining / (60 * 1000));
+    return NextResponse.json(
+      {
+        error: `Rate limit exceeded. Please wait ${minutesRemaining} minute(s) before making another request.`,
+        rateLimited: true,
+        retryAfter: timeRemaining,
+      },
+      { status: 429 },
+    );
+  }
+
   try {
-    const tokenCookie = request.cookies.get("google_oauth_tokens")?.value;
     const tokens = deserializeTokensFromCookie(tokenCookie);
 
     if (!tokens || !tokens.refresh_token) {

@@ -1,7 +1,12 @@
 import type { TransportData, Departure, StopPlace } from "./types";
+import { checkRateLimit, getTimeUntilNextCall } from "../../../lib/rate-limit-client";
 
 const ENTUR_API_URL = "https://api.entur.io/journey-planner/v3/graphql";
 const ENTUR_CLIENT_NAME = "sceneblikk-app";
+
+// Rate limit: Adjustable - default 30 seconds (30000 ms)
+// Set to 0 to disable rate limiting
+const DEPARTURES_RATE_LIMIT_MS = 30 * 1000;
 
 /**
  * Normalize stop place ID to EnTur format
@@ -246,6 +251,16 @@ export async function fetchDepartures(
   stopPlaceId: string,
   limit: number = 10
 ): Promise<Departure[]> {
+  // Check rate limit if enabled (DEPARTURES_RATE_LIMIT_MS > 0)
+  if (DEPARTURES_RATE_LIMIT_MS > 0) {
+    const rateLimitKey = `departures_${stopPlaceId}`;
+    if (!checkRateLimit(rateLimitKey, DEPARTURES_RATE_LIMIT_MS)) {
+      const timeRemaining = getTimeUntilNextCall(rateLimitKey, DEPARTURES_RATE_LIMIT_MS);
+      const secondsRemaining = Math.ceil(timeRemaining / 1000);
+      throw new Error(`Rate limit exceeded. Please wait ${secondsRemaining} second(s) before refreshing departures.`);
+    }
+  }
+
   // Normalize the stop place ID
   const normalizedId = normalizeStopPlaceId(stopPlaceId);
   const queryText = `

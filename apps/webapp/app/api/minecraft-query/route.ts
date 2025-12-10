@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import net from "net";
+import { checkRateLimit, getTimeUntilNextCall } from "../../lib/rate-limit-server";
 
 const DEFAULT_TIMEOUT = 8000; // 8 seconds
 const PROTOCOL_VERSION = 47; // 1.8.x protocol version (widely supported)
+
+// Rate limit: Adjustable - default 1 minute (60000 ms)
+// Set to 0 to disable rate limiting
+const SERVER_RATE_LIMIT_MS = 1 * 60 * 1000;
 
 interface MinecraftQueryResult {
   motd: string;
@@ -306,6 +311,30 @@ export async function GET(request: NextRequest) {
     port = portParam ? parseInt(portParam, 10) : 25565;
     if (isNaN(port) || port < 1 || port > 65535) {
       return NextResponse.json({ error: "Invalid port" }, { status: 400 });
+    }
+
+    // Check rate limit if enabled (SERVER_RATE_LIMIT_MS > 0)
+    if (SERVER_RATE_LIMIT_MS > 0) {
+      const rateLimitKey = `server_${host}_${port}`;
+      if (!checkRateLimit(rateLimitKey, SERVER_RATE_LIMIT_MS)) {
+        const timeRemaining = getTimeUntilNextCall(rateLimitKey, SERVER_RATE_LIMIT_MS);
+        const secondsRemaining = Math.ceil(timeRemaining / 1000);
+        return NextResponse.json(
+          {
+            error: `Rate limit exceeded. Please wait ${secondsRemaining} second(s) before making another request.`,
+            rateLimited: true,
+            retryAfter: timeRemaining,
+            motd: null,
+            gametype: null,
+            map: null,
+            playersOnline: null,
+            playersMax: null,
+            hostport: port,
+            hostip: host,
+          },
+          { status: 429 },
+        );
+      }
     }
 
     console.log(`[${host}:${port}] Starting Minecraft query...`);
