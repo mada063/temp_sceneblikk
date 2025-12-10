@@ -1425,13 +1425,19 @@ export function SelectedComponentPanel({
                           onClick={async () => {
                             try {
                               const response = await fetch("/api/google/oauth/url");
-                              if (!response.ok) return;
+                              if (!response.ok) {
+                                const errorData = await response.json().catch(() => ({}));
+                                console.error("Failed to get Google OAuth URL:", response.status, errorData);
+                                return;
+                              }
                               const data = await response.json();
                               if (data?.url) {
                                 window.location.href = data.url as string;
+                              } else {
+                                console.error("No OAuth URL in response:", data);
                               }
-                            } catch {
-                              // Silently ignore errors – user can retry
+                            } catch (error) {
+                              console.error("Error fetching Google OAuth URL:", error);
                             }
                           }}
                           className="inline-flex items-center justify-center rounded-full border border-custom-color-400 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 transition hover:bg-custom-color-200/40 dark:border-custom-color-300/40 dark:text-custom-color-100 dark:hover:bg-custom-color-700/50"
@@ -2070,13 +2076,19 @@ export function SelectedComponentPanel({
                           onClick={async () => {
                             try {
                               const response = await fetch("/api/google/oauth/url");
-                              if (!response.ok) return;
+                              if (!response.ok) {
+                                const errorData = await response.json().catch(() => ({}));
+                                console.error("Failed to get Google OAuth URL:", response.status, errorData);
+                                return;
+                              }
                               const data = await response.json();
                               if (data?.url) {
                                 window.location.href = data.url as string;
+                              } else {
+                                console.error("No OAuth URL in response:", data);
                               }
-                            } catch {
-                              // Ignore – user can retry
+                            } catch (error) {
+                              console.error("Error fetching Google OAuth URL:", error);
                             }
                           }}
                           className="inline-flex items-center justify-center rounded-full border border-custom-color-400 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 transition hover:bg-custom-color-200/40 dark:border-custom-color-300/40 dark:text-custom-color-100 dark:hover:bg-custom-color-700/50"
