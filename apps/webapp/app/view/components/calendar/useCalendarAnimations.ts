@@ -11,17 +11,22 @@ export function useCalendarAnimations(
 ) {
   const [isAnimating, setIsAnimating] = useState(true);
   const prevWeekKeyRef = useRef<string | number | undefined>(weekKey);
-  const isFirstRenderRef = useRef(true);
+  const isFirstMountRef = useRef(true);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Reset animation state when week changes
-    if (weekKey !== undefined && weekKey !== prevWeekKeyRef.current) {
+    const isWeekChange = weekKey !== undefined && weekKey !== prevWeekKeyRef.current;
+    const isFirstMount = isFirstMountRef.current;
+    
+    // On first mount, we want to animate
+    // On week changes (after first mount), we also want to animate
+    if (isWeekChange && !isFirstMount) {
       prevWeekKeyRef.current = weekKey;
       setIsAnimating(true);
-      isFirstRenderRef.current = false;
-    } else if (isFirstRenderRef.current) {
-      isFirstRenderRef.current = false;
+    } else if (isFirstMount) {
+      // First mount - initialize and keep animating
+      prevWeekKeyRef.current = weekKey;
+      setIsAnimating(true);
     }
 
     // Clear any existing timeout
@@ -34,6 +39,10 @@ export function useCalendarAnimations(
 
     timeoutRef.current = setTimeout(() => {
       setIsAnimating(false);
+      // Mark that we've completed the initial animation
+      if (isFirstMountRef.current) {
+        isFirstMountRef.current = false;
+      }
     }, animationDuration);
 
     return () => {
@@ -45,8 +54,8 @@ export function useCalendarAnimations(
 
   return {
     isAnimating,
-    // Keep isInitialLoad for backward compatibility
-    isInitialLoad: isAnimating && isFirstRenderRef.current,
+    // isInitialLoad is true only on the very first mount before animation completes
+    isInitialLoad: isAnimating && isFirstMountRef.current,
   };
 }
 

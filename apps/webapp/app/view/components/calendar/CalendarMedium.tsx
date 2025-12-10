@@ -276,7 +276,6 @@ export function CalendarMedium({
                 const cellDelay = isInitialLoad
                   ? `${(cellIndex * CALENDAR_ANIMATION.stagger) / 1000}s`
                   : undefined;
-                const cellOpacity = isInitialLoad ? 0 : undefined;
 
                 return (
                   <div
@@ -287,7 +286,7 @@ export function CalendarMedium({
                     style={{
                       borderColor,
                       backgroundColor: isToday ? todayHighlight : dayBackground,
-                      opacity: cellOpacity ?? (day.isCurrentMonth ? 1 : 0.35),
+                      opacity: isInitialLoad ? undefined : (day.isCurrentMonth ? 1 : 0.35),
                       animationDelay: cellDelay,
                     }}
                   >
@@ -399,7 +398,6 @@ export function CalendarMedium({
               const cellDelay = isInitialLoad
                 ? `${(cellIndex * CALENDAR_ANIMATION.stagger) / 1000}s`
                 : undefined;
-              const cellOpacity = isInitialLoad ? 0 : undefined;
 
               return (
                 <div
@@ -410,7 +408,7 @@ export function CalendarMedium({
                   style={{
                     borderColor,
                     backgroundColor: isToday ? todayHighlight : dayBackground,
-                    opacity: cellOpacity ?? (day.isCurrentMonth ? 1 : 0.35),
+                    opacity: isInitialLoad ? undefined : (day.isCurrentMonth ? 1 : 0.35),
                     animationDelay: cellDelay,
                   }}
                 >
