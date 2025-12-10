@@ -1,11 +1,19 @@
-import { NextResponse } from "next/server";
-import { createOAuthUrl } from "../../../../lib/google-oauth";
+import { NextRequest, NextResponse } from "next/server";
+import { createOAuthUrl, deserializeTokensFromCookie } from "../../../../lib/google-oauth";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const url = await createOAuthUrl();
+    // Check if we already have tokens with a refresh_token
+    const tokenCookie = request.cookies.get("google_oauth_tokens")?.value;
+    const existingTokens = deserializeTokensFromCookie(tokenCookie);
+    
+    // Only force consent if we don't have a refresh_token
+    // If we have one, just use select_account to let user choose account
+    const forceConsent = !existingTokens?.refresh_token;
+    
+    const url = await createOAuthUrl(forceConsent);
     return NextResponse.json({ url });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

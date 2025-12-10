@@ -37,13 +37,15 @@ function getOAuthClient() {
   return new google.auth.OAuth2(clientId, clientSecret, redirectUri);
 }
 
-export async function createOAuthUrl(): Promise<string> {
+export async function createOAuthUrl(forceConsent: boolean = false): Promise<string> {
   const client = getOAuthClient();
 
   const url = client.generateAuthUrl({
     access_type: "offline",
-    // Let Google decide when to re-prompt for consent; avoids forcing the
-    // approval screen every single time while still issuing a refresh token.
+    // Force consent screen only if we don't have a refresh_token
+    // Google only issues refresh_token on first consent, so we need to force re-consent
+    // if we don't already have one stored
+    prompt: forceConsent ? "consent" : "select_account",
     scope: OAUTH_SCOPES,
   });
 
