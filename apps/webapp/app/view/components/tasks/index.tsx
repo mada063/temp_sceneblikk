@@ -40,13 +40,17 @@ export function Tasks({
         });
 
         if (!response.ok) {
+          const errorText = await response.text();
           // eslint-disable-next-line no-console
-          console.warn("Google Tasks API returned non-OK response, using demo data instead.");
+          console.error("Google Tasks API returned non-OK response:", response.status, response.statusText, errorText, "- using demo data instead.");
           setTasksData(buildSampleTasksData());
           return;
         }
 
         const data: {
+          error?: string;
+          details?: string;
+          code?: string;
           taskList?: {
             id: string;
             title: string;
@@ -62,12 +66,38 @@ export function Tasks({
           }>;
         } = await response.json();
 
-        const incomingTasks = data.tasks ?? [];
-        if (!data.taskList || incomingTasks.length === 0) {
-          // Nothing configured yet – keep demo data so the panel is never empty
+        // Debug logging
+        // eslint-disable-next-line no-console
+        console.log("Google Tasks API response:", {
+          hasError: !!data.error,
+          error: data.error,
+          hasTaskList: !!data.taskList,
+          taskList: data.taskList,
+          tasksCount: data.tasks?.length ?? 0,
+          tasks: data.tasks,
+        });
+
+        // Check if the response contains an error field
+        if (data.error) {
+          // eslint-disable-next-line no-console
+          console.error("Google Tasks API returned error:", data.error, data.details || "", data.code || "", "- using demo data instead.");
           setTasksData(buildSampleTasksData());
           return;
         }
+
+        const incomingTasks = data.tasks ?? [];
+        if (!data.taskList) {
+          // No task list returned – this could mean no task lists exist or API error
+          // eslint-disable-next-line no-console
+          console.warn("Google Tasks API returned no task list - using demo data instead. Response data:", data);
+          setTasksData(buildSampleTasksData());
+          return;
+        }
+        
+        // Allow empty task lists - don't fall back to demo data if taskList exists but is empty
+        // This allows users to see an empty state rather than fake demo data
+        // Only use demo data if we have a task list but it's truly empty (no tasks)
+        // However, if taskList exists, we should show it even if empty
 
         const now = new Date();
         const mappedTasks: Task[] = incomingTasks.map((task) => {

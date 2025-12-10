@@ -93,30 +93,56 @@ export async function fetchGoogleTasks(
   let taskList: GoogleTasksList | null = null;
 
   if (!taskListId) {
-    const taskListsResponse = await tasksApi.tasklists.list({
-      maxResults: 1,
+    try {
+      const taskListsResponse = await tasksApi.tasklists.list({
+        maxResults: 1,
+      });
+      const firstList = taskListsResponse.data.items?.[0];
+      if (!firstList || !firstList.id) {
+        return {
+          taskList: null,
+          tasks: [],
+        };
+      }
+      taskListId = firstList.id;
+      taskList = {
+        id: firstList.id,
+        title: firstList.title ?? "Oppgaver",
+        updated: firstList.updated ?? undefined,
+      };
+    } catch (error) {
+      console.error("Failed to fetch Google Task Lists:", error);
+      throw error;
+    }
+  }
+
+  if (!taskListId) {
+    return {
+      taskList: null,
+      tasks: [],
+    };
+  }
+
+  let tasksResponse;
+  try {
+    tasksResponse = await tasksApi.tasks.list({
+      tasklist: taskListId,
+      showCompleted: false,
+      showDeleted: false,
+      maxResults: input.maxResults ?? 50,
     });
-    const firstList = taskListsResponse.data.items?.[0];
-    if (!firstList || !firstList.id) {
+  } catch (error: any) {
+    console.error("Failed to fetch tasks from Google Tasks API:", error);
+    // If the error is 404 (list not found), return null taskList
+    if (error?.code === 404 || error?.response?.status === 404) {
+      console.warn(`Task list ${taskListId} not found`);
       return {
         taskList: null,
         tasks: [],
       };
     }
-    taskListId = firstList.id;
-    taskList = {
-      id: firstList.id,
-      title: firstList.title ?? "Oppgaver",
-      updated: firstList.updated ?? undefined,
-    };
+    throw error;
   }
-
-  const tasksResponse = await tasksApi.tasks.list({
-    tasklist: taskListId,
-    showCompleted: false,
-    showDeleted: false,
-    maxResults: input.maxResults ?? 50,
-  });
 
   const items = tasksResponse.data.items ?? [];
 
@@ -141,12 +167,33 @@ export async function fetchGoogleTasks(
       return 0;
     });
 
+  // If taskList wasn't set earlier (when taskListId was provided), create it now
   if (!taskList) {
-    taskList = {
-      id: taskListId,
-      title: "Oppgaver",
-      updated: tasks[0]?.updated ?? undefined,
-    };
+    // Try to get the task list details to get the actual title
+    try {
+      const taskListResponse = await tasksApi.tasklists.get({
+        tasklist: taskListId,
+      });
+      if (taskListResponse.data.id && taskListResponse.data.title) {
+        taskList = {
+          id: taskListResponse.data.id,
+          title: taskListResponse.data.title,
+          updated: taskListResponse.data.updated ?? undefined,
+        };
+      }
+    } catch (error) {
+      // If we can't get the list details, create a default one
+      console.warn("Could not fetch task list details, using default title");
+    }
+    
+    // Fallback to default if we still don't have a taskList
+    if (!taskList) {
+      taskList = {
+        id: taskListId,
+        title: "Oppgaver",
+        updated: tasks[0]?.updated ?? undefined,
+      };
+    }
   }
 
   return {
