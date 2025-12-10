@@ -316,6 +316,7 @@ export function CalendarMedium({
                       className={`flex min-h-0 flex-1 flex-col gap-1 ${
                         isExpanded ? "overflow-auto" : "overflow-hidden"
                       }`}
+                      style={{ minHeight: "2.5rem" }}
                     >
                       {eventsToShow.map((event, index) => {
                         const backgroundColor =
@@ -325,12 +326,12 @@ export function CalendarMedium({
                           textColor,
                         );
                         const eventDelay = isInitialLoad
-                          ? `${((cellIndex * CALENDAR_ANIMATION.stagger + (index + 1) * 50) / 1000)}s`
+                          ? `${((cellIndex * CALENDAR_ANIMATION.stagger + 300 + (index + 1) * 50) / 1000)}s`
                           : undefined;
                         return (
                           <div
                             key={event.id ?? `${day.date.toISOString()}-${index}`}
-                            className={`rounded-xl px-2 py-1 text-[11px] font-semibold leading-tight transition-opacity duration-300 ${
+                            className={`rounded-xl px-2 py-1 text-[11px] font-semibold leading-tight ${
                               isInitialLoad ? "animate-calendar-event-fade-in" : ""
                             } ${isExpanded ? "whitespace-normal" : "min-w-0 shrink-0"}`}
                             style={{
@@ -385,7 +386,7 @@ export function CalendarMedium({
           </div>
           <div
             className="mt-3 grid grid-cols-7 gap-2"
-            style={isExpanded ? { gridAutoRows: "1fr", minHeight: 0, flex: "1 1 0" } : {}}
+            style={isExpanded ? { gridAutoRows: "1fr", minHeight: 0, flex: "1 1 0" } : { gridAutoRows: "minmax(100px, 1fr)" }}
           >
             {displayedWeekDays.map((day, cellIndex) => {
               const isToday =
@@ -430,6 +431,7 @@ export function CalendarMedium({
                         className={`flex min-h-0 flex-1 flex-col gap-1 ${
                           isExpanded ? "overflow-auto" : "overflow-hidden"
                         }`}
+                        style={{ minHeight: "2.5rem" }}
                       >
                     {eventsToShow.map((event, index) => {
                       const backgroundColor =
@@ -444,7 +446,7 @@ export function CalendarMedium({
                       return (
                         <div
                           key={event.id ?? `${day.date.toISOString()}-${index}`}
-                          className={`rounded-xl px-2 py-1 text-[11px] font-semibold leading-tight transition-opacity duration-300 ${
+                          className={`rounded-xl px-2 py-1 text-[11px] font-semibold leading-tight ${
                             isInitialLoad ? "animate-calendar-event-fade-in" : ""
                           } ${isExpanded ? "whitespace-normal" : "min-w-0 shrink-0"}`}
                           style={{
