@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
   try {
-    // Check if we already have tokens with a refresh_token
+    // Check if we already have tokens with a refresh_token in cookies
     const tokenCookie = request.cookies.get("google_oauth_tokens")?.value;
     const existingTokens = deserializeTokensFromCookie(tokenCookie);
     
