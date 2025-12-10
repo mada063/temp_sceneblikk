@@ -267,16 +267,23 @@ export function CalendarMedium({
           style={{ borderColor }}
         >
           {isPortrait ? (
-            <div className="mt-3 flex flex-1 flex-col gap-2 overflow-hidden">
+            <div className="mt-3 flex flex-1 flex-col gap-2 overflow-y-auto overflow-x-visible">
               {displayedWeekDays.map((day, cellIndex) => {
                 const isToday =
                   day.date.getDate() === now.getDate() &&
                   day.date.getMonth() === now.getMonth() &&
                   day.date.getFullYear() === now.getFullYear();
 
-                const mainEvents = isExpanded ? day.events : day.events.slice(0, 2);
-                const extraEvents = isExpanded ? [] : day.events.slice(2);
-                const hasExtraEvents = extraEvents.length > 0;
+                // In portrait mode, always use 2-column layout when there are more than 2 events
+                const mainEvents = day.events.slice(0, 2);
+                const remainingEvents = day.events.slice(2);
+                const hasExtraEvents = remainingEvents.length > 0;
+                
+                // Group remaining events into columns of 2
+                const extraColumns: CalendarEvent[][] = [];
+                for (let i = 0; i < remainingEvents.length; i += 2) {
+                  extraColumns.push(remainingEvents.slice(i, i + 2));
+                }
 
                 const cellDelay = isInitialLoad
                   ? `${(cellIndex * CALENDAR_ANIMATION.stagger) / 1000}s`
@@ -285,59 +292,62 @@ export function CalendarMedium({
                 return (
                   <div
                     key={day.date.toISOString()}
-                    className="flex min-h-0 gap-2"
+                    className={`flex min-h-0 flex-col rounded-2xl px-3 py-2 transition-opacity duration-300 ${
+                      isInitialLoad ? "animate-calendar-cell-fade-in" : ""
+                    }`}
+                    style={{
+                      borderColor,
+                      backgroundColor: isToday ? todayHighlight : dayBackground,
+                      opacity: isInitialLoad ? undefined : (day.isCurrentMonth ? 1 : 0.35),
+                      animationDelay: cellDelay,
+                    }}
                   >
-                    <div
-                      className={`flex min-h-0 flex-1 flex-col rounded-2xl px-3 py-2 transition-opacity duration-300 ${
-                        isInitialLoad ? "animate-calendar-cell-fade-in" : ""
-                      }`}
-                      style={{
-                        borderColor,
-                        backgroundColor: isToday ? todayHighlight : dayBackground,
-                        opacity: isInitialLoad ? undefined : (day.isCurrentMonth ? 1 : 0.35),
-                        animationDelay: cellDelay,
-                      }}
-                    >
-                      <div className="mb-1 flex shrink-0 items-center justify-between gap-2 text-xs font-semibold">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="text-[10px] uppercase tracking-[0.3em] opacity-70"
-                            style={{ color: mutedColor }}
-                          >
-                            {(() => {
-                              const dayOfWeek = day.date.getDay();
-                              const index = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-                              const keys = [
-                                "calendarWeekdayMon",
-                                "calendarWeekdayTue",
-                                "calendarWeekdayWed",
-                                "calendarWeekdayThu",
-                                "calendarWeekdayFri",
-                                "calendarWeekdaySat",
-                                "calendarWeekdaySun",
-                              ];
-                              return t("editor", keys[index] as any);
-                            })()}
-                          </span>
-                          <span className="text-sm">{day.date.getDate()}</span>
-                        </div>
-                        {isToday ? (
-                          <span
-                            className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] uppercase tracking-[0.15em] whitespace-nowrap animate-calendar-today-pulse"
-                            style={{
-                              backgroundColor: accentColor,
-                              color: accentTextColor,
-                            }}
-                          >
-                            {t("editor", "calendarTodayLabel")}
-                          </span>
-                        ) : null}
+                    <div className="mb-1 flex shrink-0 items-center justify-between gap-2 text-xs font-semibold">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="text-[10px] uppercase tracking-[0.3em] opacity-70"
+                          style={{ color: mutedColor }}
+                        >
+                          {(() => {
+                            const dayOfWeek = day.date.getDay();
+                            const index = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                            const keys = [
+                              "calendarWeekdayMon",
+                              "calendarWeekdayTue",
+                              "calendarWeekdayWed",
+                              "calendarWeekdayThu",
+                              "calendarWeekdayFri",
+                              "calendarWeekdaySat",
+                              "calendarWeekdaySun",
+                            ];
+                            return t("editor", keys[index] as any);
+                          })()}
+                        </span>
+                        <span className="text-sm">{day.date.getDate()}</span>
                       </div>
+                      {isToday ? (
+                        <span
+                          className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] uppercase tracking-[0.15em] whitespace-nowrap animate-calendar-today-pulse"
+                          style={{
+                            backgroundColor: accentColor,
+                            color: accentTextColor,
+                          }}
+                        >
+                          {t("editor", "calendarTodayLabel")}
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="flex min-h-0 flex-1 gap-2">
                       <div
-                        className={`flex min-h-0 flex-1 flex-col gap-1 ${
+                        className={`flex min-h-0 flex-col gap-1 ${
                           isExpanded ? "overflow-auto" : "overflow-hidden"
                         }`}
-                        style={{ minHeight: "2.5rem" }}
+                        style={{ 
+                          minHeight: "2.5rem", 
+                          width: hasExtraEvents ? `${100 / (extraColumns.length + 1)}%` : "100%", 
+                          flexShrink: 0, 
+                          height: "100%" 
+                        }}
                       >
                         {mainEvents.map((event, index) => {
                           const backgroundColor =
@@ -381,60 +391,52 @@ export function CalendarMedium({
                           );
                         })}
                       </div>
+                      {hasExtraEvents && extraColumns.map((columnEvents, columnIndex) => {
+                        const columnWidth = extraColumns.length > 1 ? `${100 / (extraColumns.length + 1)}%` : "50%";
+                        return (
+                          <div
+                            key={`extra-column-${columnIndex}`}
+                            className="flex min-h-0 flex-shrink-0 flex-col gap-1 overflow-hidden"
+                            style={{ minHeight: "2.5rem", width: columnWidth, flexShrink: 0, height: "100%" }}
+                          >
+                            {columnEvents.map((event, index) => {
+                              const backgroundColor =
+                                event.color || hexToRgba(accentColor, 0.2);
+                              const eventTextColor = getReadableTextColor(
+                                event.color || backgroundColor,
+                                textColor,
+                              );
+                              const eventDelay = isInitialLoad
+                                ? `${((cellIndex * CALENDAR_ANIMATION.stagger + 300 + (columnIndex * 2 + index + 3) * 50) / 1000)}s`
+                                : undefined;
+                              return (
+                                <div
+                                  key={event.id ?? `${day.date.toISOString()}-extra-${columnIndex}-${index}`}
+                                  className={`rounded-xl px-2 py-1 text-[11px] font-semibold leading-tight min-w-0 shrink-0 ${
+                                    isInitialLoad ? "animate-calendar-event-fade-in" : ""
+                                  }`}
+                                  style={{
+                                    backgroundColor,
+                                    color: eventTextColor,
+                                    opacity: isInitialLoad ? 0 : 1,
+                                    animationDelay: eventDelay,
+                                  }}
+                                >
+                                  {event.time && (
+                                    <span className="block text-[10px] font-medium opacity-75">
+                                      {event.time}
+                                    </span>
+                                  )}
+                                  <span className="block truncate">
+                                    {event.title}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })}
                     </div>
-                    {hasExtraEvents && (
-                      <div
-                        className={`flex min-h-0 flex-col rounded-2xl px-3 py-2 transition-opacity duration-300 ${
-                          isInitialLoad ? "animate-calendar-cell-fade-in" : ""
-                        }`}
-                        style={{
-                          borderColor,
-                          backgroundColor: dayBackground,
-                          opacity: isInitialLoad ? undefined : (day.isCurrentMonth ? 1 : 0.35),
-                          animationDelay: cellDelay,
-                          minWidth: "8rem",
-                        }}
-                      >
-                        <div className="mb-1 flex shrink-0 items-center gap-2 text-xs font-semibold opacity-0">
-                          <span className="text-sm">.</span>
-                        </div>
-                        <div
-                          className="flex min-h-0 flex-1 flex-col gap-1 overflow-hidden"
-                          style={{ minHeight: "2.5rem" }}
-                        >
-                          {extraEvents.map((event, index) => {
-                            const backgroundColor =
-                              event.color || hexToRgba(accentColor, 0.2);
-                            const eventTextColor = getReadableTextColor(
-                              event.color || backgroundColor,
-                              textColor,
-                            );
-                            const eventDelay = isInitialLoad
-                              ? `${((cellIndex * CALENDAR_ANIMATION.stagger + 300 + (index + 3) * 50) / 1000)}s`
-                              : undefined;
-                            return (
-                              <div
-                                key={event.id ?? `${day.date.toISOString()}-extra-${index}`}
-                                className={`rounded-xl px-2 py-1 text-[11px] font-semibold leading-tight min-w-0 shrink-0 ${
-                                  isInitialLoad ? "animate-calendar-event-fade-in" : ""
-                                }`}
-                                style={{
-                                  backgroundColor,
-                                  color: eventTextColor,
-                                  opacity: isInitialLoad ? 0 : 1,
-                                  animationDelay: eventDelay,
-                                }}
-                              >
-                                <span className="block truncate whitespace-nowrap">
-                                  {event.time ? `${event.time} · ` : ""}
-                                  {event.title}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 );
               })}
