@@ -29,6 +29,19 @@ export async function GET(request: NextRequest) {
   try {
     const tokens = await handleOAuthCallback(code);
 
+    // Log token status for debugging (without exposing actual token values)
+    console.log("OAuth callback tokens received:", {
+      hasAccessToken: Boolean(tokens.access_token),
+      hasRefreshToken: Boolean(tokens.refresh_token),
+      hasScope: Boolean(tokens.scope),
+      expiryDate: tokens.expiry_date ? new Date(tokens.expiry_date).toISOString() : null,
+    });
+
+    if (!tokens.refresh_token) {
+      console.error("WARNING: No refresh_token received from Google OAuth. This will cause 401 errors.");
+      console.error("This usually happens if consent was already granted. Using prompt=consent should fix this.");
+    }
+
     const response = NextResponse.redirect(
       `${appBaseUrl}/editor?google=connected`,
     );
@@ -43,6 +56,8 @@ export async function GET(request: NextRequest) {
         // Keep for a long time; refresh_token will be used to keep access fresh.
         maxAge: 60 * 60 * 24 * 365, // 1 year
       });
+    } else {
+      console.error("Failed to serialize tokens for cookie");
     }
 
     return response;

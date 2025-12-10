@@ -9,8 +9,10 @@ import {
   parseColorPalette,
   makeDateKey,
 } from "./utils";
+import { useI18n } from "../../../lib/i18n";
 
 export function CalendarSmall({ appearance }: CalendarProps) {
+  const { t } = useI18n();
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
@@ -157,7 +159,7 @@ export function CalendarSmall({ appearance }: CalendarProps) {
           className="text-xs font-semibold uppercase tracking-[0.35em]"
           style={{ color: mutedColor }}
         >
-          Kalender
+          {t("editor", "calendarHeaderLabel")}
         </p>
         <p className="text-2xl font-semibold capitalize leading-tight">
           {dayLabel}
@@ -171,7 +173,7 @@ export function CalendarSmall({ appearance }: CalendarProps) {
         {todayEvents.length === 0 ? (
           <div className="flex flex-1 items-center justify-center">
             <p className="text-sm animate-fade-in" style={{ color: mutedColor, animationDelay: "0.4s" }}>
-              Ingen planlagte aktiviteter i dag.
+              {t("editor", "calendarNoActivitiesToday")}
             </p>
           </div>
         ) : (

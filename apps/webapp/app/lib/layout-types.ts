@@ -78,6 +78,7 @@ export type CellAppearance = {
   calendarCellBackground?: string;
   calendarTodayHighlight?: string;
   calendarEventPalette?: string;
+  calendarDisableAnimations?: boolean;
   /**
    * Tasks-specific options (used when componentId === "tasks").
    */
@@ -144,6 +145,7 @@ export const makeDefaultAppearance = (): CellAppearance => ({
   calendarCellBackground: "",
   calendarTodayHighlight: "",
   calendarEventPalette: "",
+  calendarDisableAnimations: false,
   tasksProvider: "demo",
   tasksListId: "",
   transportStopPlace: "62356",

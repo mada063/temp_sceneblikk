@@ -53,13 +53,30 @@ export async function GET(request: NextRequest) {
       tokens,
     );
 
+    // Log for debugging
+    console.log("Google Tasks API response:", {
+      hasTaskList: !!taskList,
+      taskListId: taskList?.id,
+      taskListTitle: taskList?.title,
+      tasksCount: tasks.length,
+      firstTask: tasks[0]?.title,
+    });
+
     return NextResponse.json({ taskList, tasks });
   } catch (error) {
     console.error("Failed to fetch Google Tasks:", error);
+    
+    // Provide more detailed error information
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorDetails = error instanceof Error && "code" in error ? String(error.code) : undefined;
 
     // Allow client to fall back to demo data
     return NextResponse.json(
-      { error: "Failed to load tasks from Google." },
+      { 
+        error: "Failed to load tasks from Google.",
+        details: errorMessage,
+        code: errorDetails,
+      },
       { status: 500 },
     );
   }

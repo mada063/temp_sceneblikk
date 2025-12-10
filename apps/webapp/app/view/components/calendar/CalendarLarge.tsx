@@ -13,10 +13,12 @@ import {
   getISOWeekNumber,
 } from "./utils";
 import { useCalendarAnimations, CALENDAR_ANIMATION } from "./useCalendarAnimations";
+import { useI18n } from "../../../lib/i18n";
 
 const UPCOMING_LIMIT = 4;
 
 export function CalendarLarge({ appearance }: CalendarProps) {
+  const { t } = useI18n();
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
@@ -185,7 +187,8 @@ export function CalendarLarge({ appearance }: CalendarProps) {
     return Array.from(weeks).sort((a, b) => a - b);
   }, [calendarDays]);
 
-  const { isInitialLoad } = useCalendarAnimations(calendarDays.length);
+  const disableAnimations = appearance.calendarDisableAnimations ?? false;
+  const { isInitialLoad } = useCalendarAnimations(calendarDays.length, undefined, disableAnimations);
 
   return (
     <div
@@ -198,13 +201,13 @@ export function CalendarLarge({ appearance }: CalendarProps) {
             className="text-xs font-semibold uppercase tracking-[0.35em]"
             style={{ color: mutedColor }}
           >
-            Kalender
+            {t("editor", "calendarHeaderLabel")}
           </p>
           <p className="text-2xl font-semibold capitalize leading-tight">
             {monthLabel}
           </p>
           <p className="text-sm font-medium" style={{ color: mutedColor }}>
-            Uke {weekNumbers.join(", ")}
+            {t("editor", "calendarWeekPrefix")} {weekNumbers.join(", ")}
           </p>
         </div>
         <div
@@ -214,7 +217,7 @@ export function CalendarLarge({ appearance }: CalendarProps) {
             color: textColor,
           }}
         >
-          <p className="text-xs uppercase tracking-[0.2em]">I dag</p>
+          <p className="text-xs uppercase tracking-[0.2em]">{t("editor", "calendarTodayLabel")}</p>
           <p className="text-base font-semibold">
             {new Intl.DateTimeFormat("nb-NO", {
               weekday: "long",
@@ -260,7 +263,7 @@ export function CalendarLarge({ appearance }: CalendarProps) {
               return (
                 <div
                   key={day.date.toISOString()}
-                  className={`flex h-full min-h-0 flex-col rounded-2xl border px-2 py-2 transition-opacity duration-300 ${
+                  className={`flex h-full min-h-0 flex-col rounded-2xl px-2 py-2 transition-opacity duration-300 ${
                     isInitialLoad ? "animate-calendar-cell-fade-in" : ""
                   }`}
                   style={{
@@ -280,7 +283,7 @@ export function CalendarLarge({ appearance }: CalendarProps) {
                           color: accentTextColor,
                         }}
                       >
-                        I dag
+                        {t("editor", "calendarTodayLabel")}
                       </span>
                     ) : null}
                   </div>
@@ -320,7 +323,7 @@ export function CalendarLarge({ appearance }: CalendarProps) {
                         className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.2em]"
                         style={{ color: mutedColor }}
                       >
-                        +{day.events.length - 2} more...
+                        +{day.events.length - 2} {t("editor", "calendarMoreEvents")}
                       </span>
                     ) : null}
                   </div>
@@ -339,12 +342,12 @@ export function CalendarLarge({ appearance }: CalendarProps) {
               className="text-xs font-semibold uppercase tracking-[0.3em]"
               style={{ color: mutedColor }}
             >
-              Kommende hendelser
+              {t("editor", "calendarUpcomingHeader")}
             </p>
             <div className="mt-3 space-y-3">
               {upcomingEvents.length === 0 ? (
                 <p className="text-sm" style={{ color: mutedColor }}>
-                  Ingen planlagte aktiviteter denne måneden.
+                  {t("editor", "calendarNoUpcomingMessage")}
                 </p>
               ) : (
                 upcomingEvents.map(({ date, event }) => (
