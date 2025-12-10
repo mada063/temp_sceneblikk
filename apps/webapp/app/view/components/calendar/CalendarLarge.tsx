@@ -260,7 +260,7 @@ export function CalendarLarge({ appearance }: CalendarProps) {
               return (
                 <div
                   key={day.date.toISOString()}
-                  className={`flex h-full min-h-0 flex-col rounded-2xl border px-2 py-2 transition-opacity duration-300 ${
+                  className={`flex h-full min-h-0 flex-col rounded-2xl px-2 py-2 transition-opacity duration-300 ${
                     isInitialLoad ? "animate-calendar-cell-fade-in" : ""
                   }`}
                   style={{

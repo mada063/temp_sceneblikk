@@ -37,7 +37,7 @@ export function Clock({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: C
     if (hasInitialized.current) return;
     
     const animationStartTime = Date.now();
-    const totalDuration = 4000; // 4 seconds total
+    const totalDuration = 2000; // 2 seconds total
     
     // Calculate target end time: current time + animation duration
     // This ensures the clock lands on the correct time when animation completes
