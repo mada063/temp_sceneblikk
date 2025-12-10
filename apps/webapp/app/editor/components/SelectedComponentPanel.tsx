@@ -1501,6 +1501,21 @@ export function SelectedComponentPanel({
                     />
                   </label>
                   <label className="flex items-center justify-between gap-3">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      {t("editor", "calendarDisableAnimationsLabel")}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={appearance.calendarDisableAnimations ?? false}
+                      onChange={(event) =>
+                        onAppearanceChange({
+                          calendarDisableAnimations: event.target.checked,
+                        })
+                      }
+                      className="h-4 w-4 rounded border border-custom-color-400 bg-white text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                    />
+                  </label>
+                  <label className="flex items-center justify-between gap-3">
                     <span className="text-xs font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "calendarAccentColorLabel")}
                     </span>

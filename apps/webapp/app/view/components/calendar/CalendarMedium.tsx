@@ -12,6 +12,7 @@ import {
   getISOWeekNumber,
 } from "./utils";
 import { useCalendarAnimations, CALENDAR_ANIMATION } from "./useCalendarAnimations";
+import { useI18n } from "../../../lib/i18n";
 
 type CalendarMediumProps = CalendarProps & {
   isExpanded?: boolean;
@@ -22,6 +23,7 @@ export function CalendarMedium({
   isExpanded = false,
   orientation,
 }: CalendarMediumProps) {
+  const { t } = useI18n();
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
@@ -189,7 +191,8 @@ export function CalendarMedium({
   const isWeekChangingRef = useRef(false);
 
   // Update cache when week changes, but keep using cached version during animations
-  const { isAnimating, isInitialLoad } = useCalendarAnimations(weekDays.length, weekKey);
+  const disableAnimations = appearance.calendarDisableAnimations ?? false;
+  const { isAnimating, isInitialLoad } = useCalendarAnimations(weekDays.length, weekKey, disableAnimations);
 
   // Detect week changes and manage cache appropriately
   useEffect(() => {
@@ -250,9 +253,9 @@ export function CalendarMedium({
             className="text-xs font-semibold uppercase tracking-[0.35em]"
             style={{ color: mutedColor }}
           >
-            Kalender
+            {t("editor", "calendarHeaderLabel")}
           </p>
-          <p className="text-2xl font-semibold">Uke {weekNumber}</p>
+          <p className="text-2xl font-semibold">{t("editor", "calendarWeekPrefix")} {weekNumber}</p>
         </div>
       </header>
 
@@ -296,7 +299,20 @@ export function CalendarMedium({
                           className="text-[10px] uppercase tracking-[0.3em] opacity-70"
                           style={{ color: mutedColor }}
                         >
-                          {WEEKDAY_LABELS[day.date.getDay() === 0 ? 6 : day.date.getDay() - 1]}
+                          {(() => {
+                            const dayOfWeek = day.date.getDay();
+                            const index = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                            const keys = [
+                              "calendarWeekdayMon",
+                              "calendarWeekdayTue",
+                              "calendarWeekdayWed",
+                              "calendarWeekdayThu",
+                              "calendarWeekdayFri",
+                              "calendarWeekdaySat",
+                              "calendarWeekdaySun",
+                            ];
+                            return t("editor", keys[index] as any);
+                          })()}
                         </span>
                         <span className="text-sm">{day.date.getDate()}</span>
                       </div>
@@ -308,7 +324,7 @@ export function CalendarMedium({
                             color: accentTextColor,
                           }}
                         >
-                          I dag
+                          {t("editor", "calendarTodayLabel")}
                         </span>
                       ) : null}
                     </div>
@@ -364,7 +380,7 @@ export function CalendarMedium({
                           className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.2em]"
                           style={{ color: mutedColor }}
                         >
-                          +{day.events.length - 2} more...
+                          +{day.events.length - 2} {t("editor", "calendarMoreEvents")}
                         </span>
                       ) : null}
                     </div>
@@ -500,7 +516,7 @@ export function CalendarMedium({
               className="text-xs font-semibold uppercase tracking-[0.3em]"
               style={{ color: mutedColor }}
             >
-              Kommende hendelser
+              {t("editor", "calendarUpcomingHeader")}
             </p>
             <div className="mt-3 space-y-2">
               {upcomingEvents.map(({ date, event }) => (

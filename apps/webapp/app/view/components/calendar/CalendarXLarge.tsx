@@ -13,10 +13,12 @@ import {
   makeDateKey,
 } from "./utils";
 import { useCalendarAnimations, CALENDAR_ANIMATION } from "./useCalendarAnimations";
+import { useI18n } from "../../../lib/i18n";
 
 const UPCOMING_LIMIT = 6;
 
 export function CalendarXLarge({ appearance }: CalendarProps) {
+  const { t } = useI18n();
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
@@ -236,7 +238,8 @@ export function CalendarXLarge({ appearance }: CalendarProps) {
     return Array.from(weeks).sort((a, b) => a - b);
   }, [secondMonthDays]);
 
-  const { isInitialLoad } = useCalendarAnimations(allDays.length);
+  const disableAnimations = appearance.calendarDisableAnimations ?? false;
+  const { isInitialLoad } = useCalendarAnimations(allDays.length, undefined, disableAnimations);
 
   const renderCalendarGrid = (
     days: CalendarDay[],
@@ -250,7 +253,7 @@ export function CalendarXLarge({ appearance }: CalendarProps) {
           {monthLabel}
         </p>
         <p className="text-xs font-medium" style={{ color: mutedColor }}>
-          Uke {weekNumbers.join(", ")}
+          {t("editor", "calendarWeekPrefix")} {weekNumbers.join(", ")}
         </p>
       </div>
       <div
@@ -303,7 +306,7 @@ export function CalendarXLarge({ appearance }: CalendarProps) {
                       color: accentTextColor,
                     }}
                   >
-                    I dag
+                    {t("editor", "calendarTodayLabel")}
                   </span>
                 ) : null}
               </div>
@@ -365,7 +368,7 @@ export function CalendarXLarge({ appearance }: CalendarProps) {
             className="text-xs font-semibold uppercase tracking-[0.35em]"
             style={{ color: mutedColor }}
           >
-            Kalender
+            {t("editor", "calendarHeaderLabel")}
           </p>
         </div>
         <div
@@ -375,7 +378,7 @@ export function CalendarXLarge({ appearance }: CalendarProps) {
             color: textColor,
           }}
         >
-          <p className="text-xs uppercase tracking-[0.2em]">I dag</p>
+          <p className="text-xs uppercase tracking-[0.2em]">{t("editor", "calendarTodayLabel")}</p>
           <p className="text-base font-semibold">
             {new Intl.DateTimeFormat("nb-NO", {
               weekday: "long",
@@ -407,12 +410,12 @@ export function CalendarXLarge({ appearance }: CalendarProps) {
               className="text-xs font-semibold uppercase tracking-[0.3em]"
               style={{ color: mutedColor }}
             >
-              Kommende hendelser
+              {t("editor", "calendarUpcomingHeader")}
             </p>
             <div className="mt-3 space-y-3">
               {upcomingEvents.length === 0 ? (
                 <p className="text-sm" style={{ color: mutedColor }}>
-                  Ingen planlagte aktiviteter.
+                  {t("editor", "calendarNoActivitiesMessage")}
                 </p>
               ) : (
                 upcomingEvents.map(({ date, event }) => (

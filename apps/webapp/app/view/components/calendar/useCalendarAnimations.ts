@@ -8,13 +8,24 @@ const CELL_STAGGER_DELAY = 30; // ms between cells
 export function useCalendarAnimations(
   totalCells: number,
   weekKey?: string | number,
+  disableAnimations?: boolean,
 ) {
-  const [isAnimating, setIsAnimating] = useState(true);
+  const [isAnimating, setIsAnimating] = useState(!disableAnimations);
   const prevWeekKeyRef = useRef<string | number | undefined>(weekKey);
   const isFirstMountRef = useRef(true);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    // If animations are disabled, skip all animation logic
+    if (disableAnimations) {
+      setIsAnimating(false);
+      isFirstMountRef.current = false;
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      return;
+    }
+
     const isWeekChange = weekKey !== undefined && weekKey !== prevWeekKeyRef.current;
     const isFirstMount = isFirstMountRef.current;
     
@@ -50,12 +61,12 @@ export function useCalendarAnimations(
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [totalCells, weekKey]);
+  }, [totalCells, weekKey, disableAnimations]);
 
   return {
-    isAnimating,
-    // isInitialLoad is true only on the very first mount before animation completes
-    isInitialLoad: isAnimating && isFirstMountRef.current,
+    isAnimating: disableAnimations ? false : isAnimating,
+    // isInitialLoad is true only on the very first mount before animation completes (and animations enabled)
+    isInitialLoad: !disableAnimations && isAnimating && isFirstMountRef.current,
   };
 }
 
