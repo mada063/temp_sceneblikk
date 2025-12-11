@@ -14,9 +14,11 @@ interface CacheEntry {
     tasks: Array<{
       id: string;
       title: string;
-      status: string;
+      status?: string | null;
       due?: string | null;
       notes?: string | null;
+      updated?: string | null;
+      position?: string | null;
     }>;
   };
   cachedAt: number;
