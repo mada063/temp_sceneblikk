@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import net from "net";
 import { checkRateLimit, getTimeUntilNextCall } from "../../lib/rate-limit-server";
+import { getCachedMinecraftData, setCachedMinecraftData } from "../../lib/minecraft-cache";
 
 const DEFAULT_TIMEOUT = 8000; // 8 seconds
 const PROTOCOL_VERSION = 47; // 1.8.x protocol version (widely supported)
@@ -305,35 +306,66 @@ export async function GET(request: NextRequest) {
   
   try {
     if (!host) {
-      return NextResponse.json({ error: "Host parameter is required" }, { status: 400 });
+      return NextResponse.json({ 
+        warning: "Host parameter is required",
+        motd: null,
+        gametype: null,
+        map: null,
+        playersOnline: null,
+        playersMax: null,
+        hostport: 25565,
+        hostip: "",
+      }, { status: 200 });
     }
 
     port = portParam ? parseInt(portParam, 10) : 25565;
     if (isNaN(port) || port < 1 || port > 65535) {
-      return NextResponse.json({ error: "Invalid port" }, { status: 400 });
+      return NextResponse.json({ 
+        warning: "Invalid port",
+        motd: null,
+        gametype: null,
+        map: null,
+        playersOnline: null,
+        playersMax: null,
+        hostport: port,
+        hostip: host || "",
+      }, { status: 200 });
     }
+
+    // Create cache key
+    const cacheKey = `server_${host}_${port}`;
+    
+    // Check if we have cached data first
+    const cachedData = getCachedMinecraftData(cacheKey);
+    const cacheAge = cachedData ? Date.now() - cachedData.cachedAt : Infinity;
+    const isCacheStale = SERVER_RATE_LIMIT_MS > 0 && cacheAge >= SERVER_RATE_LIMIT_MS;
+    const hasCache = cachedData !== null && !isCacheStale;
 
     // Check rate limit if enabled (SERVER_RATE_LIMIT_MS > 0)
     if (SERVER_RATE_LIMIT_MS > 0) {
       const rateLimitKey = `server_${host}_${port}`;
-      if (!checkRateLimit(rateLimitKey, SERVER_RATE_LIMIT_MS)) {
-        const timeRemaining = getTimeUntilNextCall(rateLimitKey, SERVER_RATE_LIMIT_MS);
-        const secondsRemaining = Math.ceil(timeRemaining / 1000);
-        return NextResponse.json(
-          {
-            error: `Rate limit exceeded. Please wait ${secondsRemaining} second(s) before making another request.`,
-            rateLimited: true,
-            retryAfter: timeRemaining,
-            motd: null,
-            gametype: null,
-            map: null,
-            playersOnline: null,
-            playersMax: null,
-            hostport: port,
-            hostip: host,
-          },
-          { status: 429 },
-        );
+      const isRateLimited = !checkRateLimit(rateLimitKey, SERVER_RATE_LIMIT_MS);
+      
+      if (isRateLimited) {
+        // Rate limited - check if we have cached data
+        if (hasCache) {
+          // Return cached data with a flag indicating it's from cache
+          return NextResponse.json({
+            motd: cachedData.data.motd,
+            gametype: cachedData.data.gametype,
+            map: cachedData.data.map,
+            playersOnline: cachedData.data.playersOnline,
+            playersMax: cachedData.data.playersMax,
+            hostport: cachedData.data.hostport,
+            hostip: cachedData.data.hostip,
+            cached: true,
+            cachedAt: cachedData.cachedAt,
+          });
+        }
+
+        // No cache exists - allow first fetch to populate cache
+        // This allows 1 fetch on first load even when rate limited
+        // The rate limit check will still record the call, so subsequent calls will be rate limited
       }
     }
 
@@ -341,6 +373,17 @@ export async function GET(request: NextRequest) {
     
     // Query the Minecraft server
     const result = await queryMinecraftServer(host, port);
+    
+    // Store the fetched data in cache
+    setCachedMinecraftData(cacheKey, {
+      motd: result.motd,
+      gametype: result.gametype,
+      map: result.map,
+      playersOnline: result.playersOnline,
+      playersMax: result.playersMax,
+      hostport: result.hostport,
+      hostip: result.hostip,
+    });
     
     const duration = Date.now() - startTime;
     console.log(`[${host}:${port}] Minecraft query success in ${duration}ms`);
@@ -353,14 +396,33 @@ export async function GET(request: NextRequest) {
       playersMax: result.playersMax,
       hostport: result.hostport,
       hostip: result.hostip,
+      cached: false,
     });
   } catch (error) {
     const duration = Date.now() - startTime;
     console.error(`[${host || "unknown"}:${port}] Minecraft query error after ${duration}ms:`, error);
-    // Return error in JSON but with 200 status so client can handle it
+    
+    // On error, try to return cached data if available
+    const cachedData = getCachedMinecraftData(`server_${host || ""}_${port}`);
+    if (cachedData) {
+      console.log(`[${host || "unknown"}:${port}] Returning cached data due to query error`);
+      return NextResponse.json({
+        motd: cachedData.data.motd,
+        gametype: cachedData.data.gametype,
+        map: cachedData.data.map,
+        playersOnline: cachedData.data.playersOnline,
+        playersMax: cachedData.data.playersMax,
+        hostport: cachedData.data.hostport,
+        hostip: cachedData.data.hostip,
+        cached: true,
+        cachedAt: cachedData.cachedAt,
+      });
+    }
+    
+    // Return warning in JSON with 200 status so client can handle it
     return NextResponse.json(
       { 
-        error: error instanceof Error ? error.message : "Failed to query server",
+        warning: error instanceof Error ? error.message : "Failed to query server",
         motd: null,
         gametype: null,
         map: null,
@@ -369,7 +431,7 @@ export async function GET(request: NextRequest) {
         hostport: port,
         hostip: host || "",
       },
-      { status: 200 } // Return 200 so client can check for error field
+      { status: 200 } // Return 200 so client can check for warning field
     );
   }
 }

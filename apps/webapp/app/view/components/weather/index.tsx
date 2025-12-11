@@ -12,6 +12,7 @@ import type { WeatherProps } from "./types";
 import { calculateHoursToShow, type PanelSize } from "./chart-config";
 import { findWeatherLocation } from "./location-utils";
 import { checkRateLimit, getTimeUntilNextCall } from "../../../lib/rate-limit-client";
+import { getCachedWeatherData, setCachedWeatherData } from "../../../lib/weather-cache";
 
 // Rate limit: 1 hour (3600000 ms)
 const WEATHER_RATE_LIMIT_MS = 60 * 60 * 1000;
@@ -86,17 +87,33 @@ export function Weather({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }:
     }
 
     const fetchWeatherData = async () => {
-      try {
-        // Check rate limit before making API call
-        const rateLimitKey = `weather_${lat}_${lon}`;
-        if (!checkRateLimit(rateLimitKey, WEATHER_RATE_LIMIT_MS)) {
-          const timeRemaining = getTimeUntilNextCall(rateLimitKey, WEATHER_RATE_LIMIT_MS);
-          const minutesRemaining = Math.ceil(timeRemaining / (60 * 1000));
-          setError(`Rate limit exceeded. Please wait ${minutesRemaining} minute(s) before refreshing.`);
+      const rateLimitKey = `weather_${lat}_${lon}`;
+      const cacheKey = `weather_${lat}_${lon}`;
+      
+      // Check if we have cached data first
+      const cachedData = getCachedWeatherData(cacheKey);
+      const cacheAge = cachedData ? Date.now() - cachedData.cachedAt : Infinity;
+      const isCacheStale = cacheAge >= WEATHER_RATE_LIMIT_MS;
+      const hasCache = cachedData !== null && !isCacheStale;
+
+      // Check rate limit
+      const isRateLimited = !checkRateLimit(rateLimitKey, WEATHER_RATE_LIMIT_MS);
+
+      if (isRateLimited) {
+        // Rate limited - check if we have cached data
+        if (hasCache) {
+          // Use cached data
+          setWeatherData(cachedData.data);
           setLoading(false);
+          setError(null);
           return;
         }
 
+        // No cache exists - allow first fetch to populate cache
+        // This allows 1 fetch on first load even when rate limited
+      }
+
+      try {
         setLoading(true);
         setError(null);
 
@@ -213,9 +230,19 @@ export function Weather({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }:
             });
         }
 
+        // Store the fetched data in cache
+        setCachedWeatherData(cacheKey, weather);
+        
         setWeatherData(weather);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load weather");
+        // On error, try to use cached data if available
+        if (cachedData) {
+          console.log("Using cached weather data due to API error");
+          setWeatherData(cachedData.data);
+          setError(null);
+        } else {
+          setError(err instanceof Error ? err.message : "Failed to load weather");
+        }
       } finally {
         setLoading(false);
       }
@@ -243,17 +270,33 @@ export function Weather({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }:
     }
 
     const fetchWeatherData2 = async () => {
-      try {
-        // Check rate limit before making API call
-        const rateLimitKey = `weather_${lat2}_${lon2}`;
-        if (!checkRateLimit(rateLimitKey, WEATHER_RATE_LIMIT_MS)) {
-          const timeRemaining = getTimeUntilNextCall(rateLimitKey, WEATHER_RATE_LIMIT_MS);
-          const minutesRemaining = Math.ceil(timeRemaining / (60 * 1000));
-          setError2(`Rate limit exceeded. Please wait ${minutesRemaining} minute(s) before refreshing.`);
+      const rateLimitKey = `weather_${lat2}_${lon2}`;
+      const cacheKey = `weather_${lat2}_${lon2}`;
+      
+      // Check if we have cached data first
+      const cachedData2 = getCachedWeatherData(cacheKey);
+      const cacheAge2 = cachedData2 ? Date.now() - cachedData2.cachedAt : Infinity;
+      const isCacheStale2 = cacheAge2 >= WEATHER_RATE_LIMIT_MS;
+      const hasCache2 = cachedData2 !== null && !isCacheStale2;
+
+      // Check rate limit
+      const isRateLimited2 = !checkRateLimit(rateLimitKey, WEATHER_RATE_LIMIT_MS);
+
+      if (isRateLimited2) {
+        // Rate limited - check if we have cached data
+        if (hasCache2) {
+          // Use cached data
+          setWeatherData2(cachedData2.data);
           setLoading2(false);
+          setError2(null);
           return;
         }
 
+        // No cache exists - allow first fetch to populate cache
+        // This allows 1 fetch on first load even when rate limited
+      }
+
+      try {
         setLoading2(true);
         setError2(null);
 
@@ -354,9 +397,19 @@ export function Weather({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }:
             });
         }
 
+        // Store the fetched data in cache
+        setCachedWeatherData(cacheKey, weather);
+        
         setWeatherData2(weather);
       } catch (err) {
-        setError2(err instanceof Error ? err.message : "Failed to load weather");
+        // On error, try to use cached data if available
+        if (cachedData2) {
+          console.log("Using cached weather data due to API error");
+          setWeatherData2(cachedData2.data);
+          setError2(null);
+        } else {
+          setError2(err instanceof Error ? err.message : "Failed to load weather");
+        }
       } finally {
         setLoading2(false);
       }
