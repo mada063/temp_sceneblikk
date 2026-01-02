@@ -263,7 +263,7 @@ export function CalendarMedium({
         className={`flex flex-1 flex-col gap-4 ${showUpcoming ? "lg:flex-row" : ""}`}
       >
         <div
-          className={`flex-1 rounded-3xl border p-4 ${isExpanded ? "flex flex-col" : ""}`}
+          className={`flex-1 rounded-3xl  p-4 ${isExpanded ? "flex flex-col" : ""}`}
           style={{ borderColor }}
         >
           {isPortrait ? (

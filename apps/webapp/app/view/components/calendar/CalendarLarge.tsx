@@ -211,7 +211,7 @@ export function CalendarLarge({ appearance }: CalendarProps) {
           </p>
         </div>
         <div
-          className="rounded-2xl border px-4 py-3 text-sm text-right"
+          className="rounded-2xl px-4 py-3 text-sm text-right"
           style={{
             borderColor,
             color: textColor,
@@ -231,7 +231,7 @@ export function CalendarLarge({ appearance }: CalendarProps) {
 
       <div className={`flex flex-1 flex-col gap-4 ${showUpcoming ? "lg:flex-row" : ""}`}>
         <div
-          className="flex-1 rounded-3xl border p-4"
+          className="flex-1 rounded-3xl p-4"
           style={{ borderColor }}
         >
           <div
@@ -353,7 +353,7 @@ export function CalendarLarge({ appearance }: CalendarProps) {
                 upcomingEvents.map(({ date, event }) => (
                   <div
                     key={event.id}
-                    className="rounded-2xl border px-3 py-2"
+                    className="rounded-2xl px-3 py-2"
                     style={{ borderColor: upcomingBorderColor }}
                   >
                     <p
