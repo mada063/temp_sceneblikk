@@ -263,12 +263,18 @@ export async function fetchDepartures(
 
   // Normalize the stop place ID
   const normalizedId = normalizeStopPlaceId(stopPlaceId);
+  
+  // Calculate timeRange based on the number of departures requested
+  // Use a conservative estimate: 12 minutes per departure (720 seconds)
+  // Minimum 1 hour (3600 seconds) to ensure we get at least some results
+  const timeRange = Math.max(3600, limit * 720);
+  
   const queryText = `
-    query($id: String!, $numberOfDepartures: Int!) {
+    query($id: String!, $numberOfDepartures: Int!, $timeRange: Int!) {
       stopPlace(id: $id) {
         id
         name
-        estimatedCalls(numberOfDepartures: $numberOfDepartures, timeRange: 3600) {
+        estimatedCalls(numberOfDepartures: $numberOfDepartures, timeRange: $timeRange) {
           realtime
           aimedArrivalTime
           expectedArrivalTime
@@ -308,7 +314,7 @@ export async function fetchDepartures(
       },
       body: JSON.stringify({
         query: queryText,
-        variables: { id: normalizedId, numberOfDepartures: limit },
+        variables: { id: normalizedId, numberOfDepartures: limit, timeRange },
       }),
     });
 

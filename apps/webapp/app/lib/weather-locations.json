@@ -24,6 +24,18 @@
     "searchTerms": ["bergen", "vestland", "norway"]
   },
   {
+    "id": "arna",
+    "name": "Arna",
+    "label": "Arna, Bergen",
+    "value": "60.4190,5.4670",
+    "latitude": 60.4190,
+    "longitude": 5.4670,
+    "county": "Vestland",
+    "municipality": "Bergen",
+    "country": "Norway",
+    "searchTerms": ["arna", "indre arna", "ytre arna", "vestland", "norway"]
+  },
+  {
     "id": "trondheim",
     "name": "Trondheim",
     "label": "Trondheim, Norway",

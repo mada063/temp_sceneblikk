@@ -195,7 +195,7 @@ export function CalendarLarge({ appearance }: CalendarProps) {
       className="flex h-full w-full flex-col gap-4 p-4 sm:p-6"
       style={{ color: textColor }}
     >
-      <header className="flex flex-wrap items-center justify-between gap-4 animate-fade-in">
+      <header className="flex flex-wrap items-center justify-between px-4 py-3 gap-4 animate-fade-in">
         <div>
           <p
             className="text-xs font-semibold uppercase tracking-[0.35em]"
@@ -353,7 +353,7 @@ export function CalendarLarge({ appearance }: CalendarProps) {
                 upcomingEvents.map(({ date, event }) => (
                   <div
                     key={event.id}
-                    className="rounded-2xl px-3 py-2"
+                    className="rounded-2xl py-2"
                     style={{ borderColor: upcomingBorderColor }}
                   >
                     <p

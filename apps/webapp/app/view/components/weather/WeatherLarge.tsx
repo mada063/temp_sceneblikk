@@ -292,13 +292,13 @@ export function WeatherLarge({ appearance, weatherData, loading, error, location
         <>
           {locationName && (
             <div
-              className="text-[10px] font-medium uppercase tracking-wider mb-1"
+              className="text-[10px] font-medium uppercase tracking-wider px-4 pt-3 mb-1"
               style={{ color: `${primaryColor}AA` }}
             >
               {locationName}
             </div>
           )}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 px-4">
             <WeatherIcon
               className="h-8 w-8 flex-shrink-0 animate-cloud-fade-in"
               style={{ color: primaryColor }}

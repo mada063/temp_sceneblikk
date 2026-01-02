@@ -270,7 +270,7 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
   };
 
   return (
-    <div className="flex h-full w-full flex-col gap-2 px-6 py-2">
+    <div className="flex h-full w-full flex-col gap-2 px-4 py-2">
       {loading ? (
         <div className="flex h-full items-center justify-center">
           <div
@@ -293,42 +293,32 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
         <>
           {locationName && (
             <div
-              className="text-[10px] font-medium uppercase tracking-wider mb-1"
+              className="text-[10px] font-medium uppercase tracking-wider px-4 pt-3 mb-1"
               style={{ color: `${primaryColor}AA` }}
             >
               {locationName}
             </div>
           )}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 px-4">
             <WeatherIcon
-              className="h-10 w-10 flex-shrink-0 animate-cloud-fade-in"
+              className="h-8 w-8 flex-shrink-0 animate-cloud-fade-in"
               style={{ color: primaryColor }}
             />
             <div>
               <div
-                className="text-2xl font-bold animate-fade-in"
+                className="text-xl font-bold animate-fade-in"
                 style={{ color: primaryColor, animationDelay: '0.3s', animationFillMode: 'both' }}
               >
                 {weatherData.temperature}°
               </div>
-              <div className="flex items-center gap-4 text-[10px] animate-fade-in" style={{ color: `${primaryColor}CC`, animationDelay: '0.5s', animationFillMode: 'both' }}>
-                <span><WindIcon className="inline h-3 w-3" /> {weatherData.windSpeed} m/s</span>
-                <span><DropletIcon className="inline h-3 w-3" /> {weatherData.humidity}%</span>
-                {showAirQuality && weatherData.airQuality && (
-                  <span>AQI: {weatherData.airQuality.aqi}</span>
-                )}
+            <div className="flex items-center gap-3 text-[9px] animate-fade-in" style={{ color: `${primaryColor}CC`, animationDelay: '0.5s', animationFillMode: 'both' }}>
+                <span><WindIcon className="inline h-2.5 w-2.5" /> {weatherData.windSpeed} m/s</span>
+                <span><DropletIcon className="inline h-2.5 w-2.5" /> {weatherData.humidity}%</span>
               </div>
             </div>
           </div>
           <div className="flex-1 min-h-0">
-            {showLocationForecast && (
-              <>
-                <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: primaryColor }}>
-                  48 Hours
-                </div>
-                {renderWeatherChart(weatherData.forecast)}
-              </>
-            )}
+            {showLocationForecast && renderWeatherChart(weatherData.forecast)}
           </div>
         </>
       ) : null}
