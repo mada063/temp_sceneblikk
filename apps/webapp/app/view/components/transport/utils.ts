@@ -6,7 +6,7 @@ const ENTUR_CLIENT_NAME = "sceneblikk-app";
 
 // Rate limit: Adjustable - default 30 seconds (30000 ms)
 // Set to 0 to disable rate limiting
-const DEPARTURES_RATE_LIMIT_MS = 30 * 1000;
+const DEPARTURES_RATE_LIMIT_MS = 0;
 
 /**
  * Normalize stop place ID to EnTur format
