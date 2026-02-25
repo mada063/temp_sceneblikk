@@ -23,7 +23,7 @@ export function BrandingSmall({ appearance, logoUrl, text, panelSize = "small" }
       {text && (
         <div
           className="text-center font-bold uppercase tracking-wider"
-          style={{ color: primaryColor, fontSize: "0.625rem" }}
+          style={{ color: primaryColor, fontSize: "0.75rem" }}
         >
           {text}
         </div>

@@ -45,7 +45,7 @@ export function TransportTiny({ appearance, transportData, loading, error, timeF
   if (error) {
     return (
       <div className="flex h-full items-center justify-center px-2">
-        <div className="text-[8px] font-medium text-center" style={{ color: `${primaryColor}CC` }}>
+        <div className="text-[0.5rem] font-medium text-center" style={{ color: `${primaryColor}CC` }}>
           {error}
         </div>
       </div>
@@ -55,7 +55,7 @@ export function TransportTiny({ appearance, transportData, loading, error, timeF
   if (!transportData || transportData.departures.length === 0) {
     return (
       <div className="flex h-full items-center justify-center px-2">
-        <div className="text-[8px] font-medium" style={{ color: `${primaryColor}CC` }}>
+        <div className="text-[0.5rem] font-medium" style={{ color: `${primaryColor}CC` }}>
           Ingen avganger
         </div>
       </div>
@@ -151,7 +151,7 @@ export function TransportTiny({ appearance, transportData, loading, error, timeF
           fallback={nextRow.fallback}
           suffix="m"
           className="opacity-80"
-          style={{ color: primaryColor, fontSize: "0.4375rem" }}
+          style={{ color: primaryColor, fontSize: "0.5rem" }}
           animateDigits={minuteAnimationIds.has(nextRow.id)}
         />
         {nextRow.hasDelay && (

@@ -14,6 +14,9 @@ import { Charts } from "./charts";
 import { Calendar } from "./calendar";
 import { Tasks } from "./tasks";
 import { Server } from "./server";
+import { Solar } from "./solar";
+import { Garbage } from "./garbage";
+import { Power } from "./power";
 import { useI18n } from "../../lib/i18n";
 
 type ComponentRendererProps = {
@@ -168,6 +171,42 @@ export function ComponentRenderer({
   if (componentId === "server") {
     return (
       <Server
+        appearance={appearance}
+        colSpan={colSpan}
+        rowSpan={rowSpan}
+        totalGridSize={totalGridSize}
+      />
+    );
+  }
+
+  // Dedicated implementation for the solar component
+  if (componentId === "solar") {
+    return (
+      <Solar
+        appearance={appearance}
+        colSpan={colSpan}
+        rowSpan={rowSpan}
+        totalGridSize={totalGridSize}
+      />
+    );
+  }
+
+  // Dedicated implementation for the garbage component
+  if (componentId === "garbage") {
+    return (
+      <Garbage
+        appearance={appearance}
+        colSpan={colSpan}
+        rowSpan={rowSpan}
+        totalGridSize={totalGridSize}
+      />
+    );
+  }
+
+  // Dedicated implementation for the power component
+  if (componentId === "power") {
+    return (
+      <Power
         appearance={appearance}
         colSpan={colSpan}
         rowSpan={rowSpan}

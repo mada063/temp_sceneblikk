@@ -172,7 +172,7 @@ export function LayoutSelector({
                 <p className="text-xs font-semibold text-custom-color-900 dark:text-white">
                   {layout.name}
                 </p>
-                <p className="text-[10px] text-custom-color-700/70 dark:text-custom-color-100/70">
+                <p className="text-[0.625rem] text-custom-color-700/70 dark:text-custom-color-100/70">
                   {new Date(layout.updatedAt).toLocaleDateString()}
                 </p>
               </button>

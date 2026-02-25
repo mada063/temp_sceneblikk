@@ -30,11 +30,11 @@ type BadgeSizeVariant = "compact" | "default" | "large";
 
 const BADGE_SIZES: Record<
   BadgeSizeVariant,
-  { width: number; height: number; fontSize: string; iconSize: number }
+  { width: string; height: string; fontSize: string; iconSize: number }
 > = {
-  compact: { width: 44, height: 24, fontSize: "0.6rem", iconSize: 12 },
-  default: { width: 56, height: 28, fontSize: "0.7rem", iconSize: 14 },
-  large: { width: 64, height: 32, fontSize: "0.85rem", iconSize: 16 },
+  compact: { width: "2.75rem", height: "1.5rem", fontSize: "0.5rem", iconSize: 12 },
+  default: { width: "3.5rem", height: "1.75rem", fontSize: "0.75rem", iconSize: 14 },
+  large: { width: "4rem", height: "2rem", fontSize: "0.75rem", iconSize: 16 },
 };
 
 type TransportBadgeProps = {
@@ -73,9 +73,9 @@ export function TransportBadge({
         border: `1px solid ${badgeBorder}`,
         color: badgeTextColor,
         borderRadius: `${badgeRadius}px`,
-        width: `${sizeConfig.width}px`,
-        minWidth: `${sizeConfig.width}px`,
-        height: `${sizeConfig.height}px`,
+        width: sizeConfig.width,
+        minWidth: sizeConfig.width,
+        height: sizeConfig.height,
         fontSize: sizeConfig.fontSize,
       }}
     >

@@ -112,7 +112,7 @@ export function PanelPlaybackPanel({
                   e.stopPropagation();
                 }}
               >
-                <label className={`flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] shadow ${
+                <label className={`flex items-center gap-2 rounded-full px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] shadow ${
                   isSelected
                     ? "bg-custom-color-400/30 text-custom-color-900 dark:bg-custom-color-300/30 dark:text-custom-color-50"
                     : "bg-black/30 text-white dark:bg-black/50"
@@ -134,7 +134,7 @@ export function PanelPlaybackPanel({
                 <button
                   type="button"
                   onClick={() => onRemoveEntry(entry.id)}
-                  className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] transition ${
+                  className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] transition ${
                     isSelected
                       ? "bg-custom-color-400/30 text-custom-color-900 hover:bg-custom-color-400/40 dark:bg-custom-color-300/30 dark:text-custom-color-50 dark:hover:bg-custom-color-300/40"
                       : "bg-black/30 text-white hover:bg-black/50 dark:bg-black/50 dark:hover:bg-black/70"

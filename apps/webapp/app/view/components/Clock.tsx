@@ -215,7 +215,7 @@ export function Clock({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: C
               animateChanges={!isInitializing}
             />
             <div
-              className="text-[10px] font-medium uppercase tracking-wider"
+              className="text-[0.75rem] font-medium uppercase tracking-wider"
               style={{ color: `${primaryColor}AA` }}
             >
               {getTimezoneLabel(tz)}

@@ -229,7 +229,7 @@ export function AnnouncementEditor({
           onMouseDown={(e) => e.preventDefault()}
         >
           <div className="p-1">
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-custom-color-500 dark:text-custom-color-400 px-2 py-1">
+            <div className="text-[0.625rem] font-semibold uppercase tracking-wide text-custom-color-500 dark:text-custom-color-400 px-2 py-1">
               {t("editor", "richTextApplyTagLabel")}
             </div>
             {(["h1", "h2", "h3", "h4", "p"] as HeadingTag[]).map((tag) => (

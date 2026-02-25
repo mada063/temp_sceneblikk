@@ -292,7 +292,7 @@ export function WeatherMediumChart({ appearance, weatherData, loading, error, lo
             })}
             </svg>
         </div>
-        <div className="flex flex-wrap items-center justify-center gap-4 py-2 text-[10px]" style={{ color: `${primaryColor}CC` }}>
+        <div className="flex flex-wrap items-center justify-center gap-4 py-2 text-[0.75rem]" style={{ color: `${primaryColor}CC` }}>
           <span>Min: {minTemp}°</span>
           <span>Avg: {Math.round(avgTemp)}°</span>
           <span>Max: {maxTemp}°</span>
@@ -325,7 +325,7 @@ export function WeatherMediumChart({ appearance, weatherData, loading, error, lo
         <>
           {locationName && (
             <div
-              className="text-[10px] font-medium uppercase tracking-wider mb-1"
+              className="text-[0.75rem] font-medium uppercase tracking-wider mb-1"
               style={{ color: `${primaryColor}AA` }}
             >
               {locationName}

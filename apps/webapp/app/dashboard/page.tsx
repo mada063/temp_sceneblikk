@@ -329,7 +329,7 @@ export default function DashboardPage() {
                     <p className="text-sm font-semibold text-custom-color-900 dark:text-white">
                       {edit.title}
                     </p>
-                    <span className="flex items-center gap-1 text-[11px] uppercase tracking-[0.18em] text-custom-color-700/70 dark:text-custom-color-100/70">
+                    <span className="flex items-center gap-1 text-[0.6875rem] uppercase tracking-[0.18em] text-custom-color-700/70 dark:text-custom-color-100/70">
                       <ClockIcon className="h-3 w-3" />
                       {edit.timestamp}
                     </span>
@@ -432,7 +432,7 @@ export default function DashboardPage() {
                             style={{ height: `${(value / maxChartValue) * 100}%` }}
                             title={`${hour}:00 - ${formatDuration(value)}`}
                           />
-                          <span className="mt-2 text-[10px] uppercase tracking-[0.26em] text-custom-color-700/70 dark:text-custom-color-100/60">
+                          <span className="mt-2 text-[0.625rem] uppercase tracking-[0.26em] text-custom-color-700/70 dark:text-custom-color-100/60">
                             {hour}h
                           </span>
                         </div>
@@ -586,7 +586,7 @@ export default function DashboardPage() {
                       <p className="text-sm font-semibold text-custom-color-900 dark:text-white">
                         {edit.title}
                       </p>
-                    <span className="flex items-center gap-1 text-[11px] uppercase tracking-[0.18em] text-custom-color-700/70 dark:text-custom-color-100/70">
+                    <span className="flex items-center gap-1 text-[0.6875rem] uppercase tracking-[0.18em] text-custom-color-700/70 dark:text-custom-color-100/70">
                       <ClockIcon className="h-3 w-3" />
                         {edit.timestamp}
                       </span>

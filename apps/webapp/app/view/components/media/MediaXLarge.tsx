@@ -26,7 +26,7 @@ export function MediaXLarge({ appearance, items, autoPlay = true, transitionDura
   if (items.length === 0) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="text-xl opacity-50" style={{ color: primaryColor }}>
+        <div className="text-[1.25rem] opacity-50" style={{ color: primaryColor }}>
           No media
         </div>
       </div>
@@ -63,7 +63,7 @@ export function MediaXLarge({ appearance, items, autoPlay = true, transitionDura
         <div
           className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6"
         >
-          <div className="text-lg font-semibold" style={{ color: primaryColor }}>
+          <div className="text-[1.25rem] font-semibold" style={{ color: primaryColor }}>
             {currentItem.title}
           </div>
         </div>

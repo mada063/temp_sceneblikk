@@ -17,6 +17,7 @@ import { searchStopPlaces, findStopPlace } from "../../view/components/transport
 import type { StopPlace } from "../../view/components/transport/types";
 import { searchWeatherLocations, findWeatherLocation } from "../../view/components/weather/location-utils";
 import type { WeatherLocation } from "../../view/components/weather/types";
+import { parseGarbageScheduleToEntries } from "../../view/components/garbage/utils";
 import { AnnouncementEditor } from "./AnnouncementEditor";
 import { ChartsEditor } from "./ChartsEditor";
 import { useI18n } from "../../lib/i18n";
@@ -632,6 +633,33 @@ export function SelectedComponentPanel({
       (entry) => entry.componentId === "server",
     );
   const isServer = isDirectServer || hasServerInPanel;
+
+  const isDirectSolar =
+    canShowComponentOptions && effectiveComponentId === "solar";
+  const hasSolarInPanel =
+    (isFreeformSelected || (componentId === "freeform-region" && allHaveSameComponent)) &&
+    !!selectedCellData?.panelEntries?.some(
+      (entry) => entry.componentId === "solar",
+    );
+  const isSolar = isDirectSolar || hasSolarInPanel;
+
+  const isDirectGarbage =
+    canShowComponentOptions && effectiveComponentId === "garbage";
+  const hasGarbageInPanel =
+    (isFreeformSelected || (componentId === "freeform-region" && allHaveSameComponent)) &&
+    !!selectedCellData?.panelEntries?.some(
+      (entry) => entry.componentId === "garbage",
+    );
+  const isGarbage = isDirectGarbage || hasGarbageInPanel;
+
+  const isDirectPower =
+    canShowComponentOptions && effectiveComponentId === "power";
+  const hasPowerInPanel =
+    (isFreeformSelected || (componentId === "freeform-region" && allHaveSameComponent)) &&
+    !!selectedCellData?.panelEntries?.some(
+      (entry) => entry.componentId === "power",
+    );
+  const isPower = isDirectPower || hasPowerInPanel;
   
   // Check if panel is full screen (takes up entire grid)
   const isFullScreen = isSingleSelection && selectedCellData && 
@@ -676,13 +704,13 @@ export function SelectedComponentPanel({
           <p className="text-xs uppercase tracking-[0.2em] text-custom-color-700/70 dark:text-custom-color-100/70">
             {selectedComponentLabel ?? t("editor", "selectedComponentDefaultLabel")}
             {!isSingleSelection && allHaveSameComponent && (
-              <span className="ml-2 text-[10px] font-normal normal-case opacity-70">
+              <span className="ml-2 text-[0.625rem] font-normal normal-case opacity-70">
                 ({selectionCount} {t("editor", "selectedComponentMultipleSuffix")})
               </span>
             )}
           </p>
           {selectionCount > 1 && !allHaveSameComponent ? (
-            <p className="rounded-full bg-custom-color-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:bg-custom-color-200/10 dark:text-custom-color-100/80">
+            <p className="rounded-full bg-custom-color-500/10 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:bg-custom-color-200/10 dark:text-custom-color-100/80">
               {selectionCount} {t("editor", "selectedComponentDifferentTypes")}
             </p>
           ) : null}
@@ -701,7 +729,7 @@ export function SelectedComponentPanel({
                       ? definition.labelNb
                       : definition?.label ?? entry.componentId;
                   return (
-                    <p className="rounded-full bg-custom-color-500/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:bg-custom-color-200/10 dark:text-custom-color-100/80">
+                    <p className="rounded-full bg-custom-color-500/10 px-3 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:bg-custom-color-200/10 dark:text-custom-color-100/80">
                       Editing entry #{entryIndex + 1}: {label} (individual settings)
                     </p>
                   );
@@ -741,10 +769,10 @@ export function SelectedComponentPanel({
             </label>
           </div>
           <div className="rounded-2xl border border-custom-color-300/30 bg-white/70 p-4 text-xs uppercase tracking-[0.16em] text-custom-color-600 dark:border-white/10 dark:bg-custom-color-800/70 dark:text-custom-color-200">
-            <p className="text-[11px] font-semibold">
+            <p className="text-[0.6875rem] font-semibold">
               {t("editor", "appearanceSectionTitle")}
             </p>
-            <div className="mt-3 space-y-3 text-[11px] normal-case tracking-normal text-custom-color-700 dark:text-custom-color-100">
+            <div className="mt-3 space-y-3 text-[0.6875rem] normal-case tracking-normal text-custom-color-700 dark:text-custom-color-100">
               <label className="flex items-center justify-between gap-3">
                 <span className="text-xs font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                   {t("editor", "appearanceBackgroundColorLabel")}
@@ -759,7 +787,7 @@ export function SelectedComponentPanel({
                     disabled={appearance.backgroundColor === "transparent"}
                     className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
                   />
-                  <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+                  <span className="text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
                     {appearance.backgroundColor === "transparent"
                       ? "TRANSPARENT"
                       : appearance.backgroundColor?.toUpperCase?.() ?? ""}
@@ -826,7 +854,7 @@ export function SelectedComponentPanel({
                     disabled={(appearance.borderWidth ?? 2) === 0}
                     className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
                   />
-                  <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+                  <span className="text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
                     {appearance.borderColor?.toUpperCase?.() ?? ""}
                   </span>
                 </div>
@@ -844,13 +872,13 @@ export function SelectedComponentPanel({
                     }
                     className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm"
                   />
-                  <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+                  <span className="text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
                     {appearance.textColor?.toUpperCase?.() ?? ""}
                   </span>
                 </div>
               </label>
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                <div className="flex items-center justify-between text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                   <span>{t("editor", "appearanceRoundedCornersLabel")}</span>
                   <span>{Math.round(appearance.borderRadius)} px</span>
                 </div>
@@ -869,7 +897,7 @@ export function SelectedComponentPanel({
                 />
               </div>
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                <div className="flex items-center justify-between text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                   <span>{t("editor", "appearanceBorderThicknessLabel")}</span>
                   <span>{Math.round(appearance.borderWidth)} px</span>
                 </div>
@@ -890,12 +918,12 @@ export function SelectedComponentPanel({
               </div>
 
               {isClock ? (
-                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[0.6875rem]">
+                  <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                     {t("editor", "clockOptionsTitle")}
                   </p>
                   <label className="flex items-center justify-between gap-3">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "clockShowSecondsLabel")}
                     </span>
                     <input
@@ -910,7 +938,7 @@ export function SelectedComponentPanel({
                     />
                   </label>
                   <label className="flex items-center justify-between gap-3">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "clockShowDateLabel")}
                     </span>
                     <input
@@ -925,10 +953,10 @@ export function SelectedComponentPanel({
                     />
                   </label>
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "timeFormatLabel")}
                     </span>
-                    <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <div className="flex items-center gap-2 text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       <label className="inline-flex items-center gap-1">
                         <input
                           type="radio"
@@ -958,7 +986,7 @@ export function SelectedComponentPanel({
                     </div>
                   </div>
                   <label className="space-y-1">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "clockTimezoneLabel")}
                     </span>
                     <select
@@ -978,10 +1006,10 @@ export function SelectedComponentPanel({
                     </select>
                   </label>
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "clockStyleLabel")}
                     </span>
-                    <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <div className="flex items-center gap-2 text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       <label className="inline-flex items-center gap-1">
                         <input
                           type="radio"
@@ -1013,7 +1041,7 @@ export function SelectedComponentPanel({
                   {isClockQuarterOrMore && (
                     <>
                       <label className="flex items-center justify-between gap-3">
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                        <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                           {t("editor", "clockShowMultipleClocksLabel")}
                         </span>
                         <input
@@ -1034,7 +1062,7 @@ export function SelectedComponentPanel({
                       {appearance.showMultipleClocks && (
                         <>
                           <label className="space-y-1">
-                            <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                            <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                               {t("editor", "clockSecondTimezoneLabel")}
                             </span>
                             <select
@@ -1054,7 +1082,7 @@ export function SelectedComponentPanel({
                             </select>
                           </label>
                           <label className="space-y-1">
-                            <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                            <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                               {t("editor", "clockThirdTimezoneLabel")}
                             </span>
                             <select
@@ -1075,7 +1103,7 @@ export function SelectedComponentPanel({
                             </select>
                           </label>
                           <label className="space-y-1">
-                            <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                            <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                               {t("editor", "clockFourthTimezoneLabel")}
                             </span>
                             <select
@@ -1103,12 +1131,12 @@ export function SelectedComponentPanel({
               ) : null}
 
               {isWeather ? (
-                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[0.6875rem]">
+                  <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                     {t("editor", "weatherOptionsTitle")}
                   </p>
                   <label className="space-y-1">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "weatherLocationLabel")}
                     </span>
                     <WeatherLocationSelector
@@ -1127,7 +1155,7 @@ export function SelectedComponentPanel({
                     />
                   </label>
                   <label className="flex items-center justify-between gap-3">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "weatherShowAirQualityLabel")}
                     </span>
                     <input
@@ -1142,7 +1170,7 @@ export function SelectedComponentPanel({
                     />
                   </label>
                   <label className="flex items-center justify-between gap-3">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "weatherShowLocationForecastLabel")}
                     </span>
                     <input
@@ -1159,7 +1187,7 @@ export function SelectedComponentPanel({
                   {isFullScreen && (
                     <>
                       <label className="flex items-center justify-between gap-3">
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                        <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                           {t("editor", "weatherShowTwoChartsLabel")}
                         </span>
                         <input
@@ -1179,7 +1207,7 @@ export function SelectedComponentPanel({
                       </label>
                       {appearance.showTwoCharts && (
                         <label className="space-y-1">
-                          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                          <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                             {t("editor", "weatherSecondLocationLabel")}
                           </span>
                           <WeatherLocationSelector
@@ -1201,10 +1229,10 @@ export function SelectedComponentPanel({
                     </>
                   )}
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "timeFormatLabel")}
                     </span>
-                    <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <div className="flex items-center gap-2 text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       <label className="inline-flex items-center gap-1">
                         <input
                           type="radio"
@@ -1236,12 +1264,12 @@ export function SelectedComponentPanel({
                 </div>
               ) : null}
               {isNews ? (
-                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[0.6875rem]">
+                  <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                     {t("editor", "newsOptionsTitle")}
                   </p>
                   <label className="space-y-1">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "newsFeedLabel")}
                     </span>
                     <select
@@ -1274,7 +1302,7 @@ export function SelectedComponentPanel({
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-3">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "newsShowSourceLabel")}
                     </span>
                     <input
@@ -1289,7 +1317,7 @@ export function SelectedComponentPanel({
                     />
                   </label>
                   <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <div className="flex items-center justify-between text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       <span>{t("editor", "newsMaxItemsLabel")}</span>
                       <span>{appearance.newsMaxItems ?? 10}</span>
                     </div>
@@ -1308,7 +1336,7 @@ export function SelectedComponentPanel({
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <div className="flex items-center justify-between text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       <span>{t("editor", "newsScrollSpeedLabel")}</span>
                       <span>{appearance.newsScrollSpeed ?? 50} px/s</span>
                     </div>
@@ -1329,12 +1357,12 @@ export function SelectedComponentPanel({
                 </div>
               ) : null}
               {isAnnouncement ? (
-                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[0.6875rem]">
+                  <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                     {t("editor", "announcementOptionsTitle")}
                   </p>
                   <label className="space-y-1">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "announcementTextLabel")}
                     </span>
                     <AnnouncementEditor
@@ -1350,12 +1378,12 @@ export function SelectedComponentPanel({
                 </div>
               ) : null}
               {isBrand ? (
-                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[0.6875rem]">
+                  <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                     {t("editor", "brandOptionsTitle")}
                   </p>
                   <label className="space-y-1">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "brandLogoUrlLabel")}
                     </span>
                     <input
@@ -1371,7 +1399,7 @@ export function SelectedComponentPanel({
                     />
                   </label>
                   <label className="space-y-1">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "brandTextLabel")}
                     </span>
                     <input
@@ -1389,13 +1417,13 @@ export function SelectedComponentPanel({
                 </div>
               ) : null}
               {isCalendar ? (
-                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[0.6875rem]">
+                  <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                     {t("editor", "calendarOptionsTitle")}
                   </p>
                   <div className="space-y-2">
                     <label className="space-y-1">
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                         {t("editor", "calendarProviderLabel")}
                       </span>
                       <select
@@ -1440,12 +1468,12 @@ export function SelectedComponentPanel({
                               console.error("Error fetching Google OAuth URL:", error);
                             }
                           }}
-                          className="inline-flex items-center justify-center rounded-full border border-custom-color-400 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 transition hover:bg-custom-color-200/40 dark:border-custom-color-300/40 dark:text-custom-color-100 dark:hover:bg-custom-color-700/50"
+                          className="inline-flex items-center justify-center rounded-full border border-custom-color-400 px-3 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 transition hover:bg-custom-color-200/40 dark:border-custom-color-300/40 dark:text-custom-color-100 dark:hover:bg-custom-color-700/50"
                         >
                           {t("editor", "calendarConnectGoogleButton")}
                         </button>
                         {googleConnected !== null && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-custom-color-500 dark:text-custom-color-400">
+                          <span className="inline-flex items-center gap-1 text-[0.625rem] font-medium text-custom-color-500 dark:text-custom-color-400">
                             <span
                               className={`h-2 w-2 rounded-full ${
                                 googleConnected
@@ -1460,13 +1488,13 @@ export function SelectedComponentPanel({
                         )}
                       </div>
                     )}
-                    <p className="text-[10px] text-custom-color-500 dark:text-custom-color-400">
+                    <p className="text-[0.625rem] text-custom-color-500 dark:text-custom-color-400">
                       {t("editor", "calendarConnectGoogleHelp")}
                     </p>
                   </div>
                   {appearance.calendarProvider === "google" && (
                     <label className="space-y-1">
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                         {t("editor", "calendarIdLabel")}
                       </span>
                       <input
@@ -1480,13 +1508,13 @@ export function SelectedComponentPanel({
                         placeholder="primary"
                         className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
                       />
-                      <p className="text-[10px] text-custom-color-500 dark:text-custom-color-400">
+                      <p className="text-[0.625rem] text-custom-color-500 dark:text-custom-color-400">
                         {t("editor", "calendarIdHelp")}
                       </p>
                     </label>
                   )}
                   <label className="flex items-center justify-between gap-3">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "calendarShowUpcomingLabel")}
                     </span>
                     <input
@@ -1501,7 +1529,7 @@ export function SelectedComponentPanel({
                     />
                   </label>
                   <label className="flex items-center justify-between gap-3">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "calendarDisableAnimationsLabel")}
                     </span>
                     <input
@@ -1535,7 +1563,7 @@ export function SelectedComponentPanel({
                         }
                         className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm"
                       />
-                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+                      <span className="text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
                         {(
                           appearance.calendarAccentColor ||
                           appearance.borderColor ||
@@ -1564,7 +1592,7 @@ export function SelectedComponentPanel({
                         }
                         className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm"
                       />
-                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+                      <span className="text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
                         {(
                           appearance.calendarMutedColor ||
                           appearance.textColor ||
@@ -1592,7 +1620,7 @@ export function SelectedComponentPanel({
                         }
                         className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm"
                       />
-                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+                      <span className="text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
                         {(
                           appearance.calendarCellBackground ||
                           appearance.backgroundColor ||
@@ -1620,7 +1648,7 @@ export function SelectedComponentPanel({
                         }
                         className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm"
                       />
-                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+                      <span className="text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
                         {(
                           appearance.calendarTodayHighlight ||
                           appearance.borderColor ||
@@ -1630,7 +1658,7 @@ export function SelectedComponentPanel({
                     </div>
                   </label>
                   <label className="space-y-1">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "calendarEventColorsLabel")}
                     </span>
                     <textarea
@@ -1647,19 +1675,19 @@ export function SelectedComponentPanel({
                       )}
                       className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
                     />
-                    <p className="text-[10px] text-custom-color-500 dark:text-custom-color-400">
+                    <p className="text-[0.625rem] text-custom-color-500 dark:text-custom-color-400">
                       {t("editor", "calendarEventColorsHelp")}
                     </p>
                   </label>
                 </div>
               ) : null}
               {isTransport ? (
-                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[0.6875rem]">
+                  <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                     {t("editor", "transportOptionsTitle")}
                   </p>
                   <label className="space-y-1">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "transportStopPlaceLabel")}
                     </span>
                     <StopPlaceSelector
@@ -1672,10 +1700,10 @@ export function SelectedComponentPanel({
                     />
                   </label>
                   <label className="flex items-center justify-between gap-3">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "transportTimeFormatLabel")}
                     </span>
-                    <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <div className="flex items-center gap-2 text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       <label className="inline-flex items-center gap-1">
                         <input
                           type="radio"
@@ -1705,7 +1733,7 @@ export function SelectedComponentPanel({
                     </div>
                   </label>
                   <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <div className="flex items-center justify-between text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       <span>{t("editor", "transportMaxDeparturesLabel")}</span>
                       <span>{appearance.transportMaxDepartures ?? 10}</span>
                     </div>
@@ -1726,7 +1754,7 @@ export function SelectedComponentPanel({
                   {isTransportMediumOrLarge && (
                     <>
                       <label className="flex items-center justify-between gap-3">
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                        <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                           {t("editor", "transportShowDualStopsLabel")}
                         </span>
                         <input
@@ -1746,7 +1774,7 @@ export function SelectedComponentPanel({
                       </label>
                       {appearance.transportShowDualStops && (
                         <label className="space-y-1">
-                          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                          <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                             {t("editor", "transportSecondStopPlaceLabel")}
                           </span>
                           <StopPlaceSelector
@@ -1776,7 +1804,7 @@ export function SelectedComponentPanel({
                         }
                         className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm"
                       />
-                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+                      <span className="text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
                         {(appearance.transportBadgeColor || appearance.textColor || "#ffffff").toUpperCase()}
                       </span>
                     </div>
@@ -1796,7 +1824,7 @@ export function SelectedComponentPanel({
                         }
                         className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm"
                       />
-                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+                      <span className="text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
                         {(appearance.transportBadgeBorder || appearance.textColor || "#ffffff").toUpperCase()}
                       </span>
                     </div>
@@ -1816,7 +1844,7 @@ export function SelectedComponentPanel({
                         }
                         className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm"
                       />
-                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+                      <span className="text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
                         {(appearance.transportBadgeTextColor || "#000000").toUpperCase()}
                       </span>
                     </div>
@@ -1836,13 +1864,13 @@ export function SelectedComponentPanel({
                         }
                         className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm"
                       />
-                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+                      <span className="text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
                         {(appearance.transportDelayColor || "#ef4444").toUpperCase()}
                       </span>
                     </div>
                   </label>
                   <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <div className="flex items-center justify-between text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       <span>{t("editor", "transportBadgeRoundednessLabel")}</span>
                       <span>{appearance.transportBadgeRadius ?? appearance.borderRadius ?? 10}px</span>
                     </div>
@@ -1863,12 +1891,12 @@ export function SelectedComponentPanel({
                 </div>
               ) : null}
               {isMedia ? (
-                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[0.6875rem]">
+                  <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                     {t("editor", "mediaOptionsTitle")}
                   </p>
                   <div className="space-y-2">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "mediaTypeLabel")}
                     </span>
                     <div className="flex gap-4">
@@ -1901,7 +1929,7 @@ export function SelectedComponentPanel({
                     </div>
                   </div>
                   <label className="space-y-1">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       {t("editor", "mediaUrlsLabel")}
                     </span>
                     <textarea
@@ -1915,7 +1943,7 @@ export function SelectedComponentPanel({
                       rows={4}
                       className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
                     />
-                    <p className="text-[10px] text-custom-color-500 dark:text-custom-color-400">
+                    <p className="text-[0.625rem] text-custom-color-500 dark:text-custom-color-400">
                       {t("editor", "mediaUrlsHelp")}
                     </p>
                   </label>
@@ -1935,7 +1963,7 @@ export function SelectedComponentPanel({
                     </label>
                   </div>
                   <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <div className="flex items-center justify-between text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       <span>{t("editor", "mediaTransitionDurationLabel")}</span>
                       <span>{appearance.mediaTransitionDuration ?? 5}s</span>
                     </div>
@@ -1956,8 +1984,8 @@ export function SelectedComponentPanel({
                 </div>
               ) : null}
               {isCharts ? (
-                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[0.6875rem]">
+                  <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                     {t("editor", "chartsOptionsTitle")}
                   </p>
                   <ChartsEditor
@@ -1969,12 +1997,12 @@ export function SelectedComponentPanel({
                 </div>
               ) : null}
               {isServer ? (
-                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[0.6875rem]">
+                  <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                     Server Options
                   </p>
                   <div className="space-y-2">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       Server Type
                     </span>
                     <select
@@ -1989,7 +2017,7 @@ export function SelectedComponentPanel({
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       Server URLs
                     </span>
                     <div className="space-y-2">
@@ -2046,7 +2074,7 @@ export function SelectedComponentPanel({
                         <span>Add Server URL</span>
                       </button>
                     </div>
-                    <p className="text-[10px] text-custom-color-500 dark:text-custom-color-400">
+                    <p className="text-[0.625rem] text-custom-color-500 dark:text-custom-color-400">
                       {appearance.serverType === "minecraft" 
                         ? "Enter Minecraft server addresses (host:port)"
                         : "Protocol (http/https) will be automatically detected from the URL"}
@@ -2054,14 +2082,273 @@ export function SelectedComponentPanel({
                   </div>
                 </div>
               ) : null}
+              {isSolar ? (
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[0.6875rem]">
+                  <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    {t("editor", "solarOptionsTitle")}
+                  </p>
+                  <label className="space-y-1">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      {t("editor", "solarLocationLabel")}
+                    </span>
+                    <WeatherLocationSelector
+                      value={appearance.solarLocation ?? "59.9139,10.7522"}
+                      onChange={(locationValue) =>
+                        onAppearanceChange({ solarLocation: locationValue })
+                      }
+                      locationName={(() => {
+                        const loc = (weatherLocations as Array<{ value: string; label: string }>).find(
+                          (l) => l.value === (appearance.solarLocation ?? "59.9139,10.7522")
+                        );
+                        return loc?.label;
+                      })()}
+                    />
+                  </label>
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      {t("editor", "solarShowDayLength")}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={appearance.solarShowDayLength ?? true}
+                      onChange={(e) => onAppearanceChange({ solarShowDayLength: e.target.checked })}
+                      className="h-4 w-4 rounded border border-custom-color-400 bg-white text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                    />
+                  </label>
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      {t("editor", "solarShowSolarNoon")}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={appearance.solarShowSolarNoon ?? false}
+                      onChange={(e) => onAppearanceChange({ solarShowSolarNoon: e.target.checked })}
+                      className="h-4 w-4 rounded border border-custom-color-400 bg-white text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                    />
+                  </label>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Tidformat
+                    </span>
+                    <div className="flex gap-2 text-[0.6875rem]">
+                      <label className="inline-flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name="solar-time-format"
+                          checked={(appearance.solarTimeFormat ?? "24h") === "24h"}
+                          onChange={() => onAppearanceChange({ solarTimeFormat: "24h" })}
+                          className="h-3.5 w-3.5"
+                        />
+                        <span>24H</span>
+                      </label>
+                      <label className="inline-flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name="solar-time-format"
+                          checked={appearance.solarTimeFormat === "12h"}
+                          onChange={() => onAppearanceChange({ solarTimeFormat: "12h" })}
+                          className="h-3.5 w-3.5"
+                        />
+                        <span>12H</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+              {isGarbage ? (
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[0.6875rem]">
+                  <p className="font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    Søppel
+                  </p>
+                  {(() => {
+                    const defaultEntries = [
+                      { label: "Restavfall", startDate: "2024-01-03", frequencyWeeks: 1 },
+                      { label: "Matavfall", startDate: "2024-01-05", frequencyWeeks: 2 },
+                      { label: "Papir og plast", startDate: "2024-01-10", frequencyWeeks: 4 },
+                      { label: "Glass og metall", startDate: "2024-01-15", frequencyWeeks: 10 },
+                    ];
+                    const effectiveEntries =
+                      appearance.garbageEntries?.length
+                        ? appearance.garbageEntries
+                        : appearance.garbageSchedule
+                          ? parseGarbageScheduleToEntries(appearance.garbageSchedule)
+                          : defaultEntries;
+                    const frequencyOptions = [
+                      { value: 1, label: "Ukentlig" },
+                      { value: 2, label: "Hver 14. dag" },
+                      { value: 4, label: "Hver 4. uke" },
+                      { value: 10, label: "Hver 10. uke" },
+                    ];
+                    const labelOptions = ["Restavfall", "Matavfall", "Papir og plast", "Glass og metall"];
+                    return (
+                      <div className="space-y-3">
+                        {effectiveEntries.map((entry, index) => (
+                          <div
+                            key={`${entry.label}-${index}`}
+                            className="flex flex-wrap items-end gap-2 rounded-lg border border-custom-color-300/50 bg-white/50 p-2 dark:bg-custom-color-800/50"
+                          >
+                            <label className="flex-1 min-w-[6rem]">
+                              <span className="mb-1 block text-[0.5625rem] font-semibold uppercase tracking-[0.12em] text-custom-color-600 dark:text-custom-color-200">
+                                Type
+                              </span>
+                              <select
+                                value={entry.label}
+                                onChange={(e) => {
+                                  const next = [...effectiveEntries];
+                                  next[index] = { ...next[index], label: e.target.value };
+                                  onAppearanceChange({ garbageEntries: next });
+                                }}
+                                className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-2 py-1.5 text-sm font-medium text-custom-color-800 dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
+                              >
+                                {labelOptions.map((opt) => (
+                                  <option key={opt} value={opt}>
+                                    {opt}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                            <label className="flex-1 min-w-[5rem]">
+                              <span className="mb-1 block text-[0.5625rem] font-semibold uppercase tracking-[0.12em] text-custom-color-600 dark:text-custom-color-200">
+                                Første dato
+                              </span>
+                              <input
+                                type="date"
+                                value={entry.startDate}
+                                onChange={(e) => {
+                                  const next = [...effectiveEntries];
+                                  next[index] = { ...next[index], startDate: e.target.value };
+                                  onAppearanceChange({ garbageEntries: next });
+                                }}
+                                className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-2 py-1.5 text-sm font-medium text-custom-color-800 dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
+                              />
+                            </label>
+                            <label className="flex-1 min-w-[5rem]">
+                              <span className="mb-1 block text-[0.5625rem] font-semibold uppercase tracking-[0.12em] text-custom-color-600 dark:text-custom-color-200">
+                                Frekvens
+                              </span>
+                              <select
+                                value={entry.frequencyWeeks}
+                                onChange={(e) => {
+                                  const next = [...effectiveEntries];
+                                  next[index] = { ...next[index], frequencyWeeks: Number(e.target.value) };
+                                  onAppearanceChange({ garbageEntries: next });
+                                }}
+                                className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-2 py-1.5 text-sm font-medium text-custom-color-800 dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
+                              >
+                                {frequencyOptions.map((opt) => (
+                                  <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next = effectiveEntries.filter((_, i) => i !== index);
+                                onAppearanceChange({
+                                  garbageEntries: next.length ? next : undefined,
+                                  garbageSchedule: next.length ? undefined : "",
+                                });
+                              }}
+                              className="rounded-lg border border-custom-color-300/50 bg-white/80 p-1.5 text-custom-color-600 hover:bg-custom-color-100 dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-200 dark:hover:bg-custom-color-700"
+                              aria-label="Fjern"
+                            >
+                              <XIcon className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = [
+                              ...effectiveEntries,
+                              { label: "Restavfall", startDate: new Date().toISOString().slice(0, 10), frequencyWeeks: 1 },
+                            ];
+                            onAppearanceChange({ garbageEntries: next });
+                          }}
+                          className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-custom-color-300/50 bg-white/50 py-2 text-sm font-medium text-custom-color-600 hover:bg-custom-color-100 dark:border-white/10 dark:bg-custom-color-800/50 dark:text-custom-color-200 dark:hover:bg-custom-color-700"
+                        >
+                          <PlusIcon className="h-4 w-4" />
+                          Legg til tømmedag
+                        </button>
+                      </div>
+                    );
+                  })()}
+                </div>
+              ) : null}
+              {isPower ? (
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[0.6875rem]">
+                  <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                    Strømpris
+                  </p>
+                  <label className="space-y-1">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Prisområde
+                    </span>
+                    <select
+                      value={appearance.powerArea ?? "NO1"}
+                      onChange={(e) => onAppearanceChange({ powerArea: e.target.value as "NO1" | "NO2" | "NO3" | "NO4" | "NO5" })}
+                      className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
+                    >
+                      <option value="NO1">NO1 – Oslo / Øst-Norge</option>
+                      <option value="NO2">NO2 – Kristiansand / Sør-Norge</option>
+                      <option value="NO3">NO3 – Trondheim / Midt-Norge</option>
+                      <option value="NO4">NO4 – Tromsø / Nord-Norge</option>
+                      <option value="NO5">NO5 – Bergen / Vest-Norge</option>
+                    </select>
+                  </label>
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Vis dagsgraf
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={appearance.powerShowDayChart ?? true}
+                      onChange={(e) => onAppearanceChange({ powerShowDayChart: e.target.checked })}
+                      className="h-4 w-4 rounded border border-custom-color-400 bg-white text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
+                    />
+                  </label>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      Tidformat
+                    </span>
+                    <div className="flex gap-2 text-[0.6875rem]">
+                      <label className="inline-flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name="power-time-format"
+                          checked={(appearance.powerTimeFormat ?? "24h") === "24h"}
+                          onChange={() => onAppearanceChange({ powerTimeFormat: "24h" })}
+                          className="h-3.5 w-3.5"
+                        />
+                        <span>24H</span>
+                      </label>
+                      <label className="inline-flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name="power-time-format"
+                          checked={appearance.powerTimeFormat === "12h"}
+                          onChange={() => onAppearanceChange({ powerTimeFormat: "12h" })}
+                          className="h-3.5 w-3.5"
+                        />
+                        <span>12H</span>
+                      </label>
+                    </div>
+                  </div>
+                  <p className="text-[0.625rem] text-custom-color-500 dark:text-custom-color-400">
+                    Strømpriser fra Hva koster strømmen.no (åpent API)
+                  </p>
+                </div>
+              ) : null}
               {isTasks ? (
-                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[11px]">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                <div className="mt-4 space-y-3 border-t border-custom-color-300/40 pt-3 text-[0.6875rem]">
+                  <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                     {t("editor", "tasksOptionsTitle")}
                   </p>
                   <div className="space-y-2">
                     <label className="space-y-1">
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                         {t("editor", "tasksProviderLabel")}
                       </span>
                       <select
@@ -2106,12 +2393,12 @@ export function SelectedComponentPanel({
                               console.error("Error fetching Google OAuth URL:", error);
                             }
                           }}
-                          className="inline-flex items-center justify-center rounded-full border border-custom-color-400 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 transition hover:bg-custom-color-200/40 dark:border-custom-color-300/40 dark:text-custom-color-100 dark:hover:bg-custom-color-700/50"
+                          className="inline-flex items-center justify-center rounded-full border border-custom-color-400 px-3 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 transition hover:bg-custom-color-200/40 dark:border-custom-color-300/40 dark:text-custom-color-100 dark:hover:bg-custom-color-700/50"
                         >
                           {t("editor", "tasksConnectGoogleButton")}
                         </button>
                         {googleConnected !== null && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-custom-color-500 dark:text-custom-color-400">
+                          <span className="inline-flex items-center gap-1 text-[0.625rem] font-medium text-custom-color-500 dark:text-custom-color-400">
                             <span
                               className={`h-2 w-2 rounded-full ${
                                 googleConnected
@@ -2126,13 +2413,13 @@ export function SelectedComponentPanel({
                         )}
                       </div>
                     )}
-                    <p className="text-[10px] text-custom-color-500 dark:text-custom-color-400">
+                    <p className="text-[0.625rem] text-custom-color-500 dark:text-custom-color-400">
                       {t("editor", "tasksConnectGoogleHelp")}
                     </p>
                   </div>
                   {appearance.tasksProvider === "google" && (
                     <label className="space-y-1">
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                         {t("editor", "tasksListIdLabel")}
                       </span>
                       <input
@@ -2149,7 +2436,7 @@ export function SelectedComponentPanel({
                         )}
                         className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
                       />
-                      <p className="text-[10px] text-custom-color-500 dark:text-custom-color-400">
+                      <p className="text-[0.625rem] text-custom-color-500 dark:text-custom-color-400">
                         {t("editor", "tasksListIdHelp")}
                       </p>
                     </label>

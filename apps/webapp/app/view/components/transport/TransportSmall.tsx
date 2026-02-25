@@ -33,15 +33,15 @@ export function TransportSmall({ appearance, transportData, loading, error, time
   const badgeTextColor = appearance.transportBadgeTextColor || "#000000";
   const badgeRadius = appearance.transportBadgeRadius ?? appearance.borderRadius ?? 8;
   const delayColor = appearance.transportDelayColor || "#ef4444";
-  const titleFontSize = "0.625rem";
-  const lineFontSize = "0.5625rem";
+  const titleFontSize = "0.75rem";
+  const lineFontSize = "0.5rem";
 
   if (loading || error || !transportData) {
     return (
       <div className="flex h-full items-center justify-center px-3">
         {loading && <div className="text-2xl opacity-50 animate-pulse" style={{ color: primaryColor }}><ActivityIcon /></div>}
-        {error && <div className="text-[9px] font-medium text-center" style={{ color: `${primaryColor}CC` }}>{error}</div>}
-        {!loading && !error && <div className="text-[9px] font-medium" style={{ color: `${primaryColor}CC` }}>Ingen avganger</div>}
+        {error && <div className="text-[0.5rem] font-medium text-center" style={{ color: `${primaryColor}CC` }}>{error}</div>}
+        {!loading && !error && <div className="text-[0.5rem] font-medium" style={{ color: `${primaryColor}CC` }}>Ingen avganger</div>}
       </div>
     );
   }
@@ -140,7 +140,7 @@ export function TransportSmall({ appearance, transportData, loading, error, time
               </div>
               <div className="flex items-center gap-1.5">
                 {row.hasDelay && (
-                  <div className="opacity-90 font-medium" style={{ color: delayColor, fontSize: "0.4375rem" }}>
+                  <div className="opacity-90 font-medium" style={{ color: delayColor, fontSize: "0.5rem" }}>
                     +{row.dep.delay}
                   </div>
                 )}

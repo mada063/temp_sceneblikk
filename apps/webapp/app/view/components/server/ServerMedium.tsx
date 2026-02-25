@@ -99,11 +99,11 @@ export function ServerMedium({ appearance, serverData, loading, error }: ServerM
                 <td className="py-2">
                   <StatusIcon className="inline-block" style={{ color: statusColor }} size={16} />
                 </td>
-                <td className="text-xs font-medium py-2 truncate max-w-[120px]" style={{ color: primaryColor }}>
+                <td className="text-xs font-medium py-2 truncate max-w-[7.5rem]" style={{ color: primaryColor }}>
                   {server.name}
                 </td>
                 {isMinecraft && (
-                  <td className="text-xs font-medium py-2 truncate max-w-[150px]" style={{ color: primaryColor }}>
+                  <td className="text-xs font-medium py-2 truncate max-w-[9.375rem]" style={{ color: primaryColor }}>
                     {server.motd || "-"}
                   </td>
                 )}

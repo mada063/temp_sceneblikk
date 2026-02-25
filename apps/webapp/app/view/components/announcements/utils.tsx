@@ -115,9 +115,9 @@ export function formatAnnouncementText(text: string, baseFontSize: string = "1re
   const sanitized = sanitizeHtml(text);
   
   // Add CSS styles for HTML tags based on base font size
-  // Convert base font size (e.g., "0.6875rem") to a number for calculations
+  // Convert base font size (e.g., "0.75rem") to a number for calculations
   const baseSizeMatch = baseFontSize.match(/(\d+\.?\d*)/);
-  const baseSizeNum = baseSizeMatch ? parseFloat(baseSizeMatch[1]) : 0.6875;
+  const baseSizeNum = baseSizeMatch ? parseFloat(baseSizeMatch[1]) : 0.75;
   
   // Calculate sizes relative to base - make them bigger
   const h1Size = (baseSizeNum * 2.5).toFixed(4) + "rem";

@@ -150,7 +150,7 @@ export function ChartsSmall({ appearance, chartConfig }: ChartsSmallProps) {
 
       default:
         return (
-          <div className="text-center opacity-70 text-[0.5625rem]" style={{ color: primaryColor }}>
+          <div className="text-center opacity-70 text-[0.5rem]" style={{ color: primaryColor }}>
             Unsupported: {chartConfig.type}
           </div>
         );

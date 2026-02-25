@@ -29,11 +29,11 @@ export function NewsXLarge({ appearance, newsData, loading, error, scrollSpeed =
 
   // Calculate font sizes based on panel dimensions - XLarge container
   const panelArea = (colSpan ?? 1) * (rowSpan ?? 1);
-  const titleFontSize = panelArea <= 24 ? "1.125rem" : "1.25rem"; // 18px or 20px - largest size
-  const descFontSize = "0.875rem"; // 14px
-  const dateFontSize = "0.75rem"; // 12px
-  const sourceFontSize = "0.75rem"; // 12px
-  const dateTimeFontSize = "0.6875rem"; // 11px
+  const titleFontSize = panelArea <= 24 ? "1.5rem" : "1.75rem";
+  const descFontSize = "1.25rem";
+  const dateFontSize = "1.25rem";
+  const sourceFontSize = "1.25rem";
+  const dateTimeFontSize = "1rem";
 
   const itemsToShow = newsData?.items.slice(0, maxItems) || [];
   

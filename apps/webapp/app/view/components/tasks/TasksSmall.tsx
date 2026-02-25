@@ -84,18 +84,18 @@ export function TasksSmall({
           <header className="flex flex-wrap items-center justify-between gap-4 animate-fade-in">
             <div>
               <p
-                className="text-xs font-semibold uppercase tracking-[0.35em]"
+                className="text-[0.75rem] font-semibold uppercase tracking-[0.35em]"
                 style={{ color: mutedColor }}
               >
                 OPPGAVER
               </p>
-              <p className="text-2xl font-semibold leading-tight">{taskList.title}</p>
+              <p className="text-[1.5rem] font-semibold leading-tight">{taskList.title}</p>
             </div>
           </header>
         )}
         <div className="flex flex-1 items-center justify-center">
           <div
-            className="text-base font-medium text-center"
+            className="text-[1rem] font-medium text-center"
             style={{ color: mutedColor }}
           >
             
@@ -110,12 +110,12 @@ export function TasksSmall({
       <header className="flex flex-wrap items-center justify-between gap-4 animate-fade-in">
         <div>
           <p
-            className="text-xs font-semibold uppercase tracking-[0.35em]"
+            className="text-[0.75rem] font-semibold uppercase tracking-[0.35em]"
             style={{ color: mutedColor }}
           >
             OPPGAVER
           </p>
-          <p className="text-2xl font-semibold leading-tight" style={{ color: primaryColor }}>{taskList?.title}</p>
+          <p className="text-[1.5rem] font-semibold leading-tight" style={{ color: primaryColor }}>{taskList?.title}</p>
         </div>
       </header>
       <div className="flex-1 flex flex-col gap-3 overflow-y-auto">
@@ -180,7 +180,7 @@ export function TasksSmall({
               </div>
               <div className="flex-1 min-w-0">
                 <div
-                  className="text-base font-medium"
+                  className="text-[1rem] font-medium"
                   style={{ color: primaryColor }}
                 >
                   {task.title}
@@ -189,7 +189,7 @@ export function TasksSmall({
                   <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                     {task.category && (
                       <span
-                        className="text-xs px-2 py-0.5 rounded-full"
+                        className="text-[0.75rem] px-2 py-0.5 rounded-full"
                         style={{
                           color: primaryColor,
                           backgroundColor: `${primaryColor}15`,
@@ -200,7 +200,7 @@ export function TasksSmall({
                     )}
                     {dueDateText && (
                       <span
-                        className="text-xs"
+                        className="text-[0.75rem]"
                         style={{ color: mutedColor }}
                       >
                         {dueDateText}
@@ -213,7 +213,7 @@ export function TasksSmall({
                           style={{ color: priorityColor }}
                         />
                         <span
-                          className="text-xs capitalize"
+                          className="text-[0.75rem] capitalize"
                           style={{ color: priorityColor }}
                         >
                           {task.priority}

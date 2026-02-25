@@ -113,6 +113,26 @@ export type CellAppearance = {
    */
   serverType?: string; // Server type selector (e.g., "website", "minecraft")
   serverUrls?: string[]; // Array of server URLs
+  /**
+   * Solar-specific options (used when componentId === "solar").
+   */
+  solarLocation?: string; // "lat,lon" (e.g. "59.9139,10.7522")
+  solarTimeFormat?: "12h" | "24h";
+  solarShowDayLength?: boolean;
+  solarShowSolarNoon?: boolean;
+  /**
+   * Garbage-specific options (used when componentId === "garbage").
+   * Structured entries (preferred). Fallback: garbageSchedule string "Label:YYYY-MM-DD:frequencyWeeks" per line.
+   */
+  garbageEntries?: Array<{ label: string; startDate: string; frequencyWeeks: number }>;
+  garbageSchedule?: string;
+  garbageTimeFormat?: "12h" | "24h";
+  /**
+   * Power (spot price) options (used when componentId === "power").
+   */
+  powerArea?: "NO1" | "NO2" | "NO3" | "NO4" | "NO5"; // Price area in Norway
+  powerTimeFormat?: "12h" | "24h";
+  powerShowDayChart?: boolean;
 };
 
 export const makeDefaultAppearance = (): CellAppearance => ({
@@ -163,6 +183,21 @@ export const makeDefaultAppearance = (): CellAppearance => ({
   chartsConfig: "",
   serverType: "website",
   serverUrls: [],
+  solarLocation: "59.9139,10.7522",
+  solarTimeFormat: "24h",
+  solarShowDayLength: true,
+  solarShowSolarNoon: false,
+  garbageEntries: [
+    { label: "Restavfall", startDate: "2024-01-03", frequencyWeeks: 1 },
+    { label: "Matavfall", startDate: "2024-01-05", frequencyWeeks: 2 },
+    { label: "Papir og plast", startDate: "2024-01-10", frequencyWeeks: 4 },
+    { label: "Glass og metall", startDate: "2024-01-15", frequencyWeeks: 10 },
+  ],
+  garbageSchedule: "",
+  garbageTimeFormat: "24h",
+  powerArea: "NO1",
+  powerTimeFormat: "24h",
+  powerShowDayChart: true,
 });
 
 export const cloneAppearance = (appearance?: CellAppearance | null) =>

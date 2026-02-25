@@ -56,7 +56,7 @@ export function TransportLarge({
   const badgeTextColor = appearance.transportBadgeTextColor || "#000000";
   const badgeRadius = appearance.transportBadgeRadius ?? appearance.borderRadius ?? 8;
   const delayColor = appearance.transportDelayColor || "#ef4444";
-  const titleFontSize = "0.9375rem";
+  const titleFontSize = "1rem";
   const lineFontSize = "0.75rem";
   const showDual = dualStopEnabled && secondaryTransportData;
 
@@ -235,14 +235,14 @@ function LargeStopSection({
                     {row.dep.destination}
                   </span>
                   {row.dep.platform && (
-                    <div className="opacity-70 mt-0.5" style={{ color: primaryColor, fontSize: "0.625rem" }}>
+                    <div className="opacity-70 mt-0.5" style={{ color: primaryColor, fontSize: "0.75rem" }}>
                       Plattform {row.dep.platform}
                     </div>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
                   {row.hasDelay && (
-                    <div className="opacity-90 font-medium" style={{ color: delayColor, fontSize: "0.625rem" }}>
+                    <div className="opacity-90 font-medium" style={{ color: delayColor, fontSize: "0.75rem" }}>
                       +{row.dep.delay} min
                     </div>
                   )}

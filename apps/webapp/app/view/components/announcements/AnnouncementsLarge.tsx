@@ -12,7 +12,7 @@ export function AnnouncementsLarge({ appearance, announcements, panelSize = "lar
   const primaryColor = appearance.textColor || "#ffffff";
   
   const panelArea = (colSpan ?? 1) * (rowSpan ?? 1);
-  const titleFontSize = panelArea <= 12 ? "0.9375rem" : "1.0625rem";
+  const titleFontSize = panelArea <= 12 ? "1rem" : "1rem";
   const messageFontSize = "0.75rem";
 
   const activeAnnouncements = filterActiveAnnouncements(announcements);

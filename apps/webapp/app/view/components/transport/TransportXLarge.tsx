@@ -31,8 +31,8 @@ export function TransportXLarge({ appearance, transportData, loading, error, tim
   const badgeTextColor = appearance.transportBadgeTextColor || "#000000";
   const badgeRadius = appearance.transportBadgeRadius ?? appearance.borderRadius ?? 8;
   const delayColor = appearance.transportDelayColor || "#ef4444";
-  const titleFontSize = "1.125rem";
-  const lineFontSize = "0.875rem";
+  const titleFontSize = "1.25rem";
+  const lineFontSize = "1rem";
 
   if (loading || error || !transportData) {
     return (

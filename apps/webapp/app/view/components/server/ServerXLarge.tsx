@@ -99,11 +99,11 @@ export function ServerXLarge({ appearance, serverData, loading, error }: ServerX
                 <td className="py-4">
                   <StatusIcon className="inline-block" style={{ color: statusColor }} size={24} />
                 </td>
-                <td className="text-base font-medium py-4 truncate max-w-[250px]" style={{ color: primaryColor }}>
+                <td className="text-base font-medium py-4 truncate max-w-[15.625rem]" style={{ color: primaryColor }}>
                   {server.name}
                 </td>
                 {isMinecraft && (
-                  <td className="text-base font-medium py-4 truncate max-w-[350px]" style={{ color: primaryColor }}>
+                  <td className="text-base font-medium py-4 truncate max-w-[21.875rem]" style={{ color: primaryColor }}>
                     {server.motd || "-"}
                   </td>
                 )}

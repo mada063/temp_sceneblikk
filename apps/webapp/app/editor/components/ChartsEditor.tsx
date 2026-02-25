@@ -268,7 +268,7 @@ export function ChartsEditor({ value, onChange }: ChartsEditorProps) {
           onChange={(e) => onChange(e.target.value)}
           className="h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm"
         />
-        <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+        <span className="text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
           {value.toUpperCase()}
         </span>
       </div>
@@ -278,7 +278,7 @@ export function ChartsEditor({ value, onChange }: ChartsEditorProps) {
   return (
     <div className="space-y-3">
       <label className="space-y-1">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+        <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
           Chart type
         </span>
         <select
@@ -294,7 +294,7 @@ export function ChartsEditor({ value, onChange }: ChartsEditorProps) {
         </select>
       </label>
       <label className="space-y-1">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+        <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
           Chart title (optional)
         </span>
         <input
@@ -307,7 +307,7 @@ export function ChartsEditor({ value, onChange }: ChartsEditorProps) {
       </label>
       <div className="grid grid-cols-2 gap-2">
         <label className="space-y-1">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+          <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
             X-axis label
           </span>
           <input
@@ -319,7 +319,7 @@ export function ChartsEditor({ value, onChange }: ChartsEditorProps) {
           />
         </label>
         <label className="space-y-1">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+          <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
             Y-axis label
           </span>
           <input
@@ -335,7 +335,7 @@ export function ChartsEditor({ value, onChange }: ChartsEditorProps) {
       {/* BarChart specific options */}
       {chartType === "BarChart" && (
         <div className="mt-3 space-y-2 rounded-lg border border-custom-color-300/40 p-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+          <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
             Bar Chart Colors
           </p>
           <ColorInput label="Bar color" value={barColor} onChange={setBarColor} />
@@ -352,7 +352,7 @@ export function ChartsEditor({ value, onChange }: ChartsEditorProps) {
       {/* LineChart specific options */}
       {chartType === "LineChart" && (
         <div className="mt-3 space-y-2 rounded-lg border border-custom-color-300/40 p-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+          <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
             Line Chart Options
           </p>
           <ColorInput label="Line color" value={seriesColor} onChange={setSeriesColor} />
@@ -389,7 +389,7 @@ export function ChartsEditor({ value, onChange }: ChartsEditorProps) {
             </label>
           </div>
           <label className="space-y-1">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+            <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
               Line type
             </span>
             <select
@@ -408,11 +408,11 @@ export function ChartsEditor({ value, onChange }: ChartsEditorProps) {
       {/* DoughnutChart specific options */}
       {chartType === "DoughnutChart" && (
         <div className="mt-3 space-y-2 rounded-lg border border-custom-color-300/40 p-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+          <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
             Doughnut Chart Options
           </p>
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+            <div className="flex items-center justify-between text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
               <span>Gap between segments</span>
               <span>{gapDegrees}°</span>
             </div>
@@ -430,7 +430,7 @@ export function ChartsEditor({ value, onChange }: ChartsEditorProps) {
           <ColorInput label="Center text" value={centerTextColor} onChange={setCenterTextColor} />
           <ColorInput label="Center value" value={centerValueColor} onChange={setCenterValueColor} />
           <ColorInput label="Center percentage" value={centerPercentageColor} onChange={setCenterPercentageColor} />
-          <p className="pt-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+          <p className="pt-2 text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
             Tooltip Colors
           </p>
           <ColorInput label="Tooltip background" value={tooltipBackgroundColor} onChange={setTooltipBackgroundColor} />
@@ -442,7 +442,7 @@ export function ChartsEditor({ value, onChange }: ChartsEditorProps) {
       {/* RadarChart specific options */}
       {chartType === "RadarChart" && (
         <div className="mt-3 space-y-2 rounded-lg border border-custom-color-300/40 p-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+          <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
             Radar Chart Colors
           </p>
           <ColorInput label="Grid color" value={gridColor} onChange={setGridColor} />
@@ -450,7 +450,7 @@ export function ChartsEditor({ value, onChange }: ChartsEditorProps) {
           <ColorInput label="Label color" value={labelColor} onChange={setLabelColor} />
           <ColorInput label="Secondary label" value={labelSecondaryColor} onChange={setLabelSecondaryColor} />
           <ColorInput label="Center text" value={centerTextColorRadar} onChange={setCenterTextColorRadar} />
-          <p className="pt-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+          <p className="pt-2 text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
             Tooltip Colors
           </p>
           <ColorInput label="Tooltip background" value={tooltipBackgroundColorRadar} onChange={setTooltipBackgroundColorRadar} />
@@ -460,7 +460,7 @@ export function ChartsEditor({ value, onChange }: ChartsEditorProps) {
       )}
 
       <div className="space-y-2">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+        <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
           Data points
         </span>
         {dataPoints.map((point) => (

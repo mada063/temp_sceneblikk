@@ -480,7 +480,7 @@ export function CanvasPreview({
 
       <div className="mt-6 flex justify-center">
         <div
-          className="relative w-full max-w-4xl rounded-[36px] border border-custom-color-200/80 p-6 shadow-[inset_0_0_45px_rgba(12,154,235,0.15)] transition-colors dark:border-white/10"
+          className="relative w-full max-w-4xl rounded-[2.25rem] border border-custom-color-200/80 p-6 shadow-[inset_0_0_2.8125rem_rgba(12,154,235,0.15)] transition-colors dark:border-white/10"
           onClick={onCanvasClick}
           style={{
             aspectRatio: `${Math.max(geometry.widthIn, 1)} / ${Math.max(
@@ -603,7 +603,7 @@ export function CanvasPreview({
                   // This will be overridden by selection/connecting outlines if present
                   if (!isConnecting && !isNeighborOfConnecting && !isSelected) {
                     spanStyle.outline = "2px solid rgba(34, 211, 238, 0.5)";
-                    spanStyle.outlineOffset = "2px";
+                    spanStyle.outlineOffset = "0.125rem";
                   }
                 } else {
                   spanStyle.backgroundColor = backgroundColor;
@@ -615,21 +615,21 @@ export function CanvasPreview({
                     spanStyle.boxShadow = `0 0 0 3px ${hexToRgba(borderColor, 0.45)}`;
                   }
                 } else {
-                  spanStyle.boxShadow = `0 16px 32px ${hexToRgba(borderColor, 0.28)}`;
+                  spanStyle.boxShadow = `0 1rem 2rem ${hexToRgba(borderColor, 0.28)}`;
                 }
                 spanStyle.color = textColor;
               }
               if (isSelected && selectionCount > 1) {
                 spanStyle.outline = "2px dashed rgba(56,189,248,0.75)";
-                spanStyle.outlineOffset = "6px";
+                spanStyle.outlineOffset = "0.375rem";
               }
               if (isConnecting) {
                 spanStyle.outline = "2px solid rgba(34, 211, 238, 0.8)";
-                spanStyle.outlineOffset = "4px";
+                spanStyle.outlineOffset = "0.25rem";
               }
               if (isNeighborOfConnecting) {
                 spanStyle.outline = "2px dashed rgba(34, 211, 238, 0.6)";
-                spanStyle.outlineOffset = "4px";
+                spanStyle.outlineOffset = "0.25rem";
               }
 
               let content: ReactNode;
@@ -665,7 +665,7 @@ export function CanvasPreview({
                     style={{ color: textColor }}
                   >
                     <span
-                      className="rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]"
+                      className="rounded-full px-3 py-1 text-[0.625rem] font-semibold uppercase tracking-[0.18em]"
                       style={{
                         backgroundColor: hexToRgba(textColor, 0.12),
                         color: textColor,
@@ -674,7 +674,7 @@ export function CanvasPreview({
                       {t("editor", "panelLabel")}
                     </span>
                     <span
-                      className="text-[10px] uppercase tracking-[0.22em]"
+                      className="text-[0.625rem] uppercase tracking-[0.22em]"
                       style={{ color: hexToRgba(textColor, 0.72) }}
                     >
                       {panelEntryCount > 0
@@ -691,7 +691,7 @@ export function CanvasPreview({
                     </span>
                     {panelEntryCount > 1 ? (
                       <span
-                        className="rounded-full px-2 py-0.5 text-[9px] uppercase tracking-[0.18em]"
+                        className="rounded-full px-2 py-0.5 text-[0.5625rem] uppercase tracking-[0.18em]"
                         style={{
                           backgroundColor: hexToRgba(textColor, 0.08),
                           color: hexToRgba(textColor, 0.68),
@@ -702,7 +702,7 @@ export function CanvasPreview({
                       </span>
                     ) : null}
                     <span
-                      className="text-[10px] uppercase tracking-[0.22em]"
+                      className="text-[0.625rem] uppercase tracking-[0.22em]"
                       style={{ color: hexToRgba(textColor, 0.56) }}
                     >
                       {`${cell.colSpan ?? 1} × ${cell.rowSpan ?? 1}`}
@@ -758,7 +758,7 @@ export function CanvasPreview({
                           event.stopPropagation();
                           onClearCell(key);
                         }}
-                        className="absolute left-2 top-2 z-10 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] opacity-0 transition group-hover:opacity-100"
+                        className="absolute left-2 top-2 z-10 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[0.625rem] font-semibold uppercase tracking-[0.18em] opacity-0 transition group-hover:opacity-100"
         
                       >
                         <TrashIcon className="h-3 w-3" />
@@ -793,7 +793,7 @@ export function CanvasPreview({
                       <button
                         type="button"
                         onPointerDown={onStartResize(key, "ne")}
-                        className="absolute right-2 top-2 z-10 hidden h-6 w-6 items-center justify-center rounded-full border border-white/40 bg-black/60 text-[10px] font-semibold uppercase tracking-[0.12em] text-white shadow transition group-hover:flex"
+                        className="absolute right-2 top-2 z-10 hidden h-6 w-6 items-center justify-center rounded-full border border-white/40 bg-black/60 text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-white shadow transition group-hover:flex"
                         aria-label="Resize component (top)"
                       >
                         <span aria-hidden="true">↕</span>
@@ -801,7 +801,7 @@ export function CanvasPreview({
                       <button
                         type="button"
                         onPointerDown={onStartResize(key, "se")}
-                        className="absolute bottom-2 right-2 z-10 hidden h-6 w-6 items-center justify-center rounded-full border border-white/40 bg-black/60 text-[10px] font-semibold uppercase tracking-[0.12em] text-white shadow transition group-hover:flex"
+                        className="absolute bottom-2 right-2 z-10 hidden h-6 w-6 items-center justify-center rounded-full border border-white/40 bg-black/60 text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-white shadow transition group-hover:flex"
                         aria-label="Resize component"
                       >
                         <span aria-hidden="true">⤢</span>

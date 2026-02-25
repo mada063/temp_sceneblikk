@@ -26,7 +26,7 @@ export function MediaTiny({ appearance, items, autoPlay = true, transitionDurati
   if (items.length === 0) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="text-xs opacity-50" style={{ color: primaryColor }}>
+        <div className="text-[0.75rem] opacity-50" style={{ color: primaryColor }}>
           No media
         </div>
       </div>

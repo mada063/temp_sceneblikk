@@ -27,7 +27,7 @@ export function ChartsTiny({ appearance, chartConfig }: ChartsTinyProps) {
     <div className="flex h-full w-full items-center justify-center p-2">
       <div className="text-center opacity-70" style={{ color: primaryColor }}>
         <div className="text-[0.5rem] mb-1">{chartConfig.type}</div>
-        <div className="text-[0.4375rem]">{chartConfig.data.length} points</div>
+        <div className="text-[0.5rem]">{chartConfig.data.length} points</div>
       </div>
     </div>
   );

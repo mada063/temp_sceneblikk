@@ -235,7 +235,7 @@ export function CalendarLarge({ appearance }: CalendarProps) {
           style={{ borderColor }}
         >
           <div
-            className="grid grid-cols-7 gap-2 text-[10px] font-semibold uppercase tracking-[0.3em]"
+            className="grid grid-cols-7 gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.3em]"
             style={{ color: mutedColor }}
           >
             {WEEKDAY_LABELS.map((label) => (
@@ -277,7 +277,7 @@ export function CalendarLarge({ appearance }: CalendarProps) {
                     <span className="shrink-0">{day.date.getDate()}</span>
                     {isToday ? (
                       <span
-                        className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] uppercase tracking-[0.15em] whitespace-nowrap animate-calendar-today-pulse"
+                        className="shrink-0 rounded-full px-1.5 py-0.5 text-[0.5rem] uppercase tracking-[0.15em] whitespace-nowrap animate-calendar-today-pulse"
                         style={{
                           backgroundColor: accentColor,
                           color: accentTextColor,
@@ -301,7 +301,7 @@ export function CalendarLarge({ appearance }: CalendarProps) {
                       return (
                         <div
                           key={event.id ?? `${day.date.toISOString()}-${index}`}
-                          className={`min-w-0 shrink-0 rounded-xl px-2 py-1 text-[11px] font-semibold leading-tight ${
+                          className={`min-w-0 shrink-0 rounded-xl px-2 py-1 text-[0.75rem] font-semibold leading-tight ${
                             isInitialLoad ? "animate-calendar-event-fade-in" : ""
                           }`}
                           style={{
@@ -320,7 +320,7 @@ export function CalendarLarge({ appearance }: CalendarProps) {
                     })}
                     {day.events.length > 2 ? (
                       <span
-                        className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.2em]"
+                        className="shrink-0 text-[0.75rem] font-semibold uppercase tracking-[0.2em]"
                         style={{ color: mutedColor }}
                       >
                         +{day.events.length - 2} {t("editor", "calendarMoreEvents")}
@@ -374,7 +374,7 @@ export function CalendarLarge({ appearance }: CalendarProps) {
                     ) : null}
                     {event.category ? (
                       <span
-                        className="mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em]"
+                        className="mt-1 inline-flex rounded-full px-2 py-0.5 text-[0.75rem] font-semibold uppercase tracking-[0.2em]"
                         style={{
                           backgroundColor: hexToRgba(accentColor, 0.2),
                           color: accentTextColor,

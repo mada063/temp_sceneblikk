@@ -260,7 +260,7 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
             })}
             </svg>
         </div>
-        <div className="flex flex-wrap items-center justify-center gap-4 py-2 text-[10px]" style={{ color: `${primaryColor}CC` }}>
+        <div className="flex flex-wrap items-center justify-center gap-4 py-2 text-[0.75rem]" style={{ color: `${primaryColor}CC` }}>
           <span>Min: {minTemp}°</span>
           <span>Avg: {Math.round(avgTemp)}°</span>
           <span>Max: {maxTemp}°</span>
@@ -293,7 +293,7 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
         <>
           {locationName && (
             <div
-              className="text-[10px] font-medium uppercase tracking-wider px-4 pt-3 mb-1"
+              className="text-[0.75rem] font-medium uppercase tracking-wider px-4 pt-3 mb-1"
               style={{ color: `${primaryColor}AA` }}
             >
               {locationName}
@@ -311,7 +311,7 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
               >
                 {weatherData.temperature}°
               </div>
-            <div className="flex items-center gap-3 text-[9px] animate-fade-in" style={{ color: `${primaryColor}CC`, animationDelay: '0.5s', animationFillMode: 'both' }}>
+            <div className="flex items-center gap-3 text-[0.75rem] animate-fade-in" style={{ color: `${primaryColor}CC`, animationDelay: '0.5s', animationFillMode: 'both' }}>
                 <span><WindIcon className="inline h-2.5 w-2.5" /> {weatherData.windSpeed} m/s</span>
                 <span><DropletIcon className="inline h-2.5 w-2.5" /> {weatherData.humidity}%</span>
               </div>

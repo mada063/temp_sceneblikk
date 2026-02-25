@@ -29,11 +29,11 @@ export function NewsSmall({ appearance, newsData, loading, error, scrollSpeed = 
     return () => clearInterval(interval);
   }, []);
 
-  // Calculate font sizes based on panel dimensions - Small container
+  // Calculate font sizes based on panel dimensions - Small container (large for readability)
   const panelArea = (colSpan ?? 1) * (rowSpan ?? 1);
-  const titleFontSize = panelArea <= 2 ? "0.625rem" : "0.6875rem"; // 10px or 11px - small size
-  const sourceFontSize = "0.5rem"; // 8px
-  const dateTimeFontSize = "0.4375rem"; // 7px
+  const titleFontSize = panelArea <= 2 ? "1.25rem" : "1.25rem";
+  const sourceFontSize = "0.75rem";
+  const dateTimeFontSize = "0.75rem";
 
   const itemsToShow = newsData?.items.slice(0, 5) || [];
   
@@ -62,7 +62,7 @@ export function NewsSmall({ appearance, newsData, loading, error, scrollSpeed = 
     return (
       <div className="flex h-full items-center justify-center px-3">
         <div
-          className="text-[9px] font-medium text-center"
+          className="text-[0.5rem] font-medium text-center"
           style={{ color: `${primaryColor}CC` }}
         >
           {error}
@@ -75,7 +75,7 @@ export function NewsSmall({ appearance, newsData, loading, error, scrollSpeed = 
     return (
       <div className="flex h-full items-center justify-center">
         <div
-          className="text-[9px] font-medium"
+          className="text-[0.5rem] font-medium"
           style={{ color: `${primaryColor}CC` }}
         >
           Ingen nyheter

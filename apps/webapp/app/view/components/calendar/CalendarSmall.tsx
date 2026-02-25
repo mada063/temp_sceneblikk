@@ -209,7 +209,7 @@ export function CalendarSmall({ appearance }: CalendarProps) {
                   <p className="mt-1 text-base font-semibold">{event.title}</p>
                   {event.category && (
                     <span
-                      className="mt-2 inline-flex rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em]"
+                      className="mt-2 inline-flex rounded-full px-2 py-1 text-[0.75rem] font-semibold uppercase tracking-[0.2em]"
                       style={{
                         backgroundColor: hexToRgba(accentColor, 0.2),
                         color: accentTextColor,

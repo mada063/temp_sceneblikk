@@ -305,7 +305,7 @@ export function CalendarMedium({
                     <div className="mb-1 flex shrink-0 items-center justify-between gap-2 text-xs font-semibold">
                       <div className="flex items-center gap-2">
                         <span
-                          className="text-[10px] uppercase tracking-[0.3em] opacity-70"
+                          className="text-[0.75rem] uppercase tracking-[0.3em] opacity-70"
                           style={{ color: mutedColor }}
                         >
                           {(() => {
@@ -327,7 +327,7 @@ export function CalendarMedium({
                       </div>
                       {isToday ? (
                         <span
-                          className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] uppercase tracking-[0.15em] whitespace-nowrap animate-calendar-today-pulse"
+                          className="shrink-0 rounded-full px-1.5 py-0.5 text-[0.5rem] uppercase tracking-[0.15em] whitespace-nowrap animate-calendar-today-pulse"
                           style={{
                             backgroundColor: accentColor,
                             color: accentTextColor,
@@ -362,7 +362,7 @@ export function CalendarMedium({
                           return (
                             <div
                               key={event.id ?? `${day.date.toISOString()}-${index}`}
-                              className={`rounded-xl px-2 py-1 text-[11px] font-semibold leading-tight ${
+                              className={`rounded-xl px-2 py-1 text-[0.75rem] font-semibold leading-tight ${
                                 isInitialLoad ? "animate-calendar-event-fade-in" : ""
                               } ${isExpanded ? "whitespace-normal" : "min-w-0 shrink-0"}`}
                               style={{
@@ -375,7 +375,7 @@ export function CalendarMedium({
                               {isExpanded ? (
                                 <div>
                                   {event.time && (
-                                    <span className="text-[10px] font-medium opacity-75">
+                                    <span className="text-[0.75rem] font-medium opacity-75">
                                       {event.time}
                                     </span>
                                   )}
@@ -412,7 +412,7 @@ export function CalendarMedium({
                               return (
                                 <div
                                   key={event.id ?? `${day.date.toISOString()}-extra-${columnIndex}-${index}`}
-                                  className={`rounded-xl px-2 py-1 text-[11px] font-semibold leading-tight min-w-0 shrink-0 ${
+                                  className={`rounded-xl px-2 py-1 text-[0.75rem] font-semibold leading-tight min-w-0 shrink-0 ${
                                     isInitialLoad ? "animate-calendar-event-fade-in" : ""
                                   }`}
                                   style={{
@@ -423,7 +423,7 @@ export function CalendarMedium({
                                   }}
                                 >
                                   {event.time && (
-                                    <span className="block text-[10px] font-medium opacity-75">
+                                    <span className="block text-[0.75rem] font-medium opacity-75">
                                       {event.time}
                                     </span>
                                   )}
@@ -444,7 +444,7 @@ export function CalendarMedium({
           ) : (
             <>
           <div
-            className="grid grid-cols-7 gap-2 text-[10px] font-semibold uppercase tracking-[0.3em]"
+            className="grid grid-cols-7 gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.3em]"
             style={{ color: mutedColor }}
           >
             {WEEKDAY_LABELS.map((label) => (
@@ -486,7 +486,7 @@ export function CalendarMedium({
                     <span className="shrink-0">{day.date.getDate()}</span>
                     {isToday ? (
                       <span
-                        className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] uppercase tracking-[0.15em] whitespace-nowrap animate-calendar-today-pulse"
+                        className="shrink-0 rounded-full px-1.5 py-0.5 text-[0.5rem] uppercase tracking-[0.15em] whitespace-nowrap animate-calendar-today-pulse"
                         style={{
                           backgroundColor: accentColor,
                           color: accentTextColor,
@@ -515,7 +515,7 @@ export function CalendarMedium({
                       return (
                         <div
                           key={event.id ?? `${day.date.toISOString()}-${index}`}
-                          className={`rounded-xl px-2 py-1 text-[11px] font-semibold leading-tight ${
+                          className={`rounded-xl px-2 py-1 text-[0.75rem] font-semibold leading-tight ${
                             isInitialLoad ? "animate-calendar-event-fade-in" : ""
                           } ${isExpanded ? "whitespace-normal" : "min-w-0 shrink-0"}`}
                           style={{
@@ -528,7 +528,7 @@ export function CalendarMedium({
                           {isExpanded ? (
                             <div>
                               {event.time && (
-                                <span className="text-[10px] font-medium opacity-75">
+                                <span className="text-[0.75rem] font-medium opacity-75">
                                   {event.time}
                                 </span>
                               )}

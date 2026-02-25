@@ -26,7 +26,7 @@ export function MediaMedium({ appearance, items, autoPlay = true, transitionDura
   if (items.length === 0) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="text-base opacity-50" style={{ color: primaryColor }}>
+        <div className="text-[1rem] opacity-50" style={{ color: primaryColor }}>
           No media
         </div>
       </div>
@@ -63,7 +63,7 @@ export function MediaMedium({ appearance, items, autoPlay = true, transitionDura
         <div
           className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3"
         >
-          <div className="text-sm font-semibold" style={{ color: primaryColor }}>
+          <div className="text-[1rem] font-semibold" style={{ color: primaryColor }}>
             {currentItem.title}
           </div>
         </div>

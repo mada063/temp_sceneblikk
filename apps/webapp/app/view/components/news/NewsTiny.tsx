@@ -29,10 +29,10 @@ export function NewsTiny({ appearance, newsData, loading, error, scrollSpeed = 5
     return () => clearInterval(interval);
   }, []);
 
-  // Calculate font size based on panel dimensions - Tiny container
+  // Calculate font size based on panel dimensions - Tiny container (large for readability)
   const panelArea = (colSpan ?? 1) * (rowSpan ?? 1);
-  const fontSize = panelArea <= 1 ? "0.5rem" : "0.5625rem"; // 8px or 9px - smallest for tiny containers
-  const dateTimeFontSize = "0.375rem"; // 6px - very small for tiny
+  const fontSize = panelArea <= 1 ? "1rem" : "1rem";
+  const dateTimeFontSize = "0.75rem";
 
   const itemsToShow = newsData?.items.slice(0, 3) || [];
   
@@ -61,7 +61,7 @@ export function NewsTiny({ appearance, newsData, loading, error, scrollSpeed = 5
     return (
       <div className="flex h-full items-center justify-center px-2">
         <div
-          className="text-[8px] font-medium text-center"
+          className="text-[0.5rem] font-medium text-center"
           style={{ color: `${primaryColor}CC` }}
         >
           {error}
@@ -74,7 +74,7 @@ export function NewsTiny({ appearance, newsData, loading, error, scrollSpeed = 5
     return (
       <div className="flex h-full items-center justify-center">
         <div
-          className="text-[8px] font-medium"
+          className="text-[0.5rem] font-medium"
           style={{ color: `${primaryColor}CC` }}
         >
           Ingen nyheter
@@ -89,7 +89,7 @@ export function NewsTiny({ appearance, newsData, loading, error, scrollSpeed = 5
         {newsData && (
           <div
             className="font-medium uppercase tracking-wider opacity-70 px-1"
-            style={{ color: primaryColor, fontSize: "0.4375rem" }} // 7px - very small for tiny
+            style={{ color: primaryColor, fontSize: "0.75rem" }}
           >
             {newsData.title}
           </div>

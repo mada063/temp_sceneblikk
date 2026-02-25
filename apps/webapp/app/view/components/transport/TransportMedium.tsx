@@ -56,8 +56,8 @@ export function TransportMedium({
   const badgeTextColor = appearance.transportBadgeTextColor || "#000000";
   const badgeRadius = appearance.transportBadgeRadius ?? appearance.borderRadius ?? 8;
   const delayColor = appearance.transportDelayColor || "#ef4444";
-  const titleFontSize = "0.8125rem";
-  const lineFontSize = "0.6875rem";
+  const titleFontSize = "0.75rem";
+  const lineFontSize = "0.75rem";
   const showDual = dualStopEnabled && secondaryTransportData;
 
   const [panelAnimated, setPanelAnimated] = useState(false);
@@ -236,14 +236,14 @@ function MediumStopSection({
                     {row.dep.destination}
                   </span>
                   {row.dep.platform && (
-                    <div className="opacity-70" style={{ color: primaryColor, fontSize: "0.5625rem" }}>
+                    <div className="opacity-70" style={{ color: primaryColor, fontSize: "0.5rem" }}>
                       Plattform {row.dep.platform}
                     </div>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
                   {row.hasDelay && (
-                    <div className="opacity-90 font-medium" style={{ color: delayColor, fontSize: "0.5625rem" }}>
+                    <div className="opacity-90 font-medium" style={{ color: delayColor, fontSize: "0.5rem" }}>
                       +{row.dep.delay} min
                     </div>
                   )}

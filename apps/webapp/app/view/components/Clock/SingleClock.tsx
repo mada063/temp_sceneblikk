@@ -132,7 +132,7 @@ export function SingleClock({
         </div>
         {dateText && (
           <div
-            className="text-xs font-medium uppercase tracking-[0.24em]"
+            className="text-[0.75rem] font-medium uppercase tracking-[0.24em]"
             style={{ color: `${color}CC` }}
           >
             {dateText}
@@ -198,7 +198,7 @@ export function SingleClock({
       </div>
       {dateText && (
         <div
-          className="text-xs font-medium uppercase tracking-[0.24em]"
+          className="text-[0.75rem] font-medium uppercase tracking-[0.24em]"
           style={{ color: `${color}CC` }}
         >
           {dateText}

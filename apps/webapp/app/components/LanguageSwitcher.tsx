@@ -65,7 +65,7 @@ export default function LanguageSwitcher() {
               src={current.flagSrc}
               alt={current.label}
               fill
-              sizes="24px"
+              sizes="1.5rem"
               className="object-cover"
             />
           </span>
@@ -100,12 +100,12 @@ export default function LanguageSwitcher() {
                     src={item.flagSrc}
                     alt={item.label}
                     fill
-                    sizes="24px"
+                    sizes="1.5rem"
                     className="object-cover"
                   />
                 </span>
                 <span className="flex-1">{item.label}</span>
-                <span className="text-[10px] uppercase tracking-[0.16em] text-custom-color-500 dark:text-custom-color-200">
+                <span className="text-[0.625rem] uppercase tracking-[0.16em] text-custom-color-500 dark:text-custom-color-200">
                   {item.code.toUpperCase()}
                 </span>
               </button>

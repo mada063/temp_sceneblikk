@@ -32,10 +32,10 @@ export function NewsLarge({ appearance, newsData, loading, error, scrollSpeed = 
 
   // Calculate font sizes based on panel dimensions - Large container
   const panelArea = (colSpan ?? 1) * (rowSpan ?? 1);
-  const titleFontSize = panelArea <= 12 ? "0.9375rem" : "1.0625rem"; // 15px or 17px - large size
-  const descFontSize = "0.75rem"; // 12px
-  const sourceFontSize = "0.6875rem"; // 11px
-  const dateTimeFontSize = "0.625rem"; // 10px
+  const titleFontSize = panelArea <= 12 ? "1.25rem" : "1.5rem";
+  const descFontSize = "1rem";
+  const sourceFontSize = "1rem";
+  const dateTimeFontSize = "0.75rem";
 
   const itemsToShow = newsData?.items.slice(0, maxItems) || [];
   
@@ -77,7 +77,7 @@ export function NewsLarge({ appearance, newsData, loading, error, scrollSpeed = 
     return (
       <div className="flex h-full items-center justify-center">
         <div
-          className="text-base font-medium"
+          className="text-lg font-medium"
           style={{ color: `${primaryColor}CC` }}
         >
           Ingen nyheter

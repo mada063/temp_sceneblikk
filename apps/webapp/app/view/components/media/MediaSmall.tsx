@@ -26,7 +26,7 @@ export function MediaSmall({ appearance, items, autoPlay = true, transitionDurat
   if (items.length === 0) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="text-sm opacity-50" style={{ color: primaryColor }}>
+        <div className="text-[1rem] opacity-50" style={{ color: primaryColor }}>
           No media
         </div>
       </div>
@@ -63,7 +63,7 @@ export function MediaSmall({ appearance, items, autoPlay = true, transitionDurat
         <div
           className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2"
         >
-          <div className="text-xs font-medium" style={{ color: primaryColor }}>
+          <div className="text-[0.75rem] font-medium" style={{ color: primaryColor }}>
             {currentItem.title}
           </div>
         </div>

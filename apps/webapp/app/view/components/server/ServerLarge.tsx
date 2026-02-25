@@ -99,11 +99,11 @@ export function ServerLarge({ appearance, serverData, loading, error }: ServerLa
                 <td className="py-3">
                   <StatusIcon className="inline-block" style={{ color: statusColor }} size={20} />
                 </td>
-                <td className="text-sm font-medium py-3 truncate max-w-[180px]" style={{ color: primaryColor }}>
+                <td className="text-sm font-medium py-3 truncate max-w-[11.25rem]" style={{ color: primaryColor }}>
                   {server.name}
                 </td>
                 {isMinecraft && (
-                  <td className="text-sm font-medium py-3 truncate max-w-[250px]" style={{ color: primaryColor }}>
+                  <td className="text-sm font-medium py-3 truncate max-w-[15.625rem]" style={{ color: primaryColor }}>
                     {server.motd || "-"}
                   </td>
                 )}

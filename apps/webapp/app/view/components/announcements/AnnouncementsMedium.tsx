@@ -12,8 +12,8 @@ export function AnnouncementsMedium({ appearance, announcements, panelSize = "me
   const primaryColor = appearance.textColor || "#ffffff";
   
   const panelArea = (colSpan ?? 1) * (rowSpan ?? 1);
-  const titleFontSize = panelArea <= 6 ? "0.8125rem" : "0.9375rem";
-  const messageFontSize = "0.6875rem";
+  const titleFontSize = panelArea <= 6 ? "0.75rem" : "1rem";
+  const messageFontSize = "0.75rem";
 
   const activeAnnouncements = filterActiveAnnouncements(announcements);
 

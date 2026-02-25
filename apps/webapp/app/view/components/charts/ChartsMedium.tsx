@@ -169,7 +169,7 @@ export function ChartsMedium({ appearance, chartConfig }: ChartsMediumProps) {
         </div>
       )}
       {(chartConfig.xAxisLabel || chartConfig.yAxisLabel) && (
-        <div className="mb-1 flex gap-4 text-[0.625rem] opacity-70" style={{ color: primaryColor }}>
+        <div className="mb-1 flex gap-4 text-[0.75rem] opacity-70" style={{ color: primaryColor }}>
           {chartConfig.xAxisLabel && <span>X: {chartConfig.xAxisLabel}</span>}
           {chartConfig.yAxisLabel && <span>Y: {chartConfig.yAxisLabel}</span>}
         </div>

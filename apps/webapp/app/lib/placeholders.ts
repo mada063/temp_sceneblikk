@@ -9,8 +9,11 @@ import {
   FiMapPin,
   FiNavigation,
   FiServer,
+  FiSun,
+  FiTrash2,
   FiType,
   FiVideo,
+  FiZap,
 } from "react-icons/fi";
 
 export type PlaceholderDefinition = {
@@ -120,6 +123,30 @@ export const PLACEHOLDER_LIBRARY: PlaceholderDefinition[] = [
     labelNb: "Server",
     descriptionNb: "Serverstatus og overvåking",
     icon: FiServer,
+  },
+  {
+    id: "solar",
+    label: "Solar",
+    description: "Sunrise, sunset and day length",
+    labelNb: "Sol",
+    descriptionNb: "Soloppgang, solnedgang og dagslengde",
+    icon: FiSun,
+  },
+  {
+    id: "garbage",
+    label: "Garbage",
+    description: "Garbage and recycling pickup schedule",
+    labelNb: "Søppel",
+    descriptionNb: "Tømmedager for avfall og gjenvinning",
+    icon: FiTrash2,
+  },
+  {
+    id: "power",
+    label: "Power",
+    description: "Electricity spot price (Norway)",
+    labelNb: "Strøm",
+    descriptionNb: "Strømpris spot (Norge)",
+    icon: FiZap,
   },
 ];
 

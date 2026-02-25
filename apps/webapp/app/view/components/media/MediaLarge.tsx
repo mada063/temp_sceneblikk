@@ -26,7 +26,7 @@ export function MediaLarge({ appearance, items, autoPlay = true, transitionDurat
   if (items.length === 0) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="text-lg opacity-50" style={{ color: primaryColor }}>
+        <div className="text-[1.25rem] opacity-50" style={{ color: primaryColor }}>
           No media
         </div>
       </div>
@@ -63,7 +63,7 @@ export function MediaLarge({ appearance, items, autoPlay = true, transitionDurat
         <div
           className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4"
         >
-          <div className="text-base font-semibold" style={{ color: primaryColor }}>
+          <div className="text-[1rem] font-semibold" style={{ color: primaryColor }}>
             {currentItem.title}
           </div>
         </div>

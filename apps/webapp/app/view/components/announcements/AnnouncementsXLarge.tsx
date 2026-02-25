@@ -12,8 +12,8 @@ export function AnnouncementsXLarge({ appearance, announcements, panelSize = "xl
   const primaryColor = appearance.textColor || "#ffffff";
   
   const panelArea = (colSpan ?? 1) * (rowSpan ?? 1);
-  const titleFontSize = panelArea <= 24 ? "1.125rem" : "1.25rem";
-  const messageFontSize = "0.875rem";
+  const titleFontSize = panelArea <= 24 ? "1.25rem" : "1.25rem";
+  const messageFontSize = "1rem";
 
   const activeAnnouncements = filterActiveAnnouncements(announcements);
 

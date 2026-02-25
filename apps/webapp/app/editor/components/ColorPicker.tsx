@@ -79,7 +79,7 @@ export function ColorPicker({
         onBlur={handleBlur}
         className={`h-9 w-9 cursor-pointer rounded-md border border-black/10 bg-transparent p-0 shadow-sm ${className}`}
       />
-      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
+      <span className="text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-custom-color-500 dark:text-custom-color-100/80">
         {localValue?.toUpperCase?.() ?? ""}
       </span>
     </div>

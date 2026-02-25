@@ -63,26 +63,26 @@ export function ServerSmall({ appearance, serverData, loading, error }: ServerSm
       <table className="w-full text-left border-collapse">
         <thead>
           <tr>
-            <th className="text-[9px] font-semibold uppercase tracking-wider pb-1" style={{ color: primaryColor }}>
+            <th className="text-[0.5rem] font-semibold uppercase tracking-wider pb-1" style={{ color: primaryColor }}>
               Status
             </th>
-            <th className="text-[9px] font-semibold uppercase tracking-wider pb-1" style={{ color: primaryColor }}>
+            <th className="text-[0.5rem] font-semibold uppercase tracking-wider pb-1" style={{ color: primaryColor }}>
               Name
             </th>
             {isMinecraft && (
-              <th className="text-[9px] font-semibold uppercase tracking-wider pb-1" style={{ color: primaryColor }}>
+              <th className="text-[0.5rem] font-semibold uppercase tracking-wider pb-1" style={{ color: primaryColor }}>
                 MOTD
               </th>
             )}
             {isMinecraft && (
-              <th className="text-[9px] font-semibold uppercase tracking-wider pb-1 text-right" style={{ color: primaryColor }}>
+              <th className="text-[0.5rem] font-semibold uppercase tracking-wider pb-1 text-right" style={{ color: primaryColor }}>
                 Players
               </th>
             )}
-            <th className="text-[9px] font-semibold uppercase tracking-wider pb-1 text-right" style={{ color: primaryColor }}>
+            <th className="text-[0.5rem] font-semibold uppercase tracking-wider pb-1 text-right" style={{ color: primaryColor }}>
               Ping
             </th>
-            <th className="text-[9px] font-semibold uppercase tracking-wider pb-1 text-right" style={{ color: primaryColor }}>
+            <th className="text-[0.5rem] font-semibold uppercase tracking-wider pb-1 text-right" style={{ color: primaryColor }}>
               Port
             </th>
           </tr>
@@ -99,16 +99,16 @@ export function ServerSmall({ appearance, serverData, loading, error }: ServerSm
                 <td className="py-1">
                   <StatusIcon className="inline-block" style={{ color: statusColor }} size={12} />
                 </td>
-                <td className="text-[9px] font-medium py-1 truncate max-w-[60px]" style={{ color: primaryColor }}>
+                <td className="text-[0.5rem] font-medium py-1 truncate max-w-[3.75rem]" style={{ color: primaryColor }}>
                   {server.name}
                 </td>
                 {isMinecraft && (
-                  <td className="text-[9px] font-medium py-1 truncate max-w-[80px]" style={{ color: primaryColor }}>
+                  <td className="text-[0.5rem] font-medium py-1 truncate max-w-[5rem]" style={{ color: primaryColor }}>
                     {server.motd || "-"}
                   </td>
                 )}
                 {isMinecraft && (
-                  <td className="text-[9px] font-medium py-1 text-right" style={{ color: primaryColor }}>
+                  <td className="text-[0.5rem] font-medium py-1 text-right" style={{ color: primaryColor }}>
                     {server.playersOnline != null && server.playersMax != null
                       ? `${server.playersOnline}/${server.playersMax}`
                       : server.playersOnline != null
@@ -116,10 +116,10 @@ export function ServerSmall({ appearance, serverData, loading, error }: ServerSm
                       : "-"}
                   </td>
                 )}
-                <td className="text-[9px] font-medium py-1 text-right" style={{ color: primaryColor }}>
+                <td className="text-[0.5rem] font-medium py-1 text-right" style={{ color: primaryColor }}>
                   {server.ping !== null ? `${server.ping}ms` : "-"}
                 </td>
-                <td className="text-[9px] font-medium py-1 text-right" style={{ color: primaryColor }}>
+                <td className="text-[0.5rem] font-medium py-1 text-right" style={{ color: primaryColor }}>
                   {server.port !== null ? server.port : "-"}
                 </td>
               </tr>
