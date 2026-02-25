@@ -1,14 +1,5 @@
-// suncalc is CJS; getTimes(date, lat, lng) returns { sunrise, sunset, dawn, dusk, solarNoon, ... }
-const SunCalc = require("suncalc") as {
-  getTimes: (date: Date, lat: number, lng: number) => {
-    sunrise: Date;
-    sunset: Date;
-    dawn: Date;
-    dusk: Date;
-    solarNoon: Date;
-  };
-};
 import type { SolarData } from "./types";
+import { getTimes as getSunCalcTimes } from "suncalc";
 
 /**
  * Get solar times for a given date at lat/lon.
@@ -18,7 +9,7 @@ export function getSolarTimes(
   lon: number,
   date: Date
 ): SolarData {
-  const times = SunCalc.getTimes(date, lat, lon);
+  const times = getSunCalcTimes(date, lat, lon);
   const sunrise = times.sunrise;
   const sunset = times.sunset;
   const solarNoon = times.solarNoon;
