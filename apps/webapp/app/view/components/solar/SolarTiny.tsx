@@ -27,7 +27,7 @@ export function SolarTiny({ appearance, solarData }: SolarTinyProps) {
   if (!solarData) {
     return (
       <div className="flex h-full w-full items-center justify-center" style={{ color: primaryColor }}>
-        <SunIcon className="h-10 w-10 opacity-50" />
+        <SunIcon className="h-10 w-10 opacity-50 animate-pulse" />
       </div>
     );
   }
@@ -39,8 +39,11 @@ export function SolarTiny({ appearance, solarData }: SolarTinyProps) {
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-1 px-2">
-      <SunIcon className="h-12 w-12 opacity-90" style={{ color: primaryColor }} />
-      <span className="text-center text-base font-medium opacity-90" style={{ color: primaryColor }}>
+      <SunIcon className="h-12 w-12 opacity-90 animate-fade-in" style={{ color: primaryColor }} />
+      <span
+        className="text-center text-base font-medium opacity-90 animate-fade-in"
+        style={{ color: primaryColor, animationDelay: "0.3s", animationFillMode: "both" }}
+      >
         {nextLabel}
         {nextTime ? ` ${nextTime}` : ""}
       </span>

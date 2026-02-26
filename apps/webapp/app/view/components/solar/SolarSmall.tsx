@@ -20,23 +20,32 @@ export function SolarSmall({ appearance, solarData }: SolarSmallProps) {
   if (!solarData) {
     return (
       <div className="flex h-full w-full items-center justify-center" style={{ color: primaryColor }}>
-        <SunIcon className="h-12 w-12 opacity-50" />
+        <SunIcon className="h-12 w-12 opacity-50 animate-pulse" />
       </div>
     );
   }
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-4">
-      <SunIcon className="h-14 w-14 opacity-90" style={{ color: primaryColor }} />
+      <SunIcon className="h-14 w-14 opacity-90 animate-fade-in" style={{ color: primaryColor }} />
       <div className="flex flex-col items-center gap-1 text-center">
-        <div className="text-lg font-semibold" style={{ color: primaryColor }}>
+        <div
+          className="text-lg font-semibold animate-fade-in"
+          style={{ color: primaryColor, animationDelay: "0.3s", animationFillMode: "both" }}
+        >
           ↑ {formatSolarTime(solarData.sunrise, solarTimeFormat)}
         </div>
-        <div className="text-lg font-semibold" style={{ color: primaryColor }}>
+        <div
+          className="text-lg font-semibold animate-fade-in"
+          style={{ color: primaryColor, animationDelay: "0.4s", animationFillMode: "both" }}
+        >
           ↓ {formatSolarTime(solarData.sunset, solarTimeFormat)}
         </div>
         {solarShowDayLength && (
-          <div className="text-sm opacity-80" style={{ color: primaryColor }}>
+          <div
+            className="text-sm opacity-80 animate-fade-in"
+            style={{ color: primaryColor, animationDelay: "0.5s", animationFillMode: "both" }}
+          >
             {formatDayLength(solarData.dayLengthMinutes)}
           </div>
         )}

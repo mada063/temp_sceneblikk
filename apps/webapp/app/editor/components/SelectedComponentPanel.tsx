@@ -2309,6 +2309,20 @@ export function SelectedComponentPanel({
                       className="h-4 w-4 rounded border border-custom-color-400 bg-white text-custom-color-500 focus:ring-custom-color-500 dark:border-white/40 dark:bg-custom-color-900"
                     />
                   </label>
+                  <label className="space-y-1">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
+                      {t("editor", "powerLanguageLabel")}
+                    </span>
+                    <select
+                      value={appearance.powerLanguage ?? ""}
+                      onChange={(e) => onAppearanceChange({ powerLanguage: (e.target.value || undefined) as "nb" | "en" | undefined })}
+                      className="w-full rounded-lg border border-custom-color-300/50 bg-white/80 px-3 py-2 text-sm font-medium text-custom-color-800 shadow-sm focus:border-custom-color-500 focus:outline-none dark:border-white/10 dark:bg-custom-color-800/80 dark:text-custom-color-50"
+                    >
+                      <option value="">{t("editor", "powerLanguageApp")}</option>
+                      <option value="nb">{t("editor", "powerLanguageNb")}</option>
+                      <option value="en">{t("editor", "powerLanguageEn")}</option>
+                    </select>
+                  </label>
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-custom-color-600 dark:text-custom-color-200">
                       Tidformat

@@ -133,6 +133,8 @@ export type CellAppearance = {
   powerArea?: "NO1" | "NO2" | "NO3" | "NO4" | "NO5"; // Price area in Norway
   powerTimeFormat?: "12h" | "24h";
   powerShowDayChart?: boolean;
+  /** Display language for power panel (defaults to app locale when unset). */
+  powerLanguage?: "nb" | "en";
 };
 
 export const makeDefaultAppearance = (): CellAppearance => ({
@@ -198,6 +200,7 @@ export const makeDefaultAppearance = (): CellAppearance => ({
   powerArea: "NO1",
   powerTimeFormat: "24h",
   powerShowDayChart: true,
+  powerLanguage: undefined,
 });
 
 export const cloneAppearance = (appearance?: CellAppearance | null) =>

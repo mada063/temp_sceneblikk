@@ -5,6 +5,7 @@ import type { PowerProps } from "./types";
 import { formatPrice } from "./utils";
 import type { PowerData } from "./types";
 import { useI18n } from "../../../lib/i18n";
+import { POWER_LABELS, type PowerLocale } from "./labels";
 
 const ZapIcon = FiZap as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
 
@@ -15,7 +16,9 @@ type PowerTinyProps = PowerProps & {
 };
 
 export function PowerTiny({ appearance, powerData, loading, error }: PowerTinyProps) {
-  const { t } = useI18n();
+  const { locale: appLocale } = useI18n();
+  const locale: PowerLocale = appearance.powerLanguage ?? appLocale;
+  const labels = POWER_LABELS[locale];
   const primaryColor = appearance.textColor || "#ffffff";
 
   if (loading) {
@@ -40,15 +43,24 @@ export function PowerTiny({ appearance, powerData, loading, error }: PowerTinyPr
 
   return (
     <div className="flex h-full w-full flex-col gap-0.5 px-2 py-1">
-      <div className="font-medium uppercase tracking-wider opacity-70" style={{ color: primaryColor, fontSize: "0.5rem" }}>
-        {t("editor", "powerSourceLabel")}
+      <div
+        className="font-medium uppercase tracking-wider opacity-70 animate-fade-in"
+        style={{ color: primaryColor, fontSize: "0.5rem", animationDelay: "0.2s", animationFillMode: "both" }}
+      >
+        {labels.powerSourceLabel}
       </div>
       <div className="flex flex-1 flex-col items-center justify-center gap-1">
-        <ZapIcon className="h-12 w-12 opacity-90" style={{ color: primaryColor }} />
-        <span className="text-lg font-bold" style={{ color: primaryColor }}>
+        <ZapIcon className="h-12 w-12 opacity-90 animate-fade-in" style={{ color: primaryColor }} />
+        <span
+          className="text-lg font-bold animate-fade-in"
+          style={{ color: primaryColor, animationDelay: "0.3s", animationFillMode: "both" }}
+        >
           {formatPrice(price)} kr
         </span>
-        <span className="text-[0.75rem] opacity-80" style={{ color: primaryColor }}>
+        <span
+          className="text-[0.75rem] opacity-80 animate-fade-in"
+          style={{ color: primaryColor, animationDelay: "0.5s", animationFillMode: "both" }}
+        >
           /kWh
         </span>
       </div>

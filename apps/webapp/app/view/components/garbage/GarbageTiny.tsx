@@ -18,7 +18,7 @@ export function GarbageTiny({ appearance, pickups }: GarbageTinyProps) {
   if (!next) {
     return (
       <div className="flex h-full w-full flex-col items-center justify-center gap-2" style={{ color: primaryColor }}>
-        <TrashIcon className="h-10 w-10 opacity-50" />
+        <TrashIcon className="h-10 w-10 opacity-50 animate-pulse" />
         <span className="text-sm opacity-80">Ingen tømming</span>
       </div>
     );
@@ -28,11 +28,17 @@ export function GarbageTiny({ appearance, pickups }: GarbageTinyProps) {
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-1 px-2">
-      <Icon className="h-12 w-12 opacity-90" style={{ color: primaryColor }} />
-      <span className="text-center text-base font-semibold" style={{ color: primaryColor }}>
+      <Icon className="h-12 w-12 opacity-90 animate-fade-in" style={{ color: primaryColor }} />
+      <span
+        className="text-center text-base font-semibold animate-fade-in"
+        style={{ color: primaryColor, animationDelay: "0.3s", animationFillMode: "both" }}
+      >
         {next.label}
       </span>
-      <span className="text-center text-sm opacity-90" style={{ color: primaryColor }}>
+      <span
+        className="text-center text-sm opacity-90 animate-fade-in"
+        style={{ color: primaryColor, animationDelay: "0.5s", animationFillMode: "both" }}
+      >
         {next.labelRelative}
       </span>
     </div>

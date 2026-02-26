@@ -17,7 +17,7 @@ export function GarbageSmall({ appearance, pickups }: GarbageSmallProps) {
   if (pickups.length === 0) {
     return (
       <div className="flex h-full w-full flex-col items-center justify-center gap-2" style={{ color: primaryColor }}>
-        <TrashIcon className="h-12 w-12 opacity-50" />
+        <TrashIcon className="h-12 w-12 opacity-50 animate-pulse" />
         <span className="text-base opacity-80">Ingen tømmedager</span>
       </div>
     );
@@ -25,15 +25,15 @@ export function GarbageSmall({ appearance, pickups }: GarbageSmallProps) {
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-4">
-      <TrashIcon className="h-12 w-12 opacity-90" style={{ color: primaryColor }} />
+      <TrashIcon className="h-12 w-12 opacity-90 animate-fade-in" style={{ color: primaryColor }} />
       <div className="flex w-full max-w-xs flex-col gap-2">
-        {pickups.slice(0, 3).map((p) => {
+        {pickups.slice(0, 3).map((p, idx) => {
           const Icon = getGarbageIcon(p.iconKey);
           return (
             <div
               key={p.id}
-              className="flex items-center justify-between gap-2 rounded-xl px-3 py-2"
-              style={{ backgroundColor: `${primaryColor}12`, color: primaryColor }}
+              className="flex items-center justify-between gap-2 rounded-xl px-3 py-2 animate-fade-in"
+              style={{ backgroundColor: `${primaryColor}12`, color: primaryColor, animationDelay: `${0.2 + idx * 0.1}s`, animationFillMode: "both" }}
             >
               <span className="flex items-center gap-2 text-sm font-medium">
                 <Icon className="h-4 w-4 flex-shrink-0 opacity-90" />

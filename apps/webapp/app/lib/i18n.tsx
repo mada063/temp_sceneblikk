@@ -317,6 +317,11 @@ const messages = {
       powerSourceLabel: "Hva koster strømmen.no",
       powerPricesToday: "Dagens priser",
       powerPriceNow: "Nå",
+      // Power options (editor)
+      powerLanguageLabel: "Språk",
+      powerLanguageApp: "App standard",
+      powerLanguageNb: "Norsk",
+      powerLanguageEn: "Engelsk",
     },
   },
   en: {
@@ -619,9 +624,14 @@ const messages = {
       solarNight: "Night",
       solarSearchPlaceholder: "Search location (e.g. Bergen, Oslo)",
       // Power (view)
-      powerSourceLabel: "Hva koster strømmen.no",
+      powerSourceLabel: "What does the power cost",
       powerPricesToday: "Today's prices",
       powerPriceNow: "Now",
+      // Power options (editor)
+      powerLanguageLabel: "Language",
+      powerLanguageApp: "Use app default",
+      powerLanguageNb: "Norwegian",
+      powerLanguageEn: "English",
     },
   },
 } as const;
