@@ -3,10 +3,13 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { Departure } from "./types";
 
-const DEFAULT_ANIMATION_DURATION = 650;
-const INITIAL_STAGGER_DELAY = 90; // ms between rows on first load
-const BOUNCE_STAGGER_DELAY = 100; // matches row animation delay (0.1s)
-const NEW_FADE_EXTRA_DELAY = 200; // wait after bounce before fading new rows
+/** Sync with globals `.animate-slide-up-bounce` duration. */
+const DEFAULT_ANIMATION_DURATION = 420;
+/** Stagger for initial row sequence + new-row fade-ins (~100ms between steps). */
+const INITIAL_STAGGER_DELAY = 100;
+/** Stagger between departure rows when bouncing (matches user preference ~100ms). */
+const BOUNCE_STAGGER_DELAY = 100;
+const NEW_FADE_EXTRA_DELAY = 120; // wait after bounce before fading new rows
 
 export function useDepartureAnimations(
   departures: Departure[],

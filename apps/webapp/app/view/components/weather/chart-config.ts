@@ -59,6 +59,9 @@ export type TemperatureRange = {
   minTemp: number;
   maxTemp: number;
   avgTemp: number;
+  /** Min/max from forecast data (not axis padding). */
+  dataMinTemp: number;
+  dataMaxTemp: number;
   yAxisTemps: number[];
 };
 
@@ -132,6 +135,8 @@ export function calculateTemperatureRange(
     minTemp,
     maxTemp,
     avgTemp,
+    dataMinTemp: actualMin,
+    dataMaxTemp: actualMax,
     yAxisTemps,
   };
 }

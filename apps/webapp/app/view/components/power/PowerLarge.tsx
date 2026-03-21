@@ -98,7 +98,7 @@ export function PowerLarge({ appearance, powerData, loading, error }: PowerLarge
               {chartData.map((d, i) => (
                 <div
                   key={i}
-                  className="flex-1 min-w-0 rounded-t opacity-80 animate-chart-bar-bounce"
+                  className="flex-1 min-w-0 rounded-t opacity-80 animate-fade-in"
                   style={{
                     height: `${Math.max(8, d.normalized * 100)}%`,
                     backgroundColor: d.isCurrent ? primaryColor : `${primaryColor}99`,

@@ -6,7 +6,7 @@ import { MinutesDisplay } from "./MinutesDisplay";
 import { useDepartureAnimations, TRANSPORT_ANIMATION } from "./useDepartureAnimations";
 import { useMinuteFlipAnimation } from "./useMinuteFlipAnimation";
 import type { TransportProps, TransportData, PanelSize } from "./types";
-import { formatDepartureTime, minutesUntilDeparture } from "./utils";
+import { formatDepartureTime, minutesUntilDepartureForDisplay } from "./utils";
 import { FiActivity } from "react-icons/fi";
 
 // Loosely typed icon components to avoid react-icons vs local React type incompatibilities
@@ -47,7 +47,7 @@ export function TransportXLarge({ appearance, transportData, loading, error, tim
   const departures = transportData.departures.slice(0, maxDepartures);
   const rowData = useMemo(() => {
     return departures.map((dep) => {
-      const minutes = minutesUntilDeparture(dep.expectedDeparture || dep.scheduledDeparture);
+      const minutes = minutesUntilDepartureForDisplay(dep.expectedDeparture || dep.scheduledDeparture);
       return {
         id: dep.id,
         dep,
@@ -71,13 +71,20 @@ export function TransportXLarge({ appearance, transportData, loading, error, tim
   let newRowCounter = 0;
 
   return (
-    <div
-      className={`flex h-full w-full flex-col gap-4 p-4 sm:p-6 ${
-        playInitialFade ? "animate-fade-in" : ""
-      }`}
-    >
+    <div className="flex h-full w-full flex-col gap-4 p-4 sm:p-6">
       {transportData.stopPlace && (
-        <div className="font-medium uppercase tracking-wider opacity-70 px-1" style={{ color: primaryColor, fontSize: titleFontSize }}>
+        <div
+          className={`font-medium uppercase tracking-wider opacity-70 px-1 ${
+            playInitialFade ? "animate-fade-in" : ""
+          }`}
+          style={{
+            color: primaryColor,
+            fontSize: titleFontSize,
+            ...(playInitialFade
+              ? { animationDelay: "0s", animationFillMode: "both" as const }
+              : {}),
+          }}
+        >
           {transportData.stopPlace.name}
         </div>
       )}

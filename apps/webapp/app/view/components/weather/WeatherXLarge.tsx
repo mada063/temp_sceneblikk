@@ -73,7 +73,7 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
     if (dataToShow.length === 0) return null;
 
     // Calculate temperature range using centralized configuration
-    const { minTemp, maxTemp, avgTemp, yAxisTemps } = calculateTemperatureRange({
+    const { minTemp, maxTemp, avgTemp, dataMinTemp, dataMaxTemp, yAxisTemps } = calculateTemperatureRange({
       forecastData: dataToShow,
       colSpan,
       rowSpan,
@@ -261,9 +261,9 @@ export function WeatherXLarge({ appearance, weatherData, loading, error, locatio
             </svg>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-4 py-2 text-[0.75rem]" style={{ color: `${primaryColor}CC` }}>
-          <span>Min: {minTemp}°</span>
+          <span>Min: {Math.round(dataMinTemp)}°</span>
           <span>Avg: {Math.round(avgTemp)}°</span>
-          <span>Max: {maxTemp}°</span>
+          <span>Max: {Math.round(dataMaxTemp)}°</span>
         </div>
       </div>
     );

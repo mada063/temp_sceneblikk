@@ -438,3 +438,10 @@ export function minutesUntilDeparture(departureTime: string | undefined): number
   return diffMinutes >= 0 ? diffMinutes : null;
 }
 
+/** Minutes until departure for “X min” display; null when >30 min so UI shows clock time instead. */
+export function minutesUntilDepartureForDisplay(departureTime: string | undefined): number | null {
+  const m = minutesUntilDeparture(departureTime);
+  if (m === null) return null;
+  return m > 30 ? null : m;
+}
+

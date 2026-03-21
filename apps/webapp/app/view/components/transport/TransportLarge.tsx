@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { TransportBadge } from "./TransportBadge";
 import { MinutesDisplay } from "./MinutesDisplay";
 import { useDepartureAnimations, TRANSPORT_ANIMATION } from "./useDepartureAnimations";
 import { useMinuteFlipAnimation } from "./useMinuteFlipAnimation";
 import type { TransportProps, TransportData, PanelSize } from "./types";
-import { formatDepartureTime, minutesUntilDeparture } from "./utils";
+import { formatDepartureTime, minutesUntilDepartureForDisplay } from "./utils";
 import { FiActivity } from "react-icons/fi";
 
 // Loosely typed icon components to avoid react-icons vs local React type incompatibilities
@@ -60,13 +60,6 @@ export function TransportLarge({
   const lineFontSize = "0.75rem";
   const showDual = dualStopEnabled && secondaryTransportData;
 
-  const [panelAnimated, setPanelAnimated] = useState(false);
-  useEffect(() => {
-    if (!panelAnimated && transportData) {
-      setPanelAnimated(true);
-    }
-  }, [panelAnimated, transportData]);
-
   if (loading || error || !transportData) {
     return (
       <div className="flex h-full items-center justify-center px-6">
@@ -82,11 +75,7 @@ export function TransportLarge({
     : [transportData];
 
   return (
-    <div
-      className={`flex h-full w-full flex-col gap-3 p-4 sm:p-6 ${
-        panelAnimated ? "" : "animate-fade-in"
-      }`}
-    >
+    <div className="flex h-full w-full flex-col gap-3 p-4 sm:p-6">
       <div className={`flex flex-1 ${showDual ? "flex-row gap-4" : "flex-col gap-3"}`}>
         {stopSections.map((sectionData, idx) => (
           <LargeStopSection
@@ -138,7 +127,7 @@ function LargeStopSection({
   );
   const rowData = useMemo(() => {
     return departures.map((dep) => {
-      const minutes = minutesUntilDeparture(dep.expectedDeparture || dep.scheduledDeparture);
+      const minutes = minutesUntilDepartureForDisplay(dep.expectedDeparture || dep.scheduledDeparture);
       return {
         id: dep.id,
         dep,
@@ -165,8 +154,16 @@ function LargeStopSection({
     <div className={`flex flex-col gap-3 ${dualMode ? "flex-1 min-w-0" : "flex-1"}`}>
       {data?.stopPlace && (
         <div
-          className="font-medium uppercase tracking-wider opacity-70 px-1"
-          style={{ color: primaryColor, fontSize: titleFontSize }}
+          className={`font-medium uppercase tracking-wider opacity-70 px-1 ${
+            playInitialFade ? "animate-fade-in" : ""
+          }`}
+          style={{
+            color: primaryColor,
+            fontSize: titleFontSize,
+            ...(playInitialFade
+              ? { animationDelay: "0s", animationFillMode: "both" as const }
+              : {}),
+          }}
         >
           {data.stopPlace.name}
         </div>

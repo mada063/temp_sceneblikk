@@ -6,7 +6,7 @@ import { MinutesDisplay } from "./MinutesDisplay";
 import { useDepartureAnimations, TRANSPORT_ANIMATION } from "./useDepartureAnimations";
 import { useMinuteFlipAnimation } from "./useMinuteFlipAnimation";
 import type { TransportProps, TransportData, PanelSize } from "./types";
-import { formatDepartureTime, minutesUntilDeparture } from "./utils";
+import { formatDepartureTime, minutesUntilDepartureForDisplay } from "./utils";
 import { FiActivity } from "react-icons/fi";
 
 // Loosely typed icon components to avoid react-icons vs local React type incompatibilities
@@ -68,7 +68,7 @@ export function TransportTiny({ appearance, transportData, loading, error, timeF
   );
   const rowData = useMemo(() => {
     return visibleDepartures.map((dep) => {
-      const minutes = minutesUntilDeparture(
+      const minutes = minutesUntilDepartureForDisplay(
         dep.expectedDeparture || dep.scheduledDeparture
       );
       return {
@@ -124,11 +124,7 @@ export function TransportTiny({ appearance, transportData, loading, error, timeF
       : undefined;
 
   return (
-    <div
-      className={`flex h-full w-full items-center justify-center gap-2 p-4 sm:p-6 ${
-        playInitialFade ? "animate-fade-in" : ""
-      }`}
-    >
+    <div className="flex h-full w-full items-center justify-center gap-2 p-4 sm:p-6">
       <div
         className={`flex items-center gap-2 ${rowAnimationClass}`}
         style={{

@@ -26,7 +26,7 @@ module.exports = {
       animation: {
         'fade-in': 'fadeIn 0.6s ease-out forwards',
         'fade-out': 'fadeOut 0.25s ease-out forwards',
-        'slide-up-bounce': 'slideUpBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards',
+        'slide-up-bounce': 'slideUpBounce 0.42s cubic-bezier(0.68, -0.45, 0.265, 1.45) forwards',
         'cloud-fade-in': 'cloudFadeIn 1s ease-out forwards',
         'clock-slide-up': 'clockSlideUp 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
         'calendar-cell-fade-in': 'calendarCellFadeIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards',
@@ -48,10 +48,10 @@ module.exports = {
           to: { opacity: '0' },
         },
         slideUpBounce: {
-          '0%': { opacity: '0', transform: 'translateY(100%)' },
-          '60%': { opacity: '1', transform: 'translateY(-5%)' },
-          '80%': { transform: 'translateY(2%)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+          '0%': { opacity: '0', transform: 'translate3d(0, 100%, 0)' },
+          '55%': { opacity: '1', transform: 'translate3d(0, -4%, 0)' },
+          '78%': { transform: 'translate3d(0, 1.5%, 0)' },
+          '100%': { opacity: '1', transform: 'translate3d(0, 0, 0)' },
         },
         cloudFadeIn: {
           '0%': { opacity: '0', transform: 'translateY(10px) scale(0.9)' },

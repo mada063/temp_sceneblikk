@@ -104,7 +104,7 @@ export function PowerXLarge({ appearance, powerData, loading, error }: PowerXLar
               {chartData.map((d, i) => (
                 <div
                   key={i}
-                  className="flex-1 min-w-0 rounded-t animate-chart-bar-bounce"
+                  className="flex-1 min-w-0 rounded-t animate-fade-in"
                   style={{
                     height: `${Math.max(10, d.normalized * 100)}%`,
                     backgroundColor: d.isCurrent ? primaryColor : `${primaryColor}99`,
