@@ -9,8 +9,11 @@ export type ServerProps = {
 
 export type PanelSize = "tiny" | "small" | "medium" | "large" | "xlarge";
 
+export type ServerKind = "website" | "minecraft";
+
 export type ServerInfo = {
   name: string;
+  kind: ServerKind;
   status: "online" | "offline" | "unknown";
   ping: number | null; // in milliseconds
   port: number | null;

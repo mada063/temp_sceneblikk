@@ -1,34 +1,32 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import type { ServerLabels } from "./labels";
 import type { ServerProps, ServerData } from "./types";
-import { FiServer, FiCheckCircle, FiXCircle, FiAlertCircle } from "react-icons/fi";
+import { ServerNameCell } from "./ServerNameCell";
+import { SERVER_TYPOGRAPHY } from "./typography";
+import { ServerStatusBadge } from "./ServerStatusBadge";
+import { FiServer } from "react-icons/fi";
 
-// Loosely typed icon components
-type IconProps = {
-  className?: string;
-  style?: CSSProperties;
-  size?: number;
-};
-
-const ServerIcon = FiServer as React.ComponentType<IconProps>;
-const CheckCircleIcon = FiCheckCircle as React.ComponentType<IconProps>;
-const XCircleIcon = FiXCircle as React.ComponentType<IconProps>;
-const AlertCircleIcon = FiAlertCircle as React.ComponentType<IconProps>;
+const ServerIcon = FiServer as React.ComponentType<{ className?: string; style?: CSSProperties }>;
 
 type ServerLargeProps = ServerProps & {
   serverData: ServerData | null;
   loading: boolean;
   error: string | null;
+  labels: ServerLabels;
 };
 
-export function ServerLarge({ appearance, serverData, loading, error }: ServerLargeProps) {
+const typography = SERVER_TYPOGRAPHY.large;
+
+export function ServerLarge({ appearance, serverData, loading, error, labels }: ServerLargeProps) {
   const primaryColor = appearance.textColor || "#ffffff";
+  const { titleFontSize } = typography;
 
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center px-6">
-        <div className="text-4xl opacity-50 animate-pulse" style={{ color: primaryColor }}>
+        <div className="text-5xl opacity-50 animate-pulse" style={{ color: primaryColor }}>
           <ServerIcon />
         </div>
       </div>
@@ -49,85 +47,68 @@ export function ServerLarge({ appearance, serverData, loading, error }: ServerLa
     return (
       <div className="flex h-full items-center justify-center px-6">
         <div className="text-base font-medium" style={{ color: `${primaryColor}CC` }}>
-          No servers configured
+          {labels.noServersConfigured}
         </div>
       </div>
     );
   }
 
   const servers = serverData.servers;
-  const isMinecraft = servers.some((s) => s.motd !== undefined || s.playersOnline !== undefined);
+  const headerClass = "pb-3 font-medium uppercase tracking-wider opacity-70";
 
   return (
-    <div className="flex h-full w-full flex-col gap-3 p-6">
-      <table className="w-full text-left border-collapse">
+    <div className="flex h-full w-full min-h-0 flex-col gap-3 overflow-auto p-4 sm:p-6">
+      <table className="w-full border-collapse text-left">
         <thead>
           <tr>
-            <th className="text-sm font-semibold uppercase tracking-wider pb-3" style={{ color: primaryColor }}>
-              Status
+            <th className={headerClass} style={{ color: primaryColor, fontSize: titleFontSize }}>
+              {labels.statusColumn}
             </th>
-            <th className="text-sm font-semibold uppercase tracking-wider pb-3" style={{ color: primaryColor }}>
-              Name
+            <th className={headerClass} style={{ color: primaryColor, fontSize: titleFontSize }}>
+              {labels.serverColumn}
             </th>
-            {isMinecraft && (
-              <th className="text-sm font-semibold uppercase tracking-wider pb-3" style={{ color: primaryColor }}>
-                MOTD
-              </th>
-            )}
-            {isMinecraft && (
-              <th className="text-sm font-semibold uppercase tracking-wider pb-3 text-right" style={{ color: primaryColor }}>
-                Players
-              </th>
-            )}
-            <th className="text-sm font-semibold uppercase tracking-wider pb-3 text-right" style={{ color: primaryColor }}>
-              Ping
+            <th className={`${headerClass} text-right`} style={{ color: primaryColor, fontSize: titleFontSize }}>
+              {labels.pingColumn}
             </th>
-            <th className="text-sm font-semibold uppercase tracking-wider pb-3 text-right" style={{ color: primaryColor }}>
-              Port
+            <th className={`${headerClass} text-right`} style={{ color: primaryColor, fontSize: titleFontSize }}>
+              {labels.portColumn}
             </th>
           </tr>
         </thead>
         <tbody>
-          {servers.map((server, index) => {
-            const StatusIcon = server.status === "online" ? CheckCircleIcon : 
-                              server.status === "offline" ? XCircleIcon : AlertCircleIcon;
-            const statusColor = server.status === "online" ? "#22c55e" : 
-                               server.status === "offline" ? "#ef4444" : "#f59e0b";
-
-            return (
+          {servers.map((server, index) => (
               <tr key={index} className="border-t" style={{ borderColor: `${primaryColor}40` }}>
                 <td className="py-3">
-                  <StatusIcon className="inline-block" style={{ color: statusColor }} size={20} />
+                  <ServerStatusBadge
+                    status={server.status}
+                    appearance={appearance}
+                    labels={labels}
+                    size="large"
+                  />
                 </td>
-                <td className="text-sm font-medium py-3 truncate max-w-[11.25rem]" style={{ color: primaryColor }}>
-                  {server.name}
-                </td>
-                {isMinecraft && (
-                  <td className="text-sm font-medium py-3 truncate max-w-[15.625rem]" style={{ color: primaryColor }}>
-                    {server.motd || "-"}
-                  </td>
-                )}
-                {isMinecraft && (
-                  <td className="text-sm font-medium py-3 text-right" style={{ color: primaryColor }}>
-                    {server.playersOnline != null && server.playersMax != null
-                      ? `${server.playersOnline}/${server.playersMax}`
-                      : server.playersOnline != null
-                      ? server.playersOnline.toString()
-                      : "-"}
-                  </td>
-                )}
-                <td className="text-sm font-medium py-3 text-right" style={{ color: primaryColor }}>
+                <ServerNameCell
+                  server={server}
+                  primaryColor={primaryColor}
+                  typography={typography}
+                  labels={labels}
+                  cellClassName="py-3 max-w-[16rem]"
+                />
+                <td
+                  className="py-3 text-right font-semibold opacity-80"
+                  style={{ color: primaryColor, fontSize: titleFontSize }}
+                >
                   {server.ping !== null ? `${server.ping}ms` : "-"}
                 </td>
-                <td className="text-sm font-medium py-3 text-right" style={{ color: primaryColor }}>
+                <td
+                  className="py-3 text-right font-semibold opacity-80"
+                  style={{ color: primaryColor, fontSize: titleFontSize }}
+                >
                   {server.port !== null ? server.port : "-"}
                 </td>
               </tr>
-            );
-          })}
+          ))}
         </tbody>
       </table>
     </div>
   );
 }
-

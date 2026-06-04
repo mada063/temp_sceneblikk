@@ -1,4 +1,137 @@
-import type { ServerInfo, ServerData } from "./types";
+import type { ServerInfo, ServerKind } from "./types";
+
+const WEB_PORTS = new Set([80, 443, 8080, 8443, 3000, 5000]);
+
+/**
+ * Strip optional mc:/minecraft: prefix and classify the entry.
+ */
+export function normalizeServerEntry(url: string): { raw: string; kind: ServerKind } {
+  let trimmed = url.trim();
+  if (!trimmed) {
+    return { raw: "", kind: "website" };
+  }
+
+  const lower = trimmed.toLowerCase();
+  if (lower.startsWith("mc:") || lower.startsWith("minecraft:")) {
+    const prefixEnd = trimmed.indexOf(":") + 1;
+    trimmed = trimmed.slice(prefixEnd).trim();
+    return { raw: trimmed, kind: "minecraft" };
+  }
+
+  if (lower.startsWith("http://") || lower.startsWith("https://")) {
+    return { raw: trimmed, kind: "website" };
+  }
+
+  const hostPort = /^([^:/\s]+):(\d+)$/.exec(trimmed);
+  if (hostPort) {
+    const port = parseInt(hostPort[2], 10);
+    if (!WEB_PORTS.has(port)) {
+      return { raw: trimmed, kind: "minecraft" };
+    }
+  }
+
+  return { raw: trimmed, kind: "website" };
+}
+
+/**
+ * Detect whether a server URL should be checked as a website or Minecraft server.
+ * Legacy layouts may set serverType to "minecraft" for host-only entries.
+ */
+export function detectServerKind(url: string, legacyServerType?: string): ServerKind {
+  const { raw, kind } = normalizeServerEntry(url);
+  if (!raw) {
+    return "website";
+  }
+  if (kind === "minecraft") {
+    return "minecraft";
+  }
+  if (legacyServerType === "minecraft" && !/^https?:\/\//i.test(url.trim())) {
+    return "minecraft";
+  }
+  return "website";
+}
+
+export function isMinecraftServerInfo(server: ServerInfo): boolean {
+  return server.kind === "minecraft";
+}
+
+export function formatMinecraftPlayers(
+  server: ServerInfo,
+  playersLabel: string
+): string | null {
+  if (!isMinecraftServerInfo(server)) {
+    return null;
+  }
+  if (server.playersOnline != null && server.playersMax != null) {
+    return `${server.playersOnline}/${server.playersMax} ${playersLabel}`;
+  }
+  if (server.playersOnline != null) {
+    return `${server.playersOnline} ${playersLabel}`;
+  }
+  return null;
+}
+
+export function buildPlaceholderServerInfo(
+  url: string,
+  legacyServerType?: string
+): ServerInfo {
+  const kind = detectServerKind(url, legacyServerType);
+  const { raw } = normalizeServerEntry(url);
+
+  if (kind === "minecraft") {
+    const { hostname, port } = parseMinecraftAddress(raw);
+    return {
+      name: hostname,
+      kind: "minecraft",
+      status: "unknown",
+      ping: null,
+      port,
+      motd: null,
+      playersOnline: null,
+      playersMax: null,
+    };
+  }
+
+  const normalized = normalizeUrl(raw);
+  return {
+    name: extractServerName(normalized),
+    kind: "website",
+    status: "unknown",
+    ping: null,
+    port: extractPort(normalized),
+  };
+}
+
+export function buildOfflineServerInfo(
+  url: string,
+  legacyServerType?: string
+): ServerInfo {
+  const kind = detectServerKind(url, legacyServerType);
+  const { raw } = normalizeServerEntry(url);
+
+  if (kind === "minecraft") {
+    const { hostname, port } = parseMinecraftAddress(raw);
+    return {
+      name: hostname,
+      kind: "minecraft",
+      status: "offline",
+      ping: null,
+      port,
+      motd: null,
+      playersOnline: null,
+      playersMax: null,
+    };
+  }
+
+  const normalized = normalizeUrl(raw);
+  return {
+    name: extractServerName(normalized),
+    kind: "website",
+    status: "offline",
+    ping: null,
+    port: extractPort(normalized),
+  };
+}
 
 /**
  * Normalize URL - add protocol if missing, default to https
@@ -136,22 +269,27 @@ export function determineStatus(ping: number | null): "online" | "offline" | "un
 /**
  * Fetch server information for a single URL (website)
  */
-export async function fetchSingleServerInfo(url: string, serverType: string = "website"): Promise<ServerInfo> {
-  if (serverType === "minecraft") {
-    return fetchMinecraftServerInfo(url);
+export async function fetchSingleServerInfo(
+  url: string,
+  legacyServerType: string = "website"
+): Promise<ServerInfo> {
+  const kind = detectServerKind(url, legacyServerType);
+  const { raw } = normalizeServerEntry(url);
+
+  if (kind === "minecraft") {
+    const info = await fetchMinecraftServerInfo(raw);
+    return { ...info, kind: "minecraft" };
   }
-  
-  // Website server
-  const normalized = normalizeUrl(url);
+
+  const normalized = normalizeUrl(raw);
   const name = extractServerName(normalized);
   const port = extractPort(normalized);
-  
-  // Measure ping using normalized URL
   const ping = await measurePing(normalized);
   const status = determineStatus(ping);
 
   return {
     name,
+    kind: "website",
     status,
     ping,
     port,
@@ -187,10 +325,10 @@ export async function fetchMinecraftServerInfo(address: string): Promise<ServerI
     
     const info = await response.json();
     
-    // Check if API returned an error in the JSON response
-    if (info.error) {
-      console.error(`Minecraft query error for ${hostname}:${port}`, info.error);
-      throw new Error(info.error);
+    const apiError = info.error ?? info.warning;
+    if (apiError) {
+      console.error(`Minecraft query error for ${hostname}:${port}`, apiError);
+      throw new Error(apiError);
     }
     
     const endTime = performance.now();
@@ -208,6 +346,7 @@ export async function fetchMinecraftServerInfo(address: string): Promise<ServerI
     
     return {
       name: hostname,
+      kind: "minecraft",
       status: "online",
       ping,
       port: port,
@@ -217,11 +356,11 @@ export async function fetchMinecraftServerInfo(address: string): Promise<ServerI
     };
   } catch (error) {
     console.error(`Minecraft query exception for ${address}:`, error);
-    // If query fails, try to extract hostname and port for display
     const { hostname, port } = parseMinecraftAddress(address);
     
     return {
       name: hostname,
+      kind: "minecraft",
       status: "offline",
       ping: null,
       port,
