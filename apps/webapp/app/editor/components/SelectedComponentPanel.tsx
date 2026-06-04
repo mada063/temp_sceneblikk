@@ -21,6 +21,11 @@ import { parseGarbageScheduleToEntries } from "../../view/components/garbage/uti
 import { AnnouncementEditor } from "./AnnouncementEditor";
 import { ChartsEditor } from "./ChartsEditor";
 import { useI18n } from "../../lib/i18n";
+import {
+  isBadgeShowBorder,
+  isBadgeShowText,
+  isBadgeTransparent,
+} from "../../view/components/server/badge-styles";
 
 import type {
   CellAppearance,
@@ -2093,17 +2098,14 @@ export function SelectedComponentPanel({
                         {
                           field: "serverStatusBadgeTransparent" as const,
                           labelKey: "serverStatusBadgeTransparentLabel" as const,
-                          defaultChecked: false,
                         },
                         {
                           field: "serverStatusBadgeShowBorder" as const,
                           labelKey: "serverStatusBadgeShowBorderLabel" as const,
-                          defaultChecked: true,
                         },
                         {
                           field: "serverStatusBadgeShowText" as const,
                           labelKey: "serverStatusBadgeShowTextLabel" as const,
-                          defaultChecked: true,
                         },
                       ] as const
                     ).map((toggle) => (
@@ -2113,7 +2115,13 @@ export function SelectedComponentPanel({
                         </span>
                         <input
                           type="checkbox"
-                          checked={appearance[toggle.field] ?? toggle.defaultChecked}
+                          checked={
+                            toggle.field === "serverStatusBadgeTransparent"
+                              ? isBadgeTransparent(appearance)
+                              : toggle.field === "serverStatusBadgeShowBorder"
+                                ? isBadgeShowBorder(appearance)
+                                : isBadgeShowText(appearance)
+                          }
                           onChange={(event) =>
                             onAppearanceChange({
                               [toggle.field]: event.target.checked,
@@ -2160,19 +2168,9 @@ export function SelectedComponentPanel({
                         },
                       ] as const
                     ).map((group) => {
-                      const transparent =
-                        appearance.serverStatusBadgeTransparent ??
-                        (appearance.serverStatusBadgeUseBackground === undefined
-                          ? false
-                          : !appearance.serverStatusBadgeUseBackground);
-                      const showBorder =
-                        appearance.serverStatusBadgeShowBorder ??
-                        appearance.serverStatusBadgeUseBorder ??
-                        true;
-                      const showText =
-                        appearance.serverStatusBadgeShowText ??
-                        appearance.serverStatusBadgeUseText ??
-                        true;
+                      const transparent = isBadgeTransparent(appearance);
+                      const showBorder = isBadgeShowBorder(appearance);
+                      const showText = isBadgeShowText(appearance);
                       const colorFields = (
                         [
                           {

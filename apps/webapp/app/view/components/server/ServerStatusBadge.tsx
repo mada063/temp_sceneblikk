@@ -3,7 +3,7 @@
 import type { CellAppearance } from "../../../lib/layout-types";
 import type { ServerInfo } from "./types";
 import type { ServerLabels } from "./labels";
-import { getServerStatusBadgeStyle } from "./badge-styles";
+import { getServerStatusBadgeStyle, isBadgeTransparent } from "./badge-styles";
 
 type BadgeSizeVariant = "compact" | "default" | "large";
 
@@ -29,8 +29,8 @@ export function ServerStatusBadge({
   const sizeConfig = BADGE_SIZES[size] ?? BADGE_SIZES.default;
   const badgeRadius = appearance.serverStatusBadgeRadius ?? appearance.borderRadius ?? 8;
   const statusStyle = getServerStatusBadgeStyle(status, appearance, labels);
-  const hasVisibleBadge =
-    statusStyle.showText || statusStyle.showBorder || statusStyle.backgroundColor !== "transparent";
+  const hasFill = !isBadgeTransparent(appearance);
+  const isVisible = statusStyle.showText || statusStyle.showBorder || hasFill;
 
   return (
     <span
@@ -40,9 +40,9 @@ export function ServerStatusBadge({
         border: statusStyle.showBorder ? `1px solid ${statusStyle.borderColor}` : "none",
         color: statusStyle.color,
         borderRadius: `${badgeRadius}px`,
-        width: hasVisibleBadge ? sizeConfig.size : 0,
-        minWidth: hasVisibleBadge ? sizeConfig.size : 0,
-        height: hasVisibleBadge ? sizeConfig.size : 0,
+        width: isVisible ? sizeConfig.size : 0,
+        minWidth: isVisible ? sizeConfig.size : 0,
+        height: isVisible ? sizeConfig.size : 0,
         fontSize: sizeConfig.fontSize,
         overflow: "hidden",
       }}

@@ -36,6 +36,11 @@ import {
   normalizeConfig,
 } from "../lib/layout-types";
 import {
+  applyServerBadgeTogglesToPanel,
+  mergeServerAppearance,
+  pickServerBadgeToggleChanges,
+} from "../view/components/server/appearance-merge";
+import {
   FREEFORM_COMPONENT_ID,
   applyCapacity,
   assignComponentToRegion,
@@ -1504,13 +1509,16 @@ export default function EditorPage() {
             ...baseAppearance,
             ...changes,
           };
-          
-          // Update the entry's appearance
+
           cell.panelEntries[entryIndex] = {
             ...entry,
             appearance: updatedAppearance,
           };
-          
+
+          if (entry.componentId === "server" && Object.keys(pickServerBadgeToggleChanges(changes)).length > 0) {
+            cell.appearance = applyServerBadgeTogglesToPanel(cell.appearance, changes);
+          }
+
           return next;
         });
         return;
@@ -1582,17 +1590,21 @@ export default function EditorPage() {
       return null;
     }
     
-    // If editing a specific entry, use that entry's appearance
     if (isFreeformSelected && selectedEntryId && selectedCellData?.panelEntries) {
-      const entry = selectedCellData.panelEntries.find(e => e.id === selectedEntryId);
+      const entry = selectedCellData.panelEntries.find((e) => e.id === selectedEntryId);
+      const panelAppearance =
+        selectedCellData.appearance ?? getAppearancePreset(selectedComponentId);
+
+      if (entry?.componentId === "server") {
+        return mergeServerAppearance(panelAppearance, entry.appearance);
+      }
+
       if (entry?.appearance) {
         return entry.appearance;
       }
-      // Fall back to panel appearance if entry doesn't have its own
       if (selectedCellData.appearance) {
         return selectedCellData.appearance;
       }
-      // Fall back to default for the entry's component type
       return getAppearancePreset(entry?.componentId ?? selectedComponentId);
     }
     

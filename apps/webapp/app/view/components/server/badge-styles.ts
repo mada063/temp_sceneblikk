@@ -41,9 +41,12 @@ type BadgeAppearanceFields = Pick<
   | "serverStatusBadgeUseText"
 >;
 
-function isBadgeTransparent(appearance: BadgeAppearanceFields): boolean {
+export function isBadgeTransparent(appearance: BadgeAppearanceFields): boolean {
   if (appearance.serverStatusBadgeTransparent === true) {
     return true;
+  }
+  if (appearance.serverStatusBadgeTransparent === false) {
+    return false;
   }
   if (appearance.serverStatusBadgeUseBackground === false) {
     return true;
@@ -51,32 +54,30 @@ function isBadgeTransparent(appearance: BadgeAppearanceFields): boolean {
   return false;
 }
 
-function isBadgeShowBorder(appearance: BadgeAppearanceFields): boolean {
-  if (appearance.serverStatusBadgeShowBorder !== undefined) {
-    return appearance.serverStatusBadgeShowBorder;
-  }
-  if (appearance.serverStatusBadgeUseBorder !== undefined) {
-    return appearance.serverStatusBadgeUseBorder;
-  }
-  return true;
-}
-
-function isBadgeShowText(appearance: BadgeAppearanceFields): boolean {
-  if (appearance.serverStatusBadgeShowText !== undefined) {
-    return appearance.serverStatusBadgeShowText;
-  }
-  if (appearance.serverStatusBadgeUseText !== undefined) {
-    return appearance.serverStatusBadgeUseText;
-  }
-  return true;
-}
-
-/** Colored background only when Transparent is off and at least border or text is shown. */
-function shouldUseCustomBackground(appearance: BadgeAppearanceFields): boolean {
-  if (isBadgeTransparent(appearance)) {
+export function isBadgeShowBorder(appearance: BadgeAppearanceFields): boolean {
+  if (appearance.serverStatusBadgeShowBorder === false) {
     return false;
   }
-  return isBadgeShowBorder(appearance) || isBadgeShowText(appearance);
+  if (appearance.serverStatusBadgeShowBorder === true) {
+    return true;
+  }
+  if (appearance.serverStatusBadgeUseBorder === false) {
+    return false;
+  }
+  return true;
+}
+
+export function isBadgeShowText(appearance: BadgeAppearanceFields): boolean {
+  if (appearance.serverStatusBadgeShowText === false) {
+    return false;
+  }
+  if (appearance.serverStatusBadgeShowText === true) {
+    return true;
+  }
+  if (appearance.serverStatusBadgeUseText === false) {
+    return false;
+  }
+  return true;
 }
 
 function getStatusColors(
@@ -84,16 +85,16 @@ function getStatusColors(
   appearance: BadgeAppearanceFields
 ): { backgroundColor: string; borderColor: string; color: string } {
   const defaults = SERVER_STATUS_BADGE_DEFAULTS[status];
-  const useBackground = shouldUseCustomBackground(appearance);
+  const transparent = isBadgeTransparent(appearance);
   const showBorder = isBadgeShowBorder(appearance);
   const showText = isBadgeShowText(appearance);
   const panelText = appearance.textColor || "#ffffff";
 
   if (status === "online") {
     return {
-      backgroundColor: useBackground
-        ? appearance.serverBadgeOnlineColor || defaults.backgroundColor
-        : "transparent",
+      backgroundColor: transparent
+        ? "transparent"
+        : appearance.serverBadgeOnlineColor || defaults.backgroundColor,
       borderColor: showBorder
         ? appearance.serverBadgeOnlineBorder || defaults.borderColor
         : "transparent",
@@ -103,9 +104,9 @@ function getStatusColors(
 
   if (status === "offline") {
     return {
-      backgroundColor: useBackground
-        ? appearance.serverBadgeOfflineColor || defaults.backgroundColor
-        : "transparent",
+      backgroundColor: transparent
+        ? "transparent"
+        : appearance.serverBadgeOfflineColor || defaults.backgroundColor,
       borderColor: showBorder
         ? appearance.serverBadgeOfflineBorder || defaults.borderColor
         : "transparent",
@@ -114,9 +115,9 @@ function getStatusColors(
   }
 
   return {
-    backgroundColor: useBackground
-      ? appearance.serverBadgeUnknownColor || defaults.backgroundColor
-      : "transparent",
+    backgroundColor: transparent
+      ? "transparent"
+      : appearance.serverBadgeUnknownColor || defaults.backgroundColor,
     borderColor: showBorder
       ? appearance.serverBadgeUnknownBorder || defaults.borderColor
       : "transparent",
