@@ -326,7 +326,9 @@ export async function fetchMinecraftServerInfo(address: string): Promise<ServerI
     const info = await response.json();
     
     const apiError = info.error ?? info.warning;
-    if (apiError) {
+    const hasServerData =
+      info.motd != null || info.playersOnline != null || info.playersMax != null;
+    if (apiError && !hasServerData) {
       console.error(`Minecraft query error for ${hostname}:${port}`, apiError);
       throw new Error(apiError);
     }

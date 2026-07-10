@@ -114,6 +114,34 @@ export function makeDateKey(date: Date) {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 }
 
+function formatClockTime(date: Date) {
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+
+export function formatEventTimeLabel(
+  start: Date,
+  end?: Date | string | null,
+  allDay?: boolean,
+): string | undefined {
+  if (allDay) {
+    return undefined;
+  }
+
+  const startLabel = formatClockTime(start);
+  if (!end) {
+    return startLabel;
+  }
+
+  const endDate = end instanceof Date ? end : new Date(end);
+  if (Number.isNaN(endDate.getTime())) {
+    return startLabel;
+  }
+
+  return `${startLabel} – ${formatClockTime(endDate)}`;
+}
+
 export function hexToRgba(color: string | undefined, alpha: number) {
   if (!color) {
     return `rgba(255, 255, 255, ${alpha})`;

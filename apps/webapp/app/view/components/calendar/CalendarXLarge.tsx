@@ -11,6 +11,7 @@ import {
   parseColorPalette,
   getISOWeekNumber,
   makeDateKey,
+  formatEventTimeLabel,
 } from "./utils";
 import { useCalendarAnimations, CALENDAR_ANIMATION } from "./useCalendarAnimations";
 import { useI18n } from "../../../lib/i18n";
@@ -117,9 +118,11 @@ export function CalendarXLarge({ appearance }: CalendarProps) {
           const startDate = new Date(rawEvent.start);
           const key = makeDateKey(startDate);
 
-          const hours = startDate.getHours().toString().padStart(2, "0");
-          const minutes = startDate.getMinutes().toString().padStart(2, "0");
-          const timeLabel = rawEvent.allDay ? undefined : `${hours}:${minutes}`;
+          const timeLabel = formatEventTimeLabel(
+            startDate,
+            rawEvent.end,
+            rawEvent.allDay,
+          );
 
           const list = next[key] ?? [];
           const color =
