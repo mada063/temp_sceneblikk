@@ -14,7 +14,8 @@ import {
 } from "./server-cache";
 import { useI18n } from "../../../lib/i18n";
 import { SERVER_LABELS, type ServerLocale } from "./labels";
-import type { ServerProps, PanelSize, ServerData, ServerInfo } from "./types";
+import { usePanelSize } from "../../hooks/usePanelSize";
+import type { ServerProps, ServerData, ServerInfo } from "./types";
 
 export function Server({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: ServerProps) {
   const { locale: appLocale } = useI18n();
@@ -37,27 +38,7 @@ export function Server({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }: 
     return [];
   }, [serverUrls]);
 
-  const panelSize = useMemo((): PanelSize => {
-    const cols = colSpan ?? 1;
-    const rows = rowSpan ?? 1;
-    const panelArea = cols * rows;
-
-    if (!totalGridSize || totalGridSize === 0) {
-      if (panelArea <= 1) return "tiny";
-      if (panelArea <= 2) return "small";
-      if (panelArea <= 6) return "medium";
-      if (panelArea <= 12) return "large";
-      return "xlarge";
-    }
-
-    const fraction = panelArea / totalGridSize;
-
-    if (fraction < 0.125) return "tiny";
-    if (fraction < 0.25) return "small";
-    if (fraction < 0.5) return "medium";
-    if (fraction < 0.75) return "large";
-    return "xlarge";
-  }, [colSpan, rowSpan, totalGridSize]);
+  const panelSize = usePanelSize(colSpan, rowSpan, totalGridSize, "standard");
 
   const updateServer = useCallback((index: number, serverInfo: ServerInfo) => {
     setServerData((prev) => {

@@ -8,6 +8,7 @@ import { WeatherMediumChart } from "./WeatherMediumChart";
 import { WeatherLarge } from "./WeatherLarge";
 import { WeatherXLarge } from "./WeatherXLarge";
 import { getAirQualityLevel, type WeatherData } from "./utils";
+import { usePanelSize } from "../../hooks/usePanelSize";
 import type { WeatherProps } from "./types";
 import { calculateHoursToShow, type PanelSize } from "./chart-config";
 import { findWeatherLocation } from "./location-utils";
@@ -49,26 +50,7 @@ export function Weather({ appearance, colSpan = 1, rowSpan = 1, totalGridSize }:
     return [parts[0], parts[1]];
   }, [weatherLocation2]);
 
-  // Calculate panel size for responsive display based on fraction of grid
-  const panelSize = useMemo((): PanelSize => {
-    const panelArea = (colSpan ?? 1) * (rowSpan ?? 1);
-    
-    if (!totalGridSize || totalGridSize === 0) {
-      if (panelArea <= 1) return "tiny";
-      if (panelArea <= 2) return "small";
-      if (panelArea <= 6) return "medium";
-      if (panelArea <= 12) return "large";
-      return "xlarge";
-    }
-    
-    const fraction = panelArea / totalGridSize;
-    
-    if (fraction < 0.125) return "tiny";
-    if (fraction < 0.25) return "small";
-    if (fraction < 0.5) return "medium";
-    if (fraction < 0.75) return "large";
-    return "xlarge";
-  }, [colSpan, rowSpan, totalGridSize]);
+  const panelSize = usePanelSize(colSpan, rowSpan, totalGridSize, "standard");
 
   // Check if panel is wide and short (full width, 1/4 height) for medium+ chart view
   const isWideShortPanel = useMemo(() => {

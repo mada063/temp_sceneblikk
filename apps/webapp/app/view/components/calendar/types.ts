@@ -2,6 +2,7 @@ import type { CellAppearance } from "../../../lib/layout-types";
 
 export type CalendarProps = {
   appearance: CellAppearance;
+  eventsByDate: Record<string, CalendarEvent[]>;
   colSpan?: number;
   rowSpan?: number;
   totalGridSize?: number;

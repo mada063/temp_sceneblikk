@@ -1,13 +1,14 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { GarbageTiny } from "./GarbageTiny";
 import { GarbageSmall } from "./GarbageSmall";
 import { GarbageMedium } from "./GarbageMedium";
 import { GarbageLarge } from "./GarbageLarge";
 import { GarbageXLarge } from "./GarbageXLarge";
 import { getNextPickups, getNextPickupsFromEntries } from "./utils";
-import type { GarbageProps, PanelSize } from "./types";
+import { usePanelSize } from "../../hooks/usePanelSize";
+import type { GarbageProps } from "./types";
 import type { GarbagePickup } from "./types";
 
 const DEFAULT_SCHEDULE = "Restavfall:2024-01-03:1\nMatavfall:2024-01-05:2\nPapir og plast:2024-01-10:4\nGlass og metall:2024-01-15:10";
@@ -37,22 +38,7 @@ export function Garbage({
     return () => clearInterval(interval);
   }, [appearance.garbageEntries, appearance.garbageSchedule]);
 
-  const panelSize = useMemo((): PanelSize => {
-    const panelArea = (colSpan ?? 1) * (rowSpan ?? 1);
-    if (!totalGridSize || totalGridSize === 0) {
-      if (panelArea <= 1) return "tiny";
-      if (panelArea <= 2) return "small";
-      if (panelArea <= 6) return "medium";
-      if (panelArea <= 12) return "large";
-      return "xlarge";
-    }
-    const fraction = panelArea / totalGridSize;
-    if (fraction < 0.125) return "tiny";
-    if (fraction < 0.25) return "small";
-    if (fraction < 0.5) return "medium";
-    if (fraction < 0.75) return "large";
-    return "xlarge";
-  }, [colSpan, rowSpan, totalGridSize]);
+  const panelSize = usePanelSize(colSpan, rowSpan, totalGridSize, "standard");
 
   const commonProps = { appearance, pickups };
 

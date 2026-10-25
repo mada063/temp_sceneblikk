@@ -5,7 +5,9 @@ import { CalendarSmall } from "./CalendarSmall";
 import { CalendarMedium } from "./CalendarMedium";
 import { CalendarLarge } from "./CalendarLarge";
 import { CalendarXLarge } from "./CalendarXLarge";
-import type { CalendarProps, PanelSize } from "./types";
+import { useCalendarEvents } from "./useCalendarEvents";
+import { computePanelFraction, usePanelSize } from "../../hooks/usePanelSize";
+import type { CalendarProps } from "./types";
 
 export function Calendar({
   appearance,
@@ -13,41 +15,38 @@ export function Calendar({
   rowSpan = 1,
   totalGridSize,
   orientation,
-}: CalendarProps) {
-  // Calculate panel size for responsive display
-  const panelSize = useMemo((): PanelSize => {
-    const cols = colSpan ?? 1;
-    const rows = rowSpan ?? 1;
-    const panelArea = cols * rows;
+}: Omit<CalendarProps, "eventsByDate">) {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
 
-    if (!totalGridSize || totalGridSize === 0) {
-      if (panelArea <= 1) return "tiny";
-      if (panelArea <= 2) return "small";
-      if (panelArea <= 6) return "medium";
-      if (panelArea <= 12) return "large";
-      return "xlarge";
+  const panelSize = usePanelSize(colSpan, rowSpan, totalGridSize, "calendar");
+
+  const fraction = computePanelFraction(colSpan, rowSpan, totalGridSize);
+  const isExpandedMedium =
+    Boolean(totalGridSize && totalGridSize > 0) &&
+    fraction >= 0.25 &&
+    fraction < 0.5;
+
+  const eventMonths = useMemo(() => {
+    if (panelSize === "xlarge") {
+      const nextMonth = month + 1;
+      return [
+        { year, month },
+        {
+          year: nextMonth > 11 ? year + 1 : year,
+          month: nextMonth % 12,
+        },
+      ];
     }
+    return [{ year, month }];
+  }, [panelSize, year, month]);
 
-    const fraction = panelArea / totalGridSize;
-
-    if (fraction < 0.25) return "small"; // Tiny/small use day view
-    if (fraction < 0.5) return "medium"; // Medium starts at 1/4 (0.25) and goes to 1/2
-    if (fraction < 0.75) return "large";
-    return "xlarge";
-  }, [colSpan, rowSpan, totalGridSize]);
-
-  // Calculate if medium should use expanded mode (between 1/4 and 1/2)
-  const isExpandedMedium = useMemo(() => {
-    if (!totalGridSize || totalGridSize === 0) return false;
-    const cols = colSpan ?? 1;
-    const rows = rowSpan ?? 1;
-    const panelArea = cols * rows;
-    const fraction = panelArea / totalGridSize;
-    return fraction >= 0.25 && fraction < 0.5;
-  }, [colSpan, rowSpan, totalGridSize]);
+  const eventsByDate = useCalendarEvents(appearance, eventMonths);
 
   const commonProps = {
     appearance,
+    eventsByDate,
     colSpan,
     rowSpan,
     totalGridSize,

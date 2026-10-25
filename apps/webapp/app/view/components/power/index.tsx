@@ -1,13 +1,14 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { PowerTiny } from "./PowerTiny";
 import { PowerSmall } from "./PowerSmall";
 import { PowerMedium } from "./PowerMedium";
 import { PowerLarge } from "./PowerLarge";
 import { PowerXLarge } from "./PowerXLarge";
 import { fetchPowerPrices, getCurrentHourIndex } from "./utils";
-import type { PowerProps, PanelSize, PowerAreaId } from "./types";
+import { usePanelSize } from "../../hooks/usePanelSize";
+import type { PowerProps, PowerAreaId } from "./types";
 import type { PowerData } from "./types";
 
 export function Power({
@@ -75,22 +76,7 @@ export function Power({
     return () => clearInterval(t);
   }, [powerData]);
 
-  const panelSize = useMemo((): PanelSize => {
-    const panelArea = (colSpan ?? 1) * (rowSpan ?? 1);
-    if (!totalGridSize || totalGridSize === 0) {
-      if (panelArea <= 1) return "tiny";
-      if (panelArea <= 2) return "small";
-      if (panelArea <= 6) return "medium";
-      if (panelArea <= 12) return "large";
-      return "xlarge";
-    }
-    const fraction = panelArea / totalGridSize;
-    if (fraction < 0.125) return "tiny";
-    if (fraction < 0.25) return "small";
-    if (fraction < 0.5) return "medium";
-    if (fraction < 0.75) return "large";
-    return "xlarge";
-  }, [colSpan, rowSpan, totalGridSize]);
+  const panelSize = usePanelSize(colSpan, rowSpan, totalGridSize, "standard");
 
   const commonProps = {
     appearance: {

@@ -6,7 +6,8 @@ import { ChartsSmall } from "./ChartsSmall";
 import { ChartsMedium } from "./ChartsMedium";
 import { ChartsLarge } from "./ChartsLarge";
 import { ChartsXLarge } from "./ChartsXLarge";
-import type { ChartsProps, PanelSize } from "./types";
+import { usePanelSize, type PanelSize } from "../../hooks/usePanelSize";
+import type { ChartsProps } from "./types";
 import { parseChartConfig } from "./utils";
 
 export function Charts({
@@ -28,28 +29,7 @@ export function Charts({
     return null;
   }, [chartsConfig]);
 
-  // Calculate panel size for responsive display
-  const panelSize = useMemo((): PanelSize => {
-    const cols = colSpan ?? 1;
-    const rows = rowSpan ?? 1;
-    const panelArea = cols * rows;
-    
-    if (!totalGridSize || totalGridSize === 0) {
-      if (panelArea <= 1) return "tiny";
-      if (panelArea <= 2) return "small";
-      if (panelArea <= 6) return "medium";
-      if (panelArea <= 12) return "large";
-      return "xlarge";
-    }
-    
-    const fraction = panelArea / totalGridSize;
-    
-    if (fraction < 0.125) return "tiny";
-    if (fraction < 0.25) return "small";
-    if (fraction < 0.5) return "medium";
-    if (fraction < 0.75) return "large";
-    return "xlarge";
-  }, [colSpan, rowSpan, totalGridSize]);
+  const panelSize = usePanelSize(colSpan, rowSpan, totalGridSize, "standard");
 
   // In portrait orientation the screen is taller, so we can use a richer layout
   // by stepping each logical size up one level (S → M, M → L, L → XL, etc.).

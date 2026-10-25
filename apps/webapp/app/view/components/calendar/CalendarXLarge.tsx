@@ -1,24 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { CalendarProps, CalendarDay, CalendarEvent } from "./types";
 import {
   WEEKDAY_LABELS,
   createCalendarDays,
-  buildSampleEvents,
   hexToRgba,
   getReadableTextColor,
-  parseColorPalette,
   getISOWeekNumber,
-  makeDateKey,
-  formatEventTimeLabel,
 } from "./utils";
+import { useCalendarAppearanceColors } from "../../hooks/useAppearanceColors";
 import { useCalendarAnimations, CALENDAR_ANIMATION } from "./useCalendarAnimations";
 import { useI18n } from "../../../lib/i18n";
 
 const UPCOMING_LIMIT = 6;
 
-export function CalendarXLarge({ appearance }: CalendarProps) {
+export function CalendarXLarge({ appearance, eventsByDate }: CalendarProps) {
   const { t } = useI18n();
   const now = new Date();
   const year = now.getFullYear();
@@ -27,156 +24,17 @@ export function CalendarXLarge({ appearance }: CalendarProps) {
   const nextMonthYear = nextMonth > 11 ? year + 1 : year;
   const nextMonthIndex = nextMonth % 12;
 
-  const textColor = appearance.textColor || "#ffffff";
   const showUpcoming = appearance.calendarShowUpcoming ?? true;
-  const accentOverride = appearance.calendarAccentColor?.trim() ?? "";
-  const mutedOverride = appearance.calendarMutedColor?.trim() ?? "";
-  const cellBackgroundOverride = appearance.calendarCellBackground?.trim() ?? "";
-  const todayOverride = appearance.calendarTodayHighlight?.trim() ?? "";
-  const accentColor =
-    accentOverride !== "" ? accentOverride : appearance.borderColor || textColor;
-  const borderColor = hexToRgba(accentColor, 0.25);
-  const mutedColor =
-    mutedOverride !== "" ? mutedOverride : hexToRgba(textColor, 0.65);
-  const dayBackground =
-    cellBackgroundOverride !== ""
-      ? cellBackgroundOverride
-      : hexToRgba(textColor, 0.05);
-  const todayHighlight =
-    todayOverride !== "" ? todayOverride : hexToRgba(accentColor, 0.2);
-  const accentTextColor = getReadableTextColor(accentColor, "#0f172a");
+  const {
+    textColor,
+    accentColor,
+    borderColor,
+    mutedColor,
+    surfaceColor: dayBackground,
+    highlightColor: todayHighlight,
+    accentTextColor,
+  } = useCalendarAppearanceColors(appearance);
   const upcomingBorderColor = hexToRgba(accentColor, 0.18);
-
-  const eventPalette = useMemo(
-    () => parseColorPalette(appearance.calendarEventPalette),
-    [appearance.calendarEventPalette],
-  );
-
-  const [eventsByDate, setEventsByDate] = useState<Record<string, CalendarEvent[]>>(() =>
-    appearance.calendarProvider === "google"
-      ? {}
-      : {
-          ...buildSampleEvents(year, month, eventPalette),
-          ...buildSampleEvents(nextMonthYear, nextMonthIndex, eventPalette),
-        },
-  );
-
-  useEffect(() => {
-    if (appearance.calendarProvider !== "google") {
-      setEventsByDate({
-        ...buildSampleEvents(year, month, eventPalette),
-        ...buildSampleEvents(nextMonthYear, nextMonthIndex, eventPalette),
-      });
-      return;
-    }
-
-    const abortController = new AbortController();
-
-    const load = async (controller: AbortController = abortController) => {
-      try {
-        // Load two consecutive months in one go by asking for the full range
-        const params = new URLSearchParams({
-          year: String(year),
-          month: String(month),
-        });
-        if (appearance.calendarId && appearance.calendarId.trim() !== "") {
-          params.set("calendarId", appearance.calendarId.trim());
-        }
-
-        const response = await fetch(`/api/google/calendar?${params.toString()}`, {
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          // eslint-disable-next-line no-console
-          console.warn("Google Calendar API returned non-OK response, using demo data instead.");
-          setEventsByDate({
-            ...buildSampleEvents(year, month, eventPalette),
-            ...buildSampleEvents(nextMonthYear, nextMonthIndex, eventPalette),
-          });
-          return;
-        }
-
-        const data: {
-          events?: Array<{
-            id: string;
-            summary: string;
-            start: string;
-            end?: string | null;
-            allDay?: boolean;
-          }>;
-        } = await response.json();
-
-        const incomingEvents = data.events ?? [];
-        if (incomingEvents.length === 0) {
-          setEventsByDate({});
-          return;
-        }
-
-        const next: Record<string, CalendarEvent[]> = {};
-        incomingEvents.forEach((rawEvent, index) => {
-          const startDate = new Date(rawEvent.start);
-          const key = makeDateKey(startDate);
-
-          const timeLabel = formatEventTimeLabel(
-            startDate,
-            rawEvent.end,
-            rawEvent.allDay,
-          );
-
-          const list = next[key] ?? [];
-          const color =
-            eventPalette.length > 0
-              ? eventPalette[(index + list.length) % eventPalette.length]
-              : undefined;
-
-          list.push({
-            id: rawEvent.id,
-            title: rawEvent.summary,
-            time: timeLabel,
-            color,
-          });
-
-          next[key] = list;
-        });
-
-        setEventsByDate(next);
-      } catch (error) {
-        if (controller.signal.aborted) return;
-        // eslint-disable-next-line no-console
-        console.error("Failed to load Google Calendar events, falling back to demo data:", error);
-        setEventsByDate({
-          ...buildSampleEvents(year, month, eventPalette),
-          ...buildSampleEvents(nextMonthYear, nextMonthIndex, eventPalette),
-        });
-      }
-    };
-
-    // Load immediately on mount or when dependencies change
-    load();
-
-    // Set up polling interval: fetch every 30 minutes (30 * 60 * 1000 ms)
-    const intervalId = setInterval(() => {
-      // Create a new abort controller for each interval call
-      const intervalAbortController = new AbortController();
-      load(intervalAbortController);
-    }, 30 * 60 * 1000);
-
-    return () => {
-      abortController.abort();
-      clearInterval(intervalId);
-    };
-  }, [appearance.calendarProvider, appearance.calendarId, year, month, nextMonthYear, nextMonthIndex, eventPalette]);
-
-  const firstMonthEvents = useMemo(
-    () => buildSampleEvents(year, month, eventPalette),
-    [year, month, eventPalette],
-  );
-
-  const secondMonthEvents = useMemo(
-    () => buildSampleEvents(nextMonthYear, nextMonthIndex, eventPalette),
-    [nextMonthYear, nextMonthIndex, eventPalette],
-  );
 
   const firstMonthDays = useMemo(
     () => createCalendarDays(year, month, eventsByDate),

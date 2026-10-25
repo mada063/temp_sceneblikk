@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { TasksSmall } from "./TasksSmall";
 import { TasksMedium } from "./TasksMedium";
 import { TasksXLarge } from "./TasksXLarge";
 import { buildSampleTasksData } from "./utils";
-import type { TasksProps, PanelSize, TasksData, Task } from "./types";
+import { computePanelFraction } from "../../hooks/usePanelSize";
+import type { TasksProps, TasksData, Task } from "./types";
 
 export function Tasks({
   appearance,
@@ -165,29 +166,6 @@ export function Tasks({
     };
   }, [appearance.tasksProvider, appearance.tasksListId]);
 
-  // Calculate panel size for responsive display
-  const panelSize = useMemo((): PanelSize => {
-    const cols = colSpan ?? 1;
-    const rows = rowSpan ?? 1;
-    const panelArea = cols * rows;
-
-    if (!totalGridSize || totalGridSize === 0) {
-      if (panelArea <= 1) return "tiny";
-      if (panelArea <= 2) return "small";
-      if (panelArea <= 6) return "medium";
-      if (panelArea <= 12) return "large";
-      return "xlarge";
-    }
-
-    const fraction = panelArea / totalGridSize;
-
-    if (fraction < 0.125) return "tiny";
-    if (fraction < 0.25) return "small";
-    if (fraction < 0.5) return "medium";
-    if (fraction < 0.75) return "large";
-    return "xlarge";
-  }, [colSpan, rowSpan, totalGridSize]);
-
   const [fadingOutTaskIds, setFadingOutTaskIds] = useState<Set<string>>(new Set());
 
   const handleCompleteTopTask = () => {
@@ -236,17 +214,7 @@ export function Tasks({
   };
 
   // Calculate fraction for determining task display
-  const fraction = useMemo(() => {
-    const cols = colSpan ?? 1;
-    const rows = rowSpan ?? 1;
-    const panelArea = cols * rows;
-    
-    if (!totalGridSize || totalGridSize === 0) {
-      return 0; // Default to smallest size if no grid size
-    }
-    
-    return panelArea / totalGridSize;
-  }, [colSpan, rowSpan, totalGridSize]);
+  const fraction = computePanelFraction(colSpan, rowSpan, totalGridSize);
 
   // Render based on fraction
   // 1/12 or less (<= 0.083): show 1 task

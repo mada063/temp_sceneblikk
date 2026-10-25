@@ -7,7 +7,8 @@ import { SolarMedium } from "./SolarMedium";
 import { SolarLarge } from "./SolarLarge";
 import { SolarXLarge } from "./SolarXLarge";
 import { getSolarTimes } from "./utils";
-import type { SolarProps, PanelSize } from "./types";
+import { usePanelSize } from "../../hooks/usePanelSize";
+import type { SolarProps } from "./types";
 import type { SolarData } from "./types";
 
 export function Solar({
@@ -41,22 +42,7 @@ export function Solar({
     return () => clearInterval(interval);
   }, [lat, lon]);
 
-  const panelSize = useMemo((): PanelSize => {
-    const panelArea = (colSpan ?? 1) * (rowSpan ?? 1);
-    if (!totalGridSize || totalGridSize === 0) {
-      if (panelArea <= 1) return "tiny";
-      if (panelArea <= 2) return "small";
-      if (panelArea <= 6) return "medium";
-      if (panelArea <= 12) return "large";
-      return "xlarge";
-    }
-    const fraction = panelArea / totalGridSize;
-    if (fraction < 0.125) return "tiny";
-    if (fraction < 0.25) return "small";
-    if (fraction < 0.5) return "medium";
-    if (fraction < 0.75) return "large";
-    return "xlarge";
-  }, [colSpan, rowSpan, totalGridSize]);
+  const panelSize = usePanelSize(colSpan, rowSpan, totalGridSize, "standard");
 
   const commonProps = {
     appearance: {
