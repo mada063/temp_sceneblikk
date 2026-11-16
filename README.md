@@ -1,91 +1,36 @@
-# Sceneblikk Monorepo
-
-This is a monorepo containing both the Sceneblikk web application and website.
-
-## Structure
-
-```
-sceneblikk_app_2/
-├── apps/
-│   ├── webapp/     # Main Sceneblikk application (Next.js with TypeScript)
-│   └── web/        # Sceneblikk website (Next.js with JavaScript)
-└── package.json    # Root package.json with workspace configuration
-```
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
 
-### Install Dependencies
-
-From the root directory, run:
+First, run the development server:
 
 ```bash
-npm install
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-This will install all dependencies for both workspaces.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-### Development
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-To run the development server for a specific app:
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-```bash
-# Run webapp (main application)
-npm run dev:webapp
+## Learn More
 
-# Run web (website)
-npm run dev:web
-```
+To learn more about Next.js, take a look at the following resources:
 
-**Note:** To run both simultaneously, you'll need to open two terminal windows, or use a tool like `concurrently`:
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-```bash
-npm install -g concurrently
-concurrently "npm run dev:webapp" "npm run dev:web"
-```
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-### Building
+## Deploy on Vercel
 
-Build all apps:
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-```bash
-npm run build
-```
-
-Or build individually:
-
-```bash
-npm run build:webapp
-npm run build:web
-```
-
-### Linting
-
-Lint all apps:
-
-```bash
-npm run lint
-```
-
-Or lint individually:
-
-```bash
-npm run lint:webapp
-npm run lint:web
-```
-
-## Workspaces
-
-This monorepo uses npm workspaces. Each app in `apps/` is a separate workspace with its own `package.json`.
-
-### Apps
-
-- **webapp** (`apps/webapp/`): The main Sceneblikk application built with Next.js 15, React 19, TypeScript, and Firebase.
-- **web** (`apps/web/`): The Sceneblikk marketing website built with Next.js 15 and React 18.
-
-## Ports
-
-- **webapp**: Runs on `http://localhost:3000` (default Next.js port)
-- **web**: Runs on `http://localhost:3000` (default Next.js port)
-
-**Note:** If running both simultaneously, you'll need to configure different ports. You can do this by setting the `PORT` environment variable or modifying the dev scripts in each app's `package.json`.
-
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
